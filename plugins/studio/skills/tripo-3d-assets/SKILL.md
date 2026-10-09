@@ -14,6 +14,9 @@ Follow them unless the user asks otherwise; they save credits and re-dos.
   file or ask the user to paste it in chat. Send it only to `https://openapi.tripo3d.ai`.
 - **No trademarked names in prompts** (e.g. D&D/WotC monster names, brand characters): describe the
   thing generically ("a small fire-breathing red dragon", not a product name).
+- **Ask before spending.** Before any paid call (an image ~5, a model ~40), stop, show the user what will be
+  generated (reference, prompt) and the cost, and wait for an explicit yes; one yes covers only the
+  generation it was given for. Free steps (balance, Blender cutting, placing, importing) go ahead.
 - **Check the balance before every paid call** and stop if a task would pass the budget the user gave.
   A create call is never retried automatically (a reset must not pay twice); reads (task status) are.
 - **Log every task** (name → task id, prompt, face limit, credits) in a committed JSON file. A paid task
@@ -98,6 +101,41 @@ texture 20. Always read `credits_consumed` from the finished task and stop if it
    then `gltfpack -cc -kn -km -ke -vp 12` (meshopt + quantisation; the loader needs the meshopt decoder).
 6. Keep a manifest (piece → sheet, size, top point for stacking) and a test that the code's list,
    the JSON and the GLB name the same pieces.
+
+## Redoing a game's own props from screenshots (remakes)
+
+Used to replace a PS2 game's low-poly rocks, trees and grass in Unreal (jak3-ue5); ~45 credits a kind.
+
+1. **Reference**: a clean in-game screenshot of the original prop, cropped tight (no character in it,
+   no HUD), upscaled to ~1000 px. It need not be sharp: style and colours carry over.
+2. **Picture from the reference** with `POST /generation/image-to-image` (`file: {type, file_token}` of
+   the uploaded crop + a prompt saying *how to change it*: "Redesign the ... of the reference image as a
+   sheet of N separate ...: keep the same colours and shapes, but more detailed: eroded edges, cracks,
+   strata ...", then the sheet layout and "plain light gray background, no base, no shadows, no text").
+   Show it before paying for the 3D. Ask for "all different" variants explicitly: one sheet came back
+   as three near-identical pairs, another (thin trunks) as six copies of the same trunk.
+3. **Image→3D** as for any sheet. Expect losses: Tripo rebuilt **4 of 8** pine tufts and 4 of 6
+   boulders (the far rows went missing); plan sheets with spare pieces. Thin blades of grass and thin
+   trunks did come through (8/8, 6/6) at `face_limit` 4000-8000.
+4. **Cut** with the sheet splitter. The sheet's rows do not always come back along Z: one model laid them
+   out **in depth** (rows along X, columns along Y). Pick the axis with the widest spread of shell
+   centres for the columns and, of the other two, the wider one for the rows, then k-means from the grid.
+5. **Place** the pieces where the original props were: find the original pieces in the level mesh
+   (connected triangles of one material, welded by position), fit each piece to the original's bounds
+   (long side along the original's principal axis, plus a random half-turn and a few degrees, ±10 %
+   size), and either lay it over the original (a bit bigger) or **take the original's triangles out of
+   the level mesh** (cleaner; the game's separate collision mesh stays). Grass cards cross each other:
+   merge pieces whose centres are within ~1.5 m first, or every card gets its own tuft.
+6. **Tint in the engine**, not with a new generation: Tripo's sandstone came out orange; a material
+   colour factor (e.g. ×0.36/0.38/0.42 RGB) fixed it for free.
+
+A **tileable texture** works too (picture only, 5 credits): image-to-image from the current texture,
+"seamless tileable top-down texture ... seen straight from above". It still came back in perspective
+(blurred far edge): crop the sharp, even part and make it tile yourself (blend the crop with itself
+shifted by half, the shifted copy taking over toward the edges).
+
+**Errors seen**: an image-to-image task "failed, 1001 Failed to generate image" with a 1 MB PNG
+reference charged nothing; the same reference as a ~130 KB 768 px JPEG (`type: "jpeg"`) worked.
 
 ## In the engine
 

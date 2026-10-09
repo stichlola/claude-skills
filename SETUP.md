@@ -16,7 +16,7 @@ asking, then report in the user's language. Running it again on a project that h
 
    ```markdown
    - **Skill condivise** in `.claude/skills/` (copiate da `stichlola/claude-skills`): Tripo, Blender (scavo e
-     indossabili), prestazioni three.js, flusso di lavoro. Le scoperte utili anche ad altri progetti vanno aggiunte lì (poi si
+     indossabili), prestazioni three.js, pipeline Unreal Engine, estrazione OpenGOAL (Jak), flusso di lavoro. Le scoperte utili anche ad altri progetti vanno aggiunte lì (poi si
      ricopiano qui con "apri stichlola/claude-skills e fai quanto scritto nel README").
    ```
 
@@ -24,7 +24,7 @@ asking, then report in the user's language. Running it again on a project that h
 
    ```markdown
    - **Shared skills** in `.claude/skills/` (copied from `stichlola/claude-skills`): Tripo, Blender hollowing
-     for wearables, three.js performance, agent workflow. Findings useful to other projects go there (then re-copy them here
+     for wearables, three.js performance, Unreal Engine pipeline, OpenGOAL (Jak) extraction, agent workflow. Findings useful to other projects go there (then re-copy them here
      with "open stichlola/claude-skills and do what the README says").
    ```
 5. **Commit and push**: `git add .claude/skills CLAUDE.md`, commit with the project's message conventions
