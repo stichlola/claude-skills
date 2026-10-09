@@ -62,6 +62,15 @@ export function sunSeesShadowLayer(renderer: THREE.WebGLRenderer) {
 ```
 Also fit the shadow camera to what is on screen, and keep its texel size stable while zooming.
 
+**Lights switching on and off while panning**: a fixed pool of point lights (every extra light costs every
+lit material) handed to the sources nearest the view's centre, so fires plainly on screen went dark as the
+view moved. Fix: merge sources within ~1.5 tiles into one light (centroid, stronger, longer reach); rank
+on-screen sources first (`vector.project(camera)` inside NDC ±1.05), important ones (fires, lanterns) before
+cheap ones (lava glows, hero aura), then by distance; and give every lamp an additive ground "pool" disc
+(one InstancedMesh, radial texture, `depthWrite: false`) that is shown only while that lamp has no point
+light, so nothing ever goes dark. Keep the pool size constant (changing the number of lights recompiles
+every shader).
+
 **Thumbnail/preview renderers slowing the editor**: an extra WebGLRenderer + `toDataURL` per thumbnail
 blocks the main thread. Render them after warm-up, one per idle slice, cache the data URLs (bump a
 version key when models change).
