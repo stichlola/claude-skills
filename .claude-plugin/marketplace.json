@@ -1,12 +1,12 @@
 {
   "name": "stichlola",
   "owner": { "name": "stichlola" },
-  "description": "Shared skills for all of stichlola's projects: Tripo 3D assets, Blender hollowing for wearables, three.js performance, cloud agent workflow.",
+  "description": "Shared skills for all of stichlola's projects: Tripo 3D assets, Blender hollowing for wearables, engraved dice, three.js performance, cloud agent workflow.",
   "plugins": [
     {
       "name": "studio",
       "source": "./plugins/studio",
-      "description": "Tripo 3D assets, Blender hollowing for wearables, three.js performance and cloud agent workflow skills."
+      "description": "Tripo 3D assets, Blender hollowing for wearables, engraved dice, three.js performance and cloud agent workflow skills."
     }
   ]
 }

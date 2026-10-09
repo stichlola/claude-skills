@@ -86,6 +86,37 @@ A wavy bottom edge comes free from the cutter heightfield (bump term from the ou
   is the fastest way to read centres and sizes; tilt the ellipse ~8° (outer corner lower).
 - Plugs are computed on `GridToMesh(shell ∩ box)` (28k faces, 1 s) instead of the full helmet.
 
+## Splitting into printable parts (seam, magnetic tabs, crown)
+
+Verified on the 400 mm king head (face body + back hair panel + crown + eye plugs):
+
+- **Ask for the real print size against a reference object** the user already printed (here a 260 mm
+  mask). Fit tests in a scaled model are worthless if the slicer scale differs; import the reference
+  into the scene in mm and compare.
+- **Splitting fixes "the head does not fit"**: with a back panel the user puts the face on and closes
+  the back, so the bottom opening no longer limits the size.
+- **Hidden seam = cheapest path in the grooves**: Dijkstra on the outer-surface edge graph, edge cost
+  low where the surface is concave (mean `n·(p_u-p_v)/|p_u-p_v|` per vertex), high on ridges; waypoints
+  on both sides below the rim and across the back under the crown band. Resample at 2.5 mm, smooth.
+- **Cut with SDF, not Mesh Boolean**: a 0.6 mm sheet blade made of overlapping boxes or a ribbon swept
+  along the seam either did not separate the parts (EXACT treats a thin open sheet as nothing), produced
+  a 100-face fragment, or kept Blender at 100% CPU for minutes (MCP timeout, the app shows the server as
+  failed until Blender answers again). What worked: a closed 1.6 mm ribbon solid directed horizontally
+  towards the vertical axis (not along the surface normal), `MeshToSDF(helm, 0.8) − MeshToSDF(ribbon)`
+  → two components in 5 s.
+- **Magnetic tabs like a Spider-Man helmet**: blocks 25×30 mm fused to the body's inner wall, reaching
+  under the panel with 1 mm play (SDF: `tabs − dilate(panel, 1 mm)`), a 10.5×3.4 pocket in each tab and
+  the coaxial pocket in the panel's inner wall so the magnets meet face to face. Measure the wall depth
+  by ray casts on both sides at every tab (34 mm under the crown vs 17-20 elsewhere) and size the tab to
+  the deeper one.
+- **Crown off for printing**: a flat cut at the crown base hits the seam and the upper tabs. Cut 10 mm
+  up inside the band and separate only the band component (largest radius) from the upper slab, then
+  body = full − crown in SDF: the 10 mm ring left on the body becomes a self-aligning socket.
+- **Glasses magnets**: 10.5×3.4 pockets flush with the surface on the nose bridge and both temples
+  (ray cast from the front at x = 0 and ±78 mm); the client glues matching magnets in their sunglasses.
+- `bpy.ops.wm.save_mainfile()` drops node groups with no users: set `use_fake_user = True` on helper
+  groups you will re-run.
+
 ## Workbench renders for the client
 
 `BLENDER_WORKBENCH`, studio light, single colour, cavity BOTH, shadows, `shading.background_type='WORLD'`
