@@ -10,6 +10,7 @@ QuestBoard, scritto in modo che qualsiasi agente, in qualsiasi progetto, lo usi 
 |---|---|
 | `tripo-3d-assets` | fare modelli 3D con Tripo: facce decise in partenza, fogli di pezzi tagliati in Blender, P1 + texture da un'immagine, concept prima dei personaggi, costi, errori già visti. Con un piccolo client (`scripts/tripo_client.py`). |
 | `threejs-performance` | scene three.js lente o brutte: lag dei primi secondi, shader ricompilati, qualità adattiva, instancing, ombre che spariscono, misure prima/dopo. |
+| `blender-wearable-hollowing` | rendere cavo e indossabile un modello 3D in Blender (teste mascotte, elmi, maschere): scavo con Geometry Nodes SDF, apertura sotto senza cambiare il profilo, capelli allungati, occhi rimovibili con sedi magnete in mm reali, verifiche numeriche, bake per lo sculpt a mano, render per il cliente, trappole di MCP for Blender. Con lo script completo (`scripts/wearable_head_build.py`). |
 | `cloud-agent-workflow` | regole di lavoro nelle sessioni cloud: git sicuro (worktree, commit firmati, main allineato), niente `pkill`, lavori lunghi in background, Playwright senza GPU, controlli prima di dire "fatto". |
 
 Le skill sono in inglese (le leggono gli agenti); l'agente risponde comunque nella tua lingua.
@@ -56,7 +57,7 @@ dentro lo zip) e caricala da Customize → Skills → "+" → Upload a skill.
 ### 4. Una riga nel CLAUDE.md del progetto (facoltativo ma utile)
 
 ```markdown
-- Skill condivise in `.claude/skills/` (da `stichlola/claude-skills`): usale per Tripo, three.js e il
+- Skill condivise in `.claude/skills/` (da `stichlola/claude-skills`): usale per Tripo, three.js, Blender (scavo/indossabili) e il
   flusso di lavoro; quando scopri qualcosa di utile per altri progetti, proponi di aggiungerlo lì.
 ```
 

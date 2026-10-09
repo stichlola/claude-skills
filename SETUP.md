@@ -15,16 +15,16 @@ asking, then report in the user's language. Running it again on a project that h
    mentioning `stichlola/claude-skills` is already there), in the language the file is written in. Italian:
 
    ```markdown
-   - **Skill condivise** in `.claude/skills/` (copiate da `stichlola/claude-skills`): Tripo, prestazioni
-     three.js, flusso di lavoro. Le scoperte utili anche ad altri progetti vanno aggiunte lì (poi si
+   - **Skill condivise** in `.claude/skills/` (copiate da `stichlola/claude-skills`): Tripo, Blender (scavo e
+     indossabili), prestazioni three.js, flusso di lavoro. Le scoperte utili anche ad altri progetti vanno aggiunte lì (poi si
      ricopiano qui con "apri stichlola/claude-skills e fai quanto scritto nel README").
    ```
 
    English:
 
    ```markdown
-   - **Shared skills** in `.claude/skills/` (copied from `stichlola/claude-skills`): Tripo, three.js
-     performance, agent workflow. Findings useful to other projects go there (then re-copy them here
+   - **Shared skills** in `.claude/skills/` (copied from `stichlola/claude-skills`): Tripo, Blender hollowing
+     for wearables, three.js performance, agent workflow. Findings useful to other projects go there (then re-copy them here
      with "open stichlola/claude-skills and do what the README says").
    ```
 5. **Commit and push**: `git add .claude/skills CLAUDE.md`, commit with the project's message conventions
