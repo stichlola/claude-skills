@@ -1,5 +1,8 @@
 # claude-skills
 
+> **Agent: if you were asked to "open this repository and do what the README says", follow
+> [`SETUP.md`](SETUP.md) now, step by step, for the project you are working in.**
+
 Skill condivise per tutti i progetti di stichlola: quello che gli agenti hanno imparato lavorando su
 QuestBoard, scritto in modo che qualsiasi agente, in qualsiasi progetto, lo usi da solo quando serve.
 
@@ -13,13 +16,15 @@ Le skill sono in inglese (le leggono gli agenti); l'agente risponde comunque nel
 
 ## Come metterle in un progetto nuovo
 
-### 1. Sessioni cloud (claude.ai/code, app): copia nel progetto (consigliato)
+### 1. Sessioni cloud (claude.ai/code, app): una frase all'agente (consigliato)
 
-Le sessioni cloud caricano le skill che stanno **dentro il repository** (`.claude/skills/`). In una sessione
-del progetto nuovo scrivi all'agente:
+Le sessioni cloud caricano le skill che stanno **dentro il repository** (`.claude/skills/`). Nella prima
+sessione del progetto nuovo scrivi solo:
 
-> Aggiungi alla sessione il repository `stichlola/claude-skills`, poi esegui
-> `tools/install-into.sh <cartella del progetto>` e fai commit di `.claude/skills/`.
+> Apri `stichlola/claude-skills` e fai quanto scritto nel README.
+
+L'agente segue `SETUP.md`: copia le skill, aggiunge la riga al CLAUDE.md, fa commit e push. La stessa frase
+serve anche per **aggiornarle** dopo una modifica qui.
 
 Oppure a mano, da un computer con entrambi i repository:
 
