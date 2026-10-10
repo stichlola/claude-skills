@@ -45,6 +45,21 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   top r // 2, bottom 2·(r % 2) + c // 8). Laid out as-is it shows a grid of seams: compose a periodic
   texture choosing tiles whose edges match, then re-tile it from soft random patches (each tile has a
   bright blob in the middle, so even a correct Wang layout shows a lattice).
+- **No normals at all**: the engine shades every triangle flat and the PS2 geometry looks faceted ("low
+  poly") where the game drew it smooth. Compute area-weighted corner normals, welded by position, that
+  only average faces within ~55° (split vertices there so building corners stay sharp).
+- **Every primitive references the level's whole shared vertex buffer.** Harmless for small levels, but
+  Jak 3's Haven farms (thousands of instanced tie pieces) add up to over a billion vertex reads: the
+  Unreal import asked for 87 GB and crashed. Give each primitive its own buffer with only the vertices
+  its indices use (1.16 billion → 250 thousand).
+- Haven City's districts are mostly **tie and shrub** (windows, beams, vines, wires: ~400k triangles a
+  district); the tfrag holds only a few thousand. If a district looks bare, the low-detail backdrop
+  (`ctywide`) is being shown instead of the district level, or the district failed to import.
+- **Ocean heights differ per map**: the start-corner y of `*ocean-map-<name>*` (Jak 3: desert/wascity
+  9 m, city 0 m, the city map is in `engine/gfx/ocean/ocean-tables.gc`). If levels are moved to share
+  one world, each keeps its own sea at its own (moved) height.
+- Continue points in `engine/level/level-info.gc` (`:trans`, GOAL units) are the reliable spawn points:
+  a level's bounding-box centre is often out at sea.
 - Level backdrops (e.g. `desert`) hold low-detail copies of areas shown in detail by other levels (a
   rock "cap" over the city, coarse mountains): cut them where the detailed levels are.
 

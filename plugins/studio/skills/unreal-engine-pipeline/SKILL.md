@@ -35,6 +35,14 @@ script, an empty map filled at runtime). Each line cost a debugging session.
 - On a **mesh 2 km across Nanite quantises positions, normals and UVs**: thin props break apart, rocks
   go faceted, textures smear into streaks. Precision settings did not fix it; import such levels
   without Nanite. Small props are fine with Nanite.
+- **Displacement vs decals**: games lay decals (stains, cracks, bullet holes) flat on floors; a
+  tessellated, displaced floor pokes through them in squares that change with the view distance. Turn
+  displacement off (per material instance) on levels with decals; keep it for rock and cliffs.
+- Materials used on Nanite meshes need `used_with_nanite` (and `used_with_instanced_static_meshes` for
+  HISM props), else "missing usage flag Nanite! Default Material will be used" and they draw grey.
+- What Nanite buys on low-poly (PS2) worlds is not triangle count: it is virtual shadow map cost (many
+  non-Nanite meshes overflow the "Non-Nanite Marking Job Queue"), tessellation, and dense instanced
+  props (AI-generated models). Keep huge meshes and see-through foliage off it.
 - `r.Nanite.Streaming.StreamingPoolSize` must stay **below 2048 MB** (fatal error otherwise); 1536 works
   on an 8 GB laptop GPU.
 
@@ -78,6 +86,12 @@ script, an empty map filled at runtime). Each line cost a debugging session.
   `tasklist | grep` loops in a monitor gave false "finished" events; logs read later may still be from
   an older run, so compare timestamps.
 - Never run two imports at once: they write the same packages.
+- Test-driving from the command line beats guessing: a `-Start=<place>` and a timed teleport option plus
+  timed screenshots reproduce "it looks wrong when I get there" reports (it showed the problem was the
+  spawn point and the decals, not streaming).
+- `FParse::Value` stops at commas by default: pass `bShouldStopOnSeparator = false` for lists.
+- On Windows the agent's PowerShell may not see the user's Python (only the Store alias): call it by
+  full path or prepend its folder to PATH before launching scripts that call `python`.
 - `Remove-Item` on a variable path built next to "C:\Program Files" was blocked by the sandbox: write to
   a fresh folder instead of deleting.
 - Bash heredocs with `\0` or `'''` content corrupt Python sources (a literal NUL byte): write patch
