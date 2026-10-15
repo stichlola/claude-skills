@@ -137,6 +137,23 @@ shifted by half, the shifted copy taking over toward the edges).
 **Errors seen**: an image-to-image task "failed, 1001 Failed to generate image" with a 1 MB PNG
 reference charged nothing; the same reference as a ~130 KB 768 px JPEG (`type: "jpeg"`) worked.
 
+## Budgets by role, and the checks after generation
+
+- Give every piece a role and send `face_limit = pieces × budget(role)`: grass/reeds 500, small prop
+  1500, rock 2000, tree/house 4000, big rock formation 5000, vehicle 8000, character 10000. Show the
+  budget with the picture before paying for the 3D. Never fix the count afterwards by heavy
+  decimation: grass tufts cut from 3800 to 180 faces turned into floating shards.
+- Tripo can return more faces than asked (3000 → 5000 seen) and models **facing backwards**: check
+  the count, look at each model from 4 sides and turn it, set real-world size and collision.
+- Batches: one manifest file (every prop with its pictures and settings), several tasks in parallel,
+  resume from the task log so nothing is paid twice. Front/side/back pictures give truer models.
+- Tripo Studio (the website) credits are cheaper and often discounted but are a separate balance from
+  the API: hero assets can be made there by hand and handed to the agent as `.glb`.
+- Architecture (walls, modular buildings) comes out better built in Blender by script with
+  AI-generated tileable textures (offset by half and blend the seams; dirt = what the AI picture
+  has darker than the clean wall); keep Tripo for small detailed props. Tripo pieces float off walls
+  and bake everything into one texture.
+
 ## In the engine
 
 - Load each GLB once; draw repeated props **instanced** (one draw call per model per material).

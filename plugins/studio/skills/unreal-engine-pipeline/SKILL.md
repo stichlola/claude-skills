@@ -46,6 +46,19 @@ script, an empty map filled at runtime). Each line cost a debugging session.
 - `r.Nanite.Streaming.StreamingPoolSize` must stay **below 2048 MB** (fatal error otherwise); 1536 works
   on an 8 GB laptop GPU.
 
+## Big painted worlds
+
+- Never ship painted scatter as one merged mesh (it reached 19 M faces): export placements and spawn
+  **HISM instances** per piece; grass without collision and shadows, trees/rocks with collision.
+- Foliage cards and decimated AI models shred under Nanite: import those kits **without Nanite**.
+- A terrain painted in Blender: export its vertex colors and build a hand-made triplanar material
+  in Python (world position masks + normal² weights), see `blender-world-building`.
+- A desert haze that lifts in towns: an exponential height fog driven per frame by distance to each
+  town's flat box (smoothstep over 200 m); keep a floor (e.g. 40 %) around a town that should look
+  hazy, or the far view is clear right outside it.
+- Two seas at different heights (levels moved next to each other): cut a hole in one where the
+  other is, or it shows through floors.
+
 ## Rendering costs and looks
 
 - Log "[VSM] Non-Nanite Marking Job Queue overflow": many non-Nanite meshes over the shadow map. Make
