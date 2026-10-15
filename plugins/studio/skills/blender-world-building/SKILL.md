@@ -121,12 +121,34 @@ of the terrain mesh after import.
 
 ## Checking the map (QA)
 
-- `haven_holes.py`: a downward ray per 6 m cell over the city ± 300 m classifies city floor,
-  terrain, allowed water (bay, open sea), **HOLE** (water or nothing inside the city), **VOID**,
-  **DROP** (city floor > 6 m above a wet neighbor: street ending in the air); writes a colored top
-  view and with `--fix` adds slabs at the surrounding floor height and skirt walls down to the water.
+- `haven_holes.py`: a downward ray per 6 m cell over the districts ± 300 m (district meshes only:
+  a backdrop level spanning km makes the scan huge and marks its whole surroundings as "city").
+  Water is **open sea** if a flood fill from the scan's border reaches it, plus anything inside the
+  port district's box; every other wet or empty patch is a **HOLE**, whatever its size (a distance
+  rule missed the middle of big pools). **DROP**: city floor > 6 m above a wet neighbor (a street
+  ending in the air). It writes a colored top view (grey = height, red = hole, yellow = drop, blue =
+  allowed water) and with `--fix` adds slabs at the median floor height of the city around each hole
+  and skirt walls down below the sea under every drop edge (`HavenPatch`). The re-scan skips the patch
+  by name, so verify the fix in game.
+- **Test the test**: break the scene on purpose (delete a floor piece, open a gap, lift a wall) and
+  check the detector catches each break before trusting a clean report.
+- **Reachability bot** (to do, from the same video): an autopilot that walks or flies a route
+  (city → tunnel → town → desert) and logs where it gets stuck, falls through or can't climb, plus a
+  screenshot there.
+- Game screenshots for checking: still and sharp (motion blur off: `-dpcvars=r.MotionBlurQuality=0`),
+  the vehicle hovering, a far camera; one run per spot with a timed teleport.
 - Verify in game with timed screenshots and a teleport option (`-JakTeleport=x,y,z@sec`,
   `-JakShotTimes=...`); don't trust a Blender view for fog, materials or Nanite.
+
+## Look and atmosphere
+
+- **Art direction from screenshots**: give an image model a game screenshot and ask for the wanted
+  mood; compare the repaint with the game to find what's wrong (one video found 50 lamps all the same
+  orange and every wall one color: nothing for the eye to catch), fix, iterate round by round.
+- **Explosions/smoke from video**: generate a short clip of a real-looking effect on a black
+  background and cut it into a flipbook (e.g. 64 frames 8×8); still AI pictures that only grow and
+  fade look fake up close. Layer flash, fire, smoke, dust, debris; compare with real footage.
+- Lighting: vary color temperature and intensity per light; wet, mirror-like ground for neon scenes.
 
 ## Working with the user
 

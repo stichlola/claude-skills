@@ -154,6 +154,16 @@ reference charged nothing; the same reference as a ~130 KB 768 px JPEG (`type: "
   has darker than the clean wall); keep Tripo for small detailed props. Tripo pieces float off walls
   and bake everything into one texture.
 
+## Gameplay details seen in the same videos (Godot + agent)
+
+- Physics: Jolt (built into Godot 4) for breakables - glass cut around the hit point, pieces thrown
+  along the shot; shelves where one falling bottle knocks the next.
+- Many enemies: one flow field (arrows to the player, around walls and up stairs) for hundreds;
+  for a few dozen better-looking ones, each its own brain with flanking (come from different sides).
+- Insect walk in code: two leg groups (tripod gait), feet planted never slide, a step starts after
+  half a step of body travel, so faster bugs take longer strides.
+- Doors opened with the player's hands feel real; sliding by themselves feels fake.
+
 ## In the engine
 
 - Load each GLB once; draw repeated props **instanced** (one draw call per model per material).
