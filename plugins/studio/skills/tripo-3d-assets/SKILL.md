@@ -1,6 +1,6 @@
 ---
 name: tripo-3d-assets
-description: How to make game-ready 3D models with the Tripo API (tripo3d.ai) cheaply and cleanly - text/image to 3D, low-poly face budgets asked up front, sheets of many parts in one generation cut apart in Blender, P1 low-poly + texture from a user's image, concept pictures before characters, PBR for Unreal, costs, prompts and the failures already met. Use whenever a task generates, retextures or prepares 3D assets with Tripo, or plans a set of game props, characters or kit pieces.
+description: How to make game-ready 3D models with the Tripo API (tripo3d.ai) cheaply and cleanly - text/image to 3D, low-poly face budgets asked up front, sheets of many parts in one generation cut apart in Blender, P1 low-poly + texture from a user's image, concept pictures before characters, PBR for Unreal, animating non-human creatures from generated video, costs, prompts and the failures already met. Use whenever a task generates, retextures or prepares 3D assets with Tripo, or plans a set of game props, characters or kit pieces.
 ---
 
 # Tripo 3D assets: what works
@@ -147,6 +147,12 @@ reference charged nothing; the same reference as a ~130 KB 768 px JPEG (`type: "
   the count, look at each model from 4 sides and turn it, set real-world size and collision.
 - Batches: one manifest file (every prop with its pictures and settings), several tasks in parallel,
   resume from the task log so nothing is paid twice. Front/side/back pictures give truer models.
+  Two text-to-image tasks at once already met `HTTP 429 "You have exceeded the limit of generation"`: no
+  task is made and nothing is charged, so wait (`Retry-After`, else ~15 s) and send the create again.
+- UI art (game menus' parchment, wooden buttons, plaques) as text-to-image pieces on white, cut out and
+  nine-sliced, was turned down: painted pieces with thick rims and ornate ends look wrong once stretched to
+  small, varied button sizes. (A scripted hand-drawn skin went too; the user kept the plain website UI.)
+  Show one piece in the real UI before generating a whole kit.
 - Tripo Studio (the website) credits are cheaper and often discounted but are a separate balance from
   the API: hero assets can be made there by hand and handed to the agent as `.glb`.
 - Architecture (walls, modular buildings) comes out better built in Blender by script with
@@ -164,6 +170,18 @@ reference charged nothing; the same reference as a ~130 KB 768 px JPEG (`type: "
   half a step of body travel, so faster bugs take longer strides.
 - Doors opened with the player's hands feel real; sliding by themselves feels fake.
 
+## Animating creatures with unusual bodies
+
+Bipeds: clips written in code onto one shared skeleton. Quadrupeds, dragons and monsters have no motion data;
+the route that worked in a published experiment (not yet tried in QuestBoard) is:
+- a skeleton from UniRig, several tries checked against the mesh;
+- a generated video with **two cameras in one picture** (front and side), so each joint is triangulated;
+- a joint detector (DINO) fine-tuned on ~3000 renders of the creature itself, once per creature;
+- an **exam on a made-up motion** before paying for any video.
+
+Point tracking, SAM 2, single-view depth, animal pose models and painted legs all failed.
+Details: `reference/creature-animation.md`.
+
 ## In the engine
 
 - Load each GLB once; draw repeated props **instanced** (one draw call per model per material).
@@ -176,3 +194,4 @@ reference charged nothing; the same reference as a ~130 KB 768 px JPEG (`type: "
   image→3D (task or uploaded file), P1, texture, wait, download, task log, budget guard.
 - `reference/api.md` - endpoints and request bodies.
 - `reference/blender-sheets.md` - splitting a sheet into pieces, with the bmesh code.
+- `reference/creature-animation.md` - animating non-human creatures from generated two-camera video: the pipeline, the exam, what failed.
