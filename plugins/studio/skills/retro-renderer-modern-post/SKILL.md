@@ -141,6 +141,19 @@ camera the game hands over each frame.
   feet stay planted), on top of the wind sway. Test it with a huge radius (25 m) from the spawn
   point and a difference image: the effect is too local to see at the real radius in one still.
 
+## Denser vegetation without new assets
+
+- At level load, after the loader unpacks the shrubs: group strips into plants (welded by
+  position), keep the small ones made of crossed cards standing on the floor (floor = the level's
+  upward triangles on a 2D grid). Copy each a few times nearby, turned and scaled, only where the
+  floor continues halfway (no copies over ledges or through walls).
+- Fuller patches: tufts of a nearby plant's **own upright cards** (tall and slim, so pebbles and
+  litter never become brushes), only on floor textures that already carry 3+ plants and fading out
+  within ~4.5 m of one - the desert stays bare. Count candidates first, then thin evenly to a
+  budget; capping as you go spends it all on the first floors in the file.
+- Extra draws carry a tier (moderate / lush) and the renderer skips tiers above the setting, so the
+  menu switches density live. Judge it on A/B stills of the same spot.
+
 ## An in-game menu for the player
 
 - Once there are many effects, give the player one ImGui window on a free key (here `\`): the
