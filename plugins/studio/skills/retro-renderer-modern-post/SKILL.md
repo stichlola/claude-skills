@@ -217,3 +217,19 @@ camera the game hands over each frame.
 Off-screen occluders, light from behind the camera, anything hidden behind the foreground. The
 next real steps are geometry-side: normals computed at extraction (better dynamic lights), shadows
 for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
+
+## Menu presets and saved choices
+
+- Keep the in-game menu's choices in one JSON next to the port's own settings (OpenGOAL:
+  `file_util::get_user_settings_dir(g_game_version) / "enhanced-settings.json"`). Load it in the
+  renderer's constructor *before* the env test switches, so test runs stay reproducible; write it from
+  the menu by comparing the dumped JSON with the last one written (no per-widget "changed" plumbing).
+- Values the *game* owns (e.g. population read by GOAL at boot) must be re-sent at start through the
+  same request queue the menu uses, or the saved choice shows in the menu but not in the world.
+- Presets = three buttons that set the fields, not a separate mode: Classic (pass off), Medium
+  (drop the passes that cost the most: volumetrics, SSGI, DOF, god rays, light shadows, refraction),
+  Max (struct defaults, taken from a default-constructed `Settings`).
+- Test configs (`--config-path`) get their own settings file: delete it after a load/save test.
+- Writing C++ through a shell heredoc + Python: `"\0"` can reach the file as a raw NUL byte (grep then
+  calls the file "binary", ImGui combo strings still compile). Write such bytes with `bytes([92, 48])`
+  and scan edited sources for `\x00`.
