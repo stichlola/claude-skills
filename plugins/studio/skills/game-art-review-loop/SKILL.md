@@ -74,9 +74,22 @@ stopping at a score >= 8 or after N rounds. Ten rounds taught what follows.
   the new area) had walls culled by its precomputed visibility: reviewers saw "debris floating in the
   sky" that was the level's own geometry. Turn the culling off for those levels near the new area.
 - **UV precision**: the level builder stored UVs coarsely: world-planar UVs (hundreds of tiles)
-  rendered as one flat colour. Shift every face's UVs by whole tiles toward 0 at export (per face:
-  box projection uses different axes per face, a per-mesh shift is not enough). Clamped textures near
-  0 must not be shifted.
+  rendered as one flat colour. Do NOT fix it by shifting each face by whole tiles: the builder welds
+  vertices by position, the UV jumps between faces became stretched streaks. Generate UVs small and
+  continuous at the source (planar/box from the mesh's own minimum corner); keep a per-mesh shift at
+  export only as a guard, never touching clamped textures near 0.
+- **Grade per texture, not per level**: a whole-level grade (desaturate + tint in the shader) to make
+  the imported area match also dulled the surfaces borrowed from the host game into flat dark grey.
+  Bake the grade into the imported area's own textures at export, leave the shader neutral.
+- **Some textures just don't survive** the custom-level path (a borrowed pavement stayed flat with
+  correct UVs): after two attempts, swap to a material that renders and move on.
+- **Physics leftovers**: after a settle, some pieces fall out of the world (hundreds of metres down)
+  and inflate the level's collision grid (the file doubled). Check "nothing below / far under the
+  map" by casting DOWN from the piece; casting from above hits roofs and deletes good pieces under
+  overhangs. Removing pieces for being "lone" after a settle emptied the passages: keep what settled.
+- **The camera that matters is the logged one**: the game camera settles somewhere else than the
+  continue point's camera; collision near the real one moves the view between rounds. The regression
+  diff flags it (>55 % changed); then compare content, or re-baseline and tell the reviewers.
 - **Vertex colours are baked light**: generated meshes need the same linear mean as the floor
   (byte colours are sRGB; set and read in linear), and the attribute must be the active/render one,
   or the pieces render black.
