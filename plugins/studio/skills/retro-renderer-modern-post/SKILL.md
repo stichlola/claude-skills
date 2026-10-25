@@ -44,11 +44,29 @@ camera the game hands over each frame.
   drifting 3D noise in world space; light = fog colour + sun * Henyey-Greenstein phase * sun
   visibility. Upsample with depth weights or the mist behind a character bleeds over it.
 - **Sun visibility in screen space** (march toward the sun through the depth buffer) only gives
-  soft darkening; crisp shafts in alleys need a real sun shadow map. Keep the visibility test in
-  one function so a shadow map can replace it.
+  soft darkening; crisp shafts in alleys need a real sun shadow map (below). Keep the visibility
+  test in one function so the shadow map can replace it.
 - **Energy**: forward scattering toward the sun blows out quickly; cap the sun term and start
   subtle (density ~0.004/m, falloff ~4 m). Water and low ground far below the camera are inside the
   densest layer - judge the defaults on a view over water.
+
+## Sun shadow map from the loader's data
+
+- No need to touch each renderer: the loader already holds the static level geometry on the GPU
+  with **world-space vertex positions** (tfrag and non-wind tie are pre-transformed; here
+  `LevelData::tfrag_vertex_data`, `tie_data`, stride = `PreloadedVertex`). Draw it depth-only from
+  the sun with one tiny shader and one VAO rebound per buffer. Tfrag keeps its indices on the CPU
+  (streamed after culling) - upload them once per level load id, free them when the level goes.
+  Skip LOD/low-res and water trees, honour strips + primitive restart.
+- Orthographic map around a point ahead of the camera, **snapped to whole texels** in light space
+  (no crawling edges), 4096 over ~160 m; depth 32F with hardware compare (`sampler2DShadow`),
+  polygon offset, normal offset at lookup, fade at the edge. Save and restore the game's depth
+  clear value and depth func.
+- Any geometry the game's shaders discard (cut volumes) must be discarded in the shadow pass too.
+- Apply it only on surfaces facing the sun (normals from depth), at ~35 %: the baked vertex light
+  already darkens what faces away, and a full-strength shadow over a mostly-shaded area crushes it.
+- Characters aren't in the map: keep the screen-space sun shadows on for them.
+- The volumetric mist's sun test becomes one shadow-map lookup -> crisp shafts through gaps.
 
 ## Testing light-dependent effects
 
