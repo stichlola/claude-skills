@@ -134,6 +134,13 @@ camera the game hands over each frame.
 - A/B shots at night can differ because the lamps arrive a few frames late: retake before blaming
   the change.
 
+## Grass that reacts to the player
+
+- Vertex shader only: the game sends the player's position each frame (one kernel call), cutout
+  vegetation draws lean away within ~1.3 m and press down, scaled by tip^2 (texture v as height:
+  feet stay planted), on top of the wind sway. Test it with a huge radius (25 m) from the spawn
+  point and a difference image: the effect is too local to see at the real radius in one still.
+
 ## An in-game menu for the player
 
 - Once there are many effects, give the player one ImGui window on a free key (here `\`): the
