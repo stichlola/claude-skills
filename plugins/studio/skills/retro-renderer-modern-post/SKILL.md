@@ -111,6 +111,29 @@ camera the game hands over each frame.
   water smear into it. Caustics = two drifting ridged-noise layers multiplied, scaled by the sun
   and faded with depth.
 
+## Real normals for levels that have none
+
+- Compute them **at load, not at extraction**: the loader already unpacks the level's vertices
+  (here `TfragTree/TieTree/ShrubTree::unpack`), so no re-extraction and no file format change.
+  Weld vertices by quantized position across strips, average area-weighted face normals that lie
+  within ~60 degrees of the vertex's own faces. Winding isn't consistent in these meshes: compare
+  with |dot| and align signs, flip toward the camera in the post pass. Keep the game's own normals
+  where it has them (envmapped ties). Spare words in the vertex struct hold them (10:10:10).
+- Strip vertices sit on both sides of hard edges, so some smooth normals still round a corner off
+  (big lit triangles on flat walls). Fix in the fragment shader: the face normal from
+  `cross(dFdx(pos), dFdy(pos))` (pos relative to the camera, for precision), keep the smooth one
+  only within ~35 degrees of it.
+- Write them to a **second color attachment** of the game's framebuffer (RGB10_A2, a = 1 written,
+  cleared to 0 each frame), but only while the level renderers draw (`glDrawBuffers(2)` in a scope
+  that checks the bound framebuffer) and only for opaque, depth-writing draws (`glColorMaski(1,
+  ...)` in the shared draw-mode setup). Every shader that can run in that scope must declare
+  location 1 (write 0 where there's no normal, e.g. wind or envmap passes).
+- Post: one `surface_normal()` that uses the stored normal where a = 1 and the depth-rebuilt one
+  elsewhere (characters, water). A split debug view (stored vs depth-rebuilt, same colors) proves
+  the space conversion in one shot.
+- A/B shots at night can differ because the lamps arrive a few frames late: retake before blaming
+  the change.
+
 ## An in-game menu for the player
 
 - Once there are many effects, give the player one ImGui window on a free key (here `\`): the
