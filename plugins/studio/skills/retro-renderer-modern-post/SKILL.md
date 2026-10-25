@@ -248,3 +248,14 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   seconds (a seed at the first valid frame lands where the player was during loading).
 - Injected key events (`keybd_event`) did not reach the OpenGOAL window in test runs: prefer a test
   switch that fakes the state over driving the player.
+
+## Lighting the particles (smoke, dust, steam)
+
+- Hand the post pass's strongest lights (already sorted, view space) back to world space for the
+  next frame's particle draws; light the *normally blended* particles only (additive ones are
+  light already), per vertex, multiplicatively (`rgb *= 1 + light`) so the particle keeps its own hue.
+- Check a per-draw effect with a counter of draws by blend mode and of draws that took the path,
+  before guessing at the shader: here the path was fine and the strength was 0 because an A/B run
+  had saved its test switch into the settings file.
+- Saved settings: take what's in effect after loading the file *and* the env switches as the
+  "already saved" baseline, so a test run never writes its switches to the player's file.
