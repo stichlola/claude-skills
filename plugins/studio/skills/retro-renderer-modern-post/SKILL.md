@@ -233,3 +233,18 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
 - Writing C++ through a shell heredoc + Python: `"\0"` can reach the file as a raw NUL byte (grep then
   calls the file "binary", ImGui combo strings still compile). Write such bytes with `bytes([92, 48])`
   and scan edited sources for `\x00`.
+
+## Footprints, ruts and other "pressed in" decals in post
+
+- Let the game say *where* (the player's ground collision material: sand/dirt/snow) and keep the
+  shader test loose (flat, not green): retro sand is often neutral white after the game's lighting, so
+  a "warm color" test rejects it.
+- Bright ground is over 1.0 before tonemapping: multiplying it by 0.7 still clips to white. Clamp it to
+  1 inside the decal (`mix(c, min(c, 1), mask)`) before darkening.
+- Debug decals by painting a flat color where each test passes (`c = vec3(sandy, level, rim)`), not by
+  adding to the color (invisible on clipped white).
+- Synthetic test data must land where the camera sees it: a row "straight ahead past the player"
+  hides behind the player's body from a chase camera. Lay it beside the player, re-seed every few
+  seconds (a seed at the first valid frame lands where the player was during loading).
+- Injected key events (`keybd_event`) did not reach the OpenGOAL window in test runs: prefer a test
+  switch that fakes the state over driving the player.
