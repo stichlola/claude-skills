@@ -65,7 +65,19 @@ camera the game hands over each frame.
 - Any geometry the game's shaders discard (cut volumes) must be discarded in the shadow pass too.
 - Apply it only on surfaces facing the sun (normals from depth), at ~35 %: the baked vertex light
   already darkens what faces away, and a full-strength shadow over a mostly-shaded area crushes it.
-- Characters aren't in the map: keep the screen-space sun shadows on for them.
+- Characters: the skinned renderer (here Merc2) uploads one bone buffer per flush and reuses it.
+  Copy its bones (CPU side, at an aligned offset) and its opaque draws as it flushes, then replay
+  them in the shadow pass with a depth-only copy of its vertex shader. The bones end in camera
+  space: back to the world with the saved camera. **Check the sign**: here merc's camera space is
+  the view space negated (`-X * p`), and the first try put every shadow behind the camera. Debug
+  it by logging the bone translation nearest the player in world space - it should land within
+  centimeters. Many bone slots are uninitialized garbage; only the ones vertices reference matter.
+- Wind-swayed props (instanced, a matrix per instance swayed each frame): bake the still instance
+  matrices into one world-space buffer per level; only the translation's xyz is a position (w holds
+  other data). Alpha-test their textures in the shadow pass or leaf cards cast solid squares.
+- The game may already draw its own short shadow under the player; the sun-map one just adds the
+  long cast, so leave the game's on. Test casters with the strength at 1.0 and the sun turned
+  sideways (`JAK_ENHANCED_SUN_YAW`), then judge at the real strength.
 - The volumetric mist's sun test becomes one shadow-map lookup -> crisp shafts through gaps.
 
 ## Dynamic lights from the game's own lamps
