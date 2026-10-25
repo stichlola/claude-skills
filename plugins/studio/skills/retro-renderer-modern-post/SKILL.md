@@ -1,6 +1,6 @@
 ---
 name: retro-renderer-modern-post
-description: Adding modern rendering effects to an old-console game's PC renderer (OpenGOAL Jak 3 here, OpenGL) without touching its assets - one post pass between the 3D buckets and the HUD, view-space positions rebuilt from the game's own projection, then TAA by wrapping the world shaders' main() with a per-frame jitter, volumetric mist marched in view space, screen-space sun shadows, SSAO/SSGI, bloom, god rays, water reflections; plus how to test sun-dependent effects and what screen space cannot do. Use when the user wants "next-gen" or remaster-style graphics in a decompiled/ported game's renderer, or asks for TAA, volumetrics, AO or similar in such a renderer.
+description: Adding modern rendering effects to an old-console game's PC renderer (OpenGOAL Jak 3 here, OpenGL) without touching its assets - one post pass between the 3D buckets and the HUD, view-space positions rebuilt from the game's own projection, then TAA by wrapping the world shaders' main() with a per-frame jitter, volumetric mist marched in view space, sun shadow maps from the loader's world-space buffers, dynamic lights from the levels' own lamp data, screen-space sun shadows, SSAO/SSGI, bloom, god rays, water reflections; plus how to test sun-dependent effects and what screen space cannot do. Use when the user wants "next-gen" or remaster-style graphics in a decompiled/ported game's renderer, or asks for TAA, volumetrics, AO or similar in such a renderer.
 ---
 
 # Modern post effects in a retro game's renderer
@@ -68,6 +68,24 @@ camera the game hands over each frame.
 - Characters aren't in the map: keep the screen-space sun shadows on for them.
 - The volumetric mist's sun test becomes one shadow-map lookup -> crisp shafts through gaps.
 
+## Dynamic lights from the game's own lamps
+
+- First try: every glow sprite (the renderer's "flare" quads) as a point light. Almost invisible:
+  glows are few, faint (colours ~0.15), often doubled, mostly high up or far away (the moon is
+  one) - normalise the hue, merge duplicates, cull by distance, but don't rely on them alone.
+- The real source is the level data: Jak's levels carry **light spheres** (`light-hash` ->
+  `light-sphere-array`: bsphere = position + radius, rgb colour, brightness, a time-of-day
+  palette index whose `mood-context times[i].w` switches night lamps on). The game only uses them
+  to light actors. A small GOAL function in the time-of-day update sends the ones within 80 m of
+  the camera through one kernel call (array of vector pairs, copied under a mutex because the
+  renderer runs on another thread). That's what lights the street at night.
+- Shade them in the composite: normals rebuilt from depth (pick the smaller-difference neighbour
+  on each axis), `(1 - d^2/r^2)^2` falloff, wrap lighting (`ndl*0.85+0.15`), tinted by the scene
+  colour plus a small constant so dark surfaces still pick up light. Up to 32 per frame, sorted by
+  brightness * r/(dist+r). Start ~0.75: a strong lamp next to a wall burns it white.
+- Test at night: a switch that sets the hour after boot (`JAK_ENHANCED_HOUR`), on/off pairs
+  side by side. The AO debug view hides the lights - take the shots without it.
+
 ## Testing light-dependent effects
 
 - The key light the game hands over is not the sun disc in the sky texture; log its view-space
@@ -80,5 +98,5 @@ camera the game hands over each frame.
 ## What screen space can't do
 
 Off-screen occluders, light from behind the camera, anything hidden behind the foreground. The
-next real steps are geometry-side: normals computed at extraction (dynamic lights), sun shadow
-maps (every renderer drawn again from the sun), then ray tracing (compute-shader BVH, or Vulkan).
+next real steps are geometry-side: normals computed at extraction (better dynamic lights), shadows
+for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
