@@ -111,6 +111,19 @@ camera the game hands over each frame.
   water smear into it. Caustics = two drifting ridged-noise layers multiplied, scaled by the sun
   and faded with depth.
 
+## An in-game menu for the player
+
+- Once there are many effects, give the player one ImGui window on a free key (here `\`): the
+  effect switches, the time of day, quick travel. Register the key as an input command (those fire
+  on the SDL event even while ImGui has focus), draw the window after the debug windows.
+- The renderer thread can't call game code: the menu queues **one request** (kind + string under
+  a mutex), the game polls it each frame through one kernel call and acts in its own code
+  (time-of-day event, continue point, teleport).
+- Free the cursor while it's open (a mouse camera keeps it in relative mode) and leave out the
+  window's close button, so the key is the only way out and always restores the mouse.
+- A test switch that opens it at boot and queues one request lets a scripted run check every
+  path with a screenshot.
+
 ## What screen space can't do
 
 Off-screen occluders, light from behind the camera, anything hidden behind the foreground. The
