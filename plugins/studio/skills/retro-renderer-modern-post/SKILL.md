@@ -97,6 +97,13 @@ camera the game hands over each frame.
   brightness * r/(dist+r). Start ~0.75: a strong lamp next to a wall burns it white.
 - Test at night: a switch that sets the hour after boot (`JAK_ENHANCED_HOUR`), on/off pairs
   side by side. The AO debug view hides the lights - take the shots without it.
+- Shadows for them in screen space: per pixel, for the few strongest lights in range, 8 jittered
+  steps toward the light through the depth buffer (up to ~3 m, stopping short of the light: lamps
+  sit inside their housing), blocked when the depth is in front by less than a thickness (~1.5 m).
+  Back faces only get wrap light, so a "blocked" debug view must weight by the light actually
+  removed or it looks wrong everywhere. Cost ~0.05 ms.
+- Runs aren't deterministic (camera, NPCs): for an A/B in one frame, apply the effect to half the
+  screen (`tex_coord.x > 0.5`) temporarily.
 
 ## Fires from the glow sprites
 
@@ -165,6 +172,12 @@ camera the game hands over each frame.
   the space conversion in one shot.
 - A/B shots at night can differ because the lamps arrive a few frames late: retake before blaming
   the change.
+- The normal target only gets what's drawn while it's on: characters drawn later keep the level's
+  normal behind them unless their renderer writes one too. Skinned-mesh normals may be in view
+  space even when the lighting code reads like world space: test both spaces against the face
+  normal from derivatives (color the pixels where each agrees within ~35 degrees) - one wins
+  everywhere. Write the smooth normal where it agrees with the face, else the face's.
+- Once the stored normals exist, feed them to SSAO/SSGI too (same texture, same conversion).
 
 ## Grass that reacts to the player
 
