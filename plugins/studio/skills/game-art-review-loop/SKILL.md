@@ -98,6 +98,25 @@ stopping at a score >= 8 or after N rounds. Ten rounds taught what follows.
 - **DCC vs game**: a DCC render is a fast inner loop, the game capture is the truth (fog, culling,
   texture handling differ).
 
+## When the scores plateau
+
+In the Jak run the scores went 3/2, 5/3, 6/5 in three rounds, then stayed at 5-6 / 4-5 for seven
+more rounds while the defect lists changed every round. What that taught:
+
+- **A fix often moves the defect instead of closing it**: a gap closed by a wall reappeared beside
+  the wall; a plate that covered a void became "a straight raised ledge across the lane". Ask the
+  reviewers whether a defect is *new* or *moved*, and close gaps with overlap (0.5 m into the
+  neighbour, floor to top), never edge to edge.
+- **Global changes cost a round each**: a palette or texture change shifts every shot, the director
+  re-reads the whole scene and the score dips (round 7-8) before it recovers. Change one global
+  thing per round, and keep it as a parameter (env var) so it can be tuned without re-placing.
+- **Generated surfaces need a broken edge**: every straight, clean boundary (plate vs floor, skin
+  patch on a grid, wall top) got flagged until it was jagged, sunk in or covered by debris.
+- **Texture by role**: a slab in the floor texture placed high reads as "floor stuck to the
+  ceiling" - wall pieces take wall stone, floor pieces floor stone.
+- After ~3 rounds without a score change, stop polishing pieces: ask the director for the 3 fixes
+  that would gain most (it gives them), or tell the user the approach needs hand work.
+
 ## Working with the user
 
 - Report scores per round in a small table; say plainly when a round regressed and why.
