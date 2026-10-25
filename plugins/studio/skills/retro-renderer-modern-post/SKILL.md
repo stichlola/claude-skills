@@ -98,6 +98,20 @@ camera the game hands over each frame.
 - Test at night: a switch that sets the hour after boot (`JAK_ENHANCED_HOUR`), on/off pairs
   side by side. The AO debug view hides the lights - take the shots without it.
 
+## Fires from the glow sprites
+
+- The glow sprites are the cheapest source of "where is a fire": an orange-to-yellow glow, flame
+  sized. But colour alone also catches muzzle flashes and shots (a firefight lit the whole test
+  scene). Keep a small memory of warm glows by world position (merge within ~1.5 m: a flame is
+  several glows that come and go): a fire is one that has glowed there for a second in most frames
+  (~60%+); a gun fired from a standing enemy glows in bursts, shots move on.
+- Texture names don't help (fires and lamps share the generic glow texture).
+- With the fire positions: flicker their light, wobble the scene's uv in a column above each flame
+  (only for pixels behind it), and draw procedural embers in the composite (hash per ember and per
+  life cycle, rise + sway, depth-tested against the scene, a screen-rect early-out per fire).
+- To find a test spot, log the glows with their position, then drop a debug dot at the projected
+  fire position to check the projection before tuning anything.
+
 ## Testing light-dependent effects
 
 - The key light the game hands over is not the sun disc in the sky texture; log its view-space
