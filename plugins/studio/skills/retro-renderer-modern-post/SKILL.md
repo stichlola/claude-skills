@@ -94,6 +94,22 @@ camera the game hands over each frame.
   that negates it (that puts it under the horizon and every sun effect switches off). Log the
   view-space sun for a few yaws, pick the one in front of the review camera.
 - Exaggerate first (10x density, 3-5x sun) to see the structure, then tune down.
+- Continue points rarely frame what you need (water from close by, a shallow beach). A test switch
+  that **teleports the player** shortly after boot (`JAK_ENHANCED_TP=x,y,z,yaw` in meters) takes
+  any spot from the logged camera positions; plus an off switch per feature for A/B pairs.
+- Test boots log the loaded levels and a census of live actors by type name: it settles "are there
+  enemies / is this bank loaded" questions in seconds instead of guessing from screenshots.
+
+## Water in post
+
+- The sea's own renderers write no usable surface: keep its depth (copy right after the far-sea
+  bucket; make the near sea write its surface, then restore the depth) and shade it in the
+  composite: noise ripples faded by pixel footprint, a long swell in the normals only (calm it in
+  shallow water and at distance or it shimmers), Fresnel, screen-space reflections.
+- Shallow water: depth below the surface from the sea-bed depth; refract the sea-bed sample by
+  the slope, but only where the bent sample is still under water, or things standing out of the
+  water smear into it. Caustics = two drifting ridged-noise layers multiplied, scaled by the sun
+  and faded with depth.
 
 ## What screen space can't do
 
