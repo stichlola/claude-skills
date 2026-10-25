@@ -122,6 +122,12 @@ camera the game hands over each frame.
   the slope, but only where the bent sample is still under water, or things standing out of the
   water smear into it. Caustics = two drifting ridged-noise layers multiplied, scaled by the sun
   and faded with depth.
+- Effects lying on the water (splash and ripple discs) write depth a few cm above the sea, so a
+  naive "scene in front of the sea = not water" test shows the game's darker water there as a
+  disc. Treat a pixel as water when the scene is just above the sea surface, and composite with
+  `max(ours, game)` there so the foam still shows. Only trust a sea depth that is really behind the
+  scene (a plane under the whole level, or a depth copy where something hid the sea, matches the
+  scene itself: docks turned into water and lost their shadows). Check with an A/B of a dry scene.
 
 ## Real normals for levels that have none
 
