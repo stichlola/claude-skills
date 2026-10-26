@@ -322,3 +322,16 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   (flattened toward the horizon), lit by sampling the sheet again offset toward the sun.
 - **Window capture in test runs**: `PrintWindow` gets a 0x0 client rect when the game window is
   minimized; restore it with `ShowWindow(h, SW_SHOWNOACTIVATE)` first.
+- **Weather must live in the world, not on the screen**: any noise indexed by screen angle reads as
+  "blotches stuck to the lens". Dust and fog: march a few jittered steps (quadratic spacing, more
+  near) through 3D noise at *world* points, stretched along the wind and offset by an accumulated
+  drift (wrap it rarely; rotating a wrapped drift breaks periodicity). Use an integer hash for 3D
+  noise far from the origin (`sin` hashes band at kilometer coordinates).
+- **Start from the game's own effect**: if the original has a storm (e.g. a dust-storm process with
+  intensity and wind globals), have it call a kernel function each frame to hand those to the
+  renderer, and time the values out when the process stops sending. The post effect then follows
+  the game's own triggers and matches its particles' wind.
+- **Showcase weather states**: a "changing" cycle (clouds build, rain, thunderstorm with bolts and
+  flashes, sun back on wet ground with shafts, steam and a rainbow at 42/51 degrees from the
+  antisolar point, slow drying) shows off wet reflections, halos and shafts far better than a
+  static toggle. Keep ground wetness separate from rain (soak fast, dry over ~90 s).
