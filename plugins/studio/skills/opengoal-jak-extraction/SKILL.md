@@ -101,3 +101,14 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   collision glb); `--sand TILE.png` uses a ready tileable picture instead.
 - In jak3-ue5: `tools/glb/find_props.py` / `place_props.py` (pieces of a level mesh, replacing them),
   `tools/audio/stage_audio.py` (the sound list).
+
+## Jak 3 city population (lesson)
+
+- Haven's people and enemies are traffic objects: `want-count` per `traffic-type`, set from
+  `*want-count-levels*` by each faction's current level (`traffic-manager-method-22`). Scale there;
+  each type has 20 inactive slots, so cap at 20. Spawning is on demand, so going up to 20 a type
+  gave no "traffic-manager: unable to spawn".
+- When counting processes by type name, list the names first: Freedom League guards are
+  `crimson-guard` (not `guard-*`), KG robots are `roboguard-city`, `spydroid`, `flying-turret`.
+- Measure where the user plays, from their save: test boots don't have the story's faction state,
+  so the war zone can be empty there.
