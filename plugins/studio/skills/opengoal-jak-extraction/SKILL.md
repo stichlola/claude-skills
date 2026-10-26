@@ -112,3 +112,8 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   `crimson-guard` (not `guard-*`), KG robots are `roboguard-city`, `spydroid`, `flying-turret`.
 - Measure where the user plays, from their save: test boots don't have the story's faction state,
   so the war zone can be empty there.
+- Past 20 a kind: the traffic engine's `inactive-object-array` (20 per type, stride in
+  `reset-and-init-from-manager`, check in `add-reserved-process`) and the trackers' 126 active slots
+  are fixed arrays; enlarging them is safe once the explicit `:offset`s after them are dropped (they
+  were the natural layout). The next wall is the nav meshes' `nav-max-users` (res lump, default 64):
+  `new-nav-control` returns #f when full and some callers crash. Raise it and test the busiest spot.
