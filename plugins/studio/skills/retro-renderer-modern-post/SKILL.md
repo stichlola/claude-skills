@@ -292,3 +292,33 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   a debug view that outputs the traced term alone (window recesses darken) before tuning.
 - Call the BVH update once per frame before the first pass that uses it (here SSAO), not inside
   the composite.
+
+## Area looks, weather, soft shadows and cutscene DoF in post (lesson)
+
+- **Tell the renderer where the player is.** One kernel call per frame from the game's time-of-day
+  update (level name of the level the player is "inside", the hour as a float, whether a cutscene
+  runs) unlocks a lot: a color grade per area and per day/night, weather by area, cutscene-only
+  effects. Ease every target (grade ~1.5 s, weather ~4 s) so level changes and nightfall don't snap.
+  Gate sky/weather effects on "is there a 3D scene this frame", or they paint over loading screens.
+- **Grade per area** as lift (added in the shadows: `c*gain + lift*(1-c)`), gain, saturation,
+  contrast and warmth on top of the global settings; a small table of day/night looks per area is
+  enough. Classify areas by level-name prefix.
+- **Rain that sells it at night** is mostly the wet ground, not the streaks: darken level ground,
+  reflect the screen with the existing SSR march (windows and signs on the street), more in puddles
+  from a world-space noise and at grazing angles, plus the dynamic lights' Blinn glints on wet
+  surfaces. Streaks: a few layers on a grid of the view ray's world azimuth/elevation (they turn with
+  the camera), each layer hidden behind nearer depth; derive line width from `fwidth` computed in
+  uniform control flow, before any per-layer `continue`. Raindrop rings: keep them sparse (skip
+  cells per cycle by hash) or they read as bubbles.
+- **Soft shadows (PCSS) with a hardware-compare shadow map**: bind the same depth texture to a
+  second unit through a *sampler object* with `GL_TEXTURE_COMPARE_MODE = GL_NONE` for the blocker
+  search; unbind the sampler after the draw. Penumbra = blocker gap x ~0.02; grow the bias with the
+  filter radius; rotate the Vogel disk per pixel and frame and let TAA average it.
+- **Cutscene autofocus without a stall**: `glReadPixels` a few depth texels around the screen center
+  into two alternating pixel-pack buffers, map last frame's, ease the focus in log space. Gather DoF
+  with per-sample CoC: a sample counts where its blur reaches the pixel; a farther sample only up to
+  the pixel's own CoC (no sharp-subject bleed).
+- **Clouds without a volume march**: one noise sheet at a fixed altitude along the view ray
+  (flattened toward the horizon), lit by sampling the sheet again offset toward the sun.
+- **Window capture in test runs**: `PrintWindow` gets a 0x0 client rect when the game window is
+  minimized; restore it with `ShowWindow(h, SW_SHOWNOACTIVATE)` first.
