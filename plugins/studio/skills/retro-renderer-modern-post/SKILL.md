@@ -198,6 +198,13 @@ camera the game hands over each frame.
   budget; capping as you go spends it all on the first floors in the file.
 - Extra draws carry a tier (moderate / lush) and the renderer skips tiers above the setting, so the
   menu switches density live. Judge it on A/B stills of the same spot.
+- Climbing plants: don't lay grass cards flat on walls (they read as spiky grass). Look for the
+  game's **own** wall vines first (shrub textures named `*vine*`, flat on a wall) and copy those
+  onto nearby walls, turned so their facing matches the new wall and kept as high above the floor.
+  A wall is many small triangles: chain the coplanar ones above and below the spot to get its real
+  height, or every tall vine gets rejected. One vine per small cell, so copies don't pile up.
+- To find where a loader-placed effect landed, log a few positions, then teleport *several meters
+  out* facing it. Teleporting next to it puts the camera inside the bush or the wall.
 
 ## An in-game menu for the player
 
