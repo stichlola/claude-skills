@@ -346,3 +346,31 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   bitrate tier), TikTok 1080x1920 60 fps, Instagram 1080x1920 **30 fps** (~25 Mbps, H.264 High,
   BT.709, AAC 320k, faststart); on the IG phone app turn on "Upload at highest quality". Rain and
   particles are the encoder's worst case, so a light unsharp after the Lanczos scale helps.
+
+## One post renderer for several games of the same engine family (lesson)
+
+When one runtime runs several games (OpenGOAL: Jak 1, 2, 3), keep the effects in one shared
+renderer and give each game only three thin layers:
+
+- **A hook in the game's bucket dispatch**: post on the finished 3D scene right before the first
+  sprite/HUD bucket, ocean depth captures around that game's ocean buckets. Find the HUD bucket per
+  game; the enum names differ.
+- **Bridges in the game's own scripts** for what only the game knows (sun direction, level, hour,
+  cutscene, player position, who pushes the grass, menu requests, test boot point). Shared kernel
+  functions, one call site per game. Older engines lack things (Jak 1 has no light spheres): send
+  zero rather than skipping the bridge.
+- **Data, not code, for everything tunable**: zones by level-name prefix per game, day/night grade
+  per zone, weather per zone (fixed values, a periodic "harder" window, spells of fair/wet weather
+  picked by a hashed roll per spell, morning mist), per-game scale for bounced light and lamps. One
+  commented JSON, polled once a second and reloaded on save: tune while playing. Level names
+  collide across games (Jak 1 and Jak 2 both have "sunken"): one prefix list per game.
+- A **checker script** that greps each game for the hooks and bridges, validates the data and
+  lists the levels in no zone makes porting the next feature a checklist.
+
+Per-game tuning matters: the same GI is too bright on a game whose levels are lit brighter, and an
+already saturated game (Jak 1) burns under a "sunny" grade meant for a duller one; scale it to ~0.3.
+
+Snow in post: the rain's world-cell columns walked along the view ray (2D DDA), but round flakes
+(miss distance and vertical offset as one 2D distance), ~1 m/s fall, the whole column swaying, the
+wind shearing space a little. Hot air over lava: offset the sampling uv with a rising sine pattern,
+stronger where the pixels a little below are lava-colored (red minus blue, bright red).
