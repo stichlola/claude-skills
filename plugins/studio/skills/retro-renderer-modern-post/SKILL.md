@@ -280,3 +280,15 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   night reflections are dark.
 - A debug mode that paints only the traced color (misses in magenta) proves it works; mixed into
   the normal image the difference is easy to miss.
+- Mean colors per triangle look flat and blocky ("non funziona bene"): users notice at once. Keep
+  a small texture per material (64x64 layers of a GL_TEXTURE_2D_ARRAY, mipmapped, REPEAT) plus
+  per-triangle UVs (80-byte triangles = 5 vec4), interpolate with the hit's barycentrics and pick
+  the mip from the hit distance. Combine the per-level arrays with glCopyImageSubData.
+- Never switch traced/untraced reflections at a hard distance on water: it draws a horizon line.
+  Fade the traced contribution over a band (150-200 m).
+- Ray-traced AO falls out of the same BVH: 6 cosine-weighted 3 m rays per pixel in the SSAO pass
+  (nearest-hit traversal, linear distance weight). Take min(traced, SSAO): characters aren't in
+  the BVH and keep their screen-space contact shadows. In open squares it barely shows; check in
+  a debug view that outputs the traced term alone (window recesses darken) before tuning.
+- Call the BVH update once per frame before the first pass that uses it (here SSAO), not inside
+  the composite.
