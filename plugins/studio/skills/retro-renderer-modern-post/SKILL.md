@@ -266,3 +266,17 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   had saved its test switch into the settings file.
 - Saved settings: take what's in effect after loading the file *and* the env switches as the
   "already saved" baseline, so a test run never writes its switches to the player's file.
+
+## Software ray-traced reflections on an OpenGL 4.3 renderer (lesson)
+
+- No hardware RT in OpenGL, but SSBOs are there: build a BVH per level on the loader thread (binned
+  SAH, 4 triangles a leaf, depth-first so the left child is the next node; a 160k-triangle PS2 level
+  takes ~0.06 s), upload each once, copy the levels in use into one buffer set with
+  glCopyBufferSubData when the set changes, pass per-level bases as uniforms.
+- Trace only where the screen-space reflection misses: same picture where SSR works, real geometry
+  where it fails (off-screen, occluded). At 60 fps the cost didn't show.
+- Shade hits like the game would: keep per triangle the texture's mean color and the vertex's
+  baked time-of-day color index, and weight the 8 palettes with the frame's itimes (64 = 1), so
+  night reflections are dark.
+- A debug mode that paints only the traced color (misses in magenta) proves it works; mixed into
+  the normal image the difference is easy to miss.
