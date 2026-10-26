@@ -117,3 +117,11 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   are fixed arrays; enlarging them is safe once the explicit `:offset`s after them are dropped (they
   were the natural layout). The next wall is the nav meshes' `nav-max-users` (res lump, default 64):
   `new-nav-control` returns #f when full and some callers crash. Raise it and test the busiest spot.
+
+- Raising Jak 3 traffic counts: every citizen holds a slot of the static `*default-nav-mesh*` (128
+  slots) from its init, even while inactive in the pool; the street meshes are a separate limit.
+  The crash ("too many users for nav-mesh #f", then a turret/spydroid without nav) came from that
+  default mesh. Fix at the source: `citizen-spawn` refuses when the default mesh is nearly full; also
+  make `traffic-activate` itself refuse on a full target mesh (missions and the war zone send it
+  directly, bypassing the traffic engine). `go` inside an event handler doesn't leave it: guard
+  everything after `go-inactive`.
