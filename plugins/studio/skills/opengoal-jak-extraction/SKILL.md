@@ -84,6 +84,14 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
 - Check a decoder without listening: the mean level should be a few thousand, not ~30000 (saturated =
   wrong filter sign or misaligned blocks), and sample-to-sample jumps at block boundaries should be no
   bigger than inside blocks.
+- **Sounds that don't play in game** (OpenGOAL, modded game): usually their bank isn't loaded, not a
+  sound-engine bug. Banks are swapped per area into a fixed budget (Jak 3: six half-slots; Haven's
+  `city-sound-expand-want-list` fills them in priority order; a faction's full bank takes two). Adding
+  content that loads more levels at once (more factions, extra areas) silently pushes a bank out.
+  Find which bank has a name by searching the `.SBK` files for it (lowercase, `_` for `-`), log the
+  loaded banks when a name lookup fails (`Player::PlaySoundByName` returns 0 quietly), and reorder the
+  priority list rather than adding slots (the overlord's banks mirror PS2 SPU memory). Some names the
+  code plays exist in no bank at all: leftovers, harmless.
 
 ## Files
 
