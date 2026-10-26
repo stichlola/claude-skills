@@ -335,3 +335,14 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   flashes, sun back on wet ground with shafts, steam and a rainbow at 42/51 degrees from the
   antisolar point, slow drying) shows off wet reflections, halos and shafts far better than a
   static toggle. Keep ground wetness separate from rain (soak fast, dry over ~90 s).
+- **Storms read through the sky, not just bolts**: add sheet lightning (the whole cloud layer
+  flickering from inside, 2-3 pulses within ~0.4 s, every 2-6 s) on top of the bolts, and let the
+  puddles spread with storm strength. A timed weather script from level entry (`<s>:<mode>,...`)
+  makes videos repeatable.
+- **Social cuts of gameplay** (vertical 9:16 from a 16:10 capture): crop around the player below any
+  capture strip, paint out debug markers (`delogo`), skip stretches where the game's own subtitles
+  would be cut by the crop. Small captions low on screen (~79% height) with soft shadows read
+  better than big titles. Encode per platform: YouTube Shorts upscaled to 1440x2560 (much higher
+  bitrate tier), TikTok 1080x1920 60 fps, Instagram 1080x1920 **30 fps** (~25 Mbps, H.264 High,
+  BT.709, AAC 320k, faststart); on the IG phone app turn on "Upload at highest quality". Rain and
+  particles are the encoder's worst case, so a light unsharp after the Lanczos scale helps.
