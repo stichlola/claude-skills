@@ -187,5 +187,11 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
 - Ship only new drawings. For an atlas partly redrawn, leave the cells not redrawn as see-through
   magenta (RGB 255,0,255, alpha 0) and fill them at load from the game's own texture, enlarged.
   Upscales of game art are made on the player's machine from their disc (installer asks, with time).
+- A Windows setup .exe (Inno Setup 6, per-user, `PrivilegesRequired=lowest`) over the release folder:
+  custom pages (ISO pickers, HD option per game) only write small files (`ISO\iso-paths.txt`,
+  `data\hd-textures-jakN.txt`) that the .bat launcher reads, so the zip and the setup share one flow.
+  Gotchas: an .iss with non-ASCII text needs a UTF-8 BOM; `/VERYSILENT` skips the pages but still runs
+  `NextButtonClick` (guard validation with `WizardSilent`, or the silent test exits 1); test with
+  `/VERYSILENT /CURRENTUSER /DIR=<tmp> /LOG=<file>` then `unins000.exe /VERYSILENT`.
 - Don't ship scripts that need `powershell -ExecutionPolicy Bypass` to end users: do image work in
   Python (Pillow/NumPy) and call Real-ESRGAN's exe directly.
