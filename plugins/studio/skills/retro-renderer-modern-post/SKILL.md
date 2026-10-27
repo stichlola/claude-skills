@@ -410,3 +410,28 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   checkerboard over a Haven district at night was the game's own.
 - Patch scripts: normalize CRLF (`git stash pop` can bring a file back with CRLF and an exact-match
   assert fails); and never put a `//` comment between `if (...)` and its `{` in a sed edit.
+
+## Puddles, embers, beam dust and presets (lesson)
+
+- **Puddles that outlast the rain**: keep a separate `puddle_level` that rises fast (~20 s) and
+  falls slowly (~220 s), apart from the surface wetness; shrink the puddle mask's threshold with it
+  so puddles dry from the edges in, and only on flat ground (normal.y gate), with a darker damp rim.
+- **Rain bounces** reuse the footstep splash slots: tiny strength-0 splashes spawned a few meters
+  around the player at a rate tied to the rain, short life; the shader treats strength < 0.5 as
+  "rain drop" (three 1 cm droplets) instead of a step splash.
+- **Fires from the game's own particle spawners**: the glow-sprite detection misses fires whose
+  sprites are dim; hook the part-spawner's update to report FIRE-kind spawners within ~40 m and
+  merge them (one entry per 2 m) into the fire list that gets embers and heat haze. Some embers
+  as rare white-hot "pops" (fast, only some cycles) make a fire feel alive.
+- **Dust motes in headlight cones**: a world-space grid (one mote per 0.3 m) tested against each
+  cone, with a per-cell hash that *skips* most cells; without the skip the motes line up in visible
+  vertical columns. Size from distance (`max(1 cm, depth*pixel*1.2)`), stronger in sandstorm/rain.
+- **Hand-placed fill lights need a `bulb` flag**: a light in a dark alley has no lamp model, and
+  drawing its beacon dot shows a light floating in mid-air. Pure-hue colors read as tinted
+  (a purple-ish industrial light): use warm whites.
+- **A Performance preset**: start from Medium and turn off what costs GPU (shadow map, SSAO, sun
+  shadows, water reflections, far view, light spill, lit smoke, cloud shadows, relief, extra
+  vegetation). Renderer timers on the CPU barely move; measure on the GPU or by fps.
+- **Pad access to a debug/settings menu**: a two-button combo (Select+R3) read with the pad's own
+  button state; while the menu is open zero the game's axes and swallow button-downs, and turn
+  ImGui gamepad navigation on only then.

@@ -125,3 +125,25 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   make `traffic-activate` itself refuse on a full target mesh (missions and the war zone send it
   directly, bypassing the traffic engine). `go` inside an event handler doesn't leave it: guard
   everything after `go-inactive`.
+
+## Adding player states and talking to GOAL from C++ (lesson)
+
+- A request channel C++ -> GOAL: a small `(kind, string)` mailbox the C++ side fills and a GOAL
+  function polls every frame (`pc-enhanced-poll-request`), dispatching by kind.
+- That poller runs inside the target's post (`flag-setup`): it must **not** `go` to a new state.
+  Set a global flag and let `target-stance`'s `:trans` start the state (on the ground, no gun), and
+  drop the request after ~2 s if Jak never stood still.
+- Load order matters for new states: logic-target.o -> target.o -> target2.o. Declare
+  `(define-extern target-x (state target))` in target.gc and define the state in target2.gc.
+- Clock: `(send-event (ppointer->process *time-of-day*) 'change 'ratio r)`; ratio 1.0 is normal
+  (one game hour per real minute, a day in 24 min), so N hours in 5 s is ratio `12*N`. Read the
+  hour with `(the-as time-of-day-proc (ppointer->process *time-of-day*))` - the bare pointer is
+  `process` and has no `time-of-day` field. Restore the ratio in `:exit` (a hit can end the state).
+- Lying down: Jak II and 3 have no sleep animation, but `target-load-wait` makes Jak trip
+  (`jakb-trip-ja`), holds him flat by seeking to aframe 19 at 0.05, then gets up with
+  `jakb-painful-land-ja` from aframe 40 + `jakb-painful-land-end-ja`. `painful-land` from 40 is
+  the *getting up*, not the fall. Verify a short animation with a capture every ~1.2 s, not one shot.
+- Testing a cutscene: spawn `scene-player` with the scene name from an env var once the level is
+  up (`JAK_ENHANCED_SCENE`). The Jak 2 hour override must wait for `*target*`.
+- A release's launcher runs `gk.exe --game jakN -- -boot -fakeiso` from its folder; testing a
+  fresh install with `--proj-path` makes gk quit at once with an empty log.
