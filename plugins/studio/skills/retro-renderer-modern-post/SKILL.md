@@ -435,3 +435,19 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - **Pad access to a debug/settings menu**: a two-button combo (Select+R3) read with the pad's own
   button state; while the menu is open zero the game's axes and swallow button-downs, and turn
   ImGui gamepad navigation on only then.
+
+## A start menu over a booting game, and testing it by keys (lesson)
+
+- **Start menu without a second program**: draw it as a fullscreen ImGui page over the game that is
+  already booting (darkened), and pick another game by the runtime's in-process switch. The game's
+  own title/intro keeps running behind; the menu only has to own the pad (same flag as the
+  settings menu) and the keyboard (skip the game's keyboard poll and the global shortcuts while it
+  is up). Show it once per process, so a later switch goes straight into the game.
+- **Launcher remembers**: the game writes "last game played" next to its settings; the launcher
+  boots that one, so the most common choice (same game again) costs no restart.
+- **Path helpers**: check what a "config dir" helper already appends (OpenGOAL's
+  `get_user_config_dir()` already ends in `OpenGOAL`, adding it again made `OpenGOAL\OpenGOAL`);
+  deriving from the settings dir (`parent.parent`) also respects a `--config-path` override.
+- **Driving it from a script**: `WScript.Shell.AppActivate(pid)` + `SendKeys` works for Enter and
+  letters, but `{LEFT}`/`{RIGHT}` arrive without the extended-key flag, which SDL reads as the
+  keypad (KP_4/KP_6): bind A/D as well (useful anyway) and test with those.
