@@ -171,3 +171,21 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
 - Jak 1 screen UI: sprites and text use 512 x 224 (y halved from 448), `draw-string-xy` with
   `middle` centers on x, no font scale, and the large font has only capitals and the pad glyphs
   (lowercase comes out as kanji).
+
+## HD HUD, menu and minimap art (lesson)
+
+- Texture replacements baked into the levels (`custom_assets/<game>/texture_replacements`) break
+  anything drawn by the direct renderer in texel units (HUD, minimap, menus): the shader divides by
+  `textureSize`, so a 4x texture shows a quarter. Load those at runtime instead (`add_texture` in
+  `LoaderStages.cpp`) and register a texel scale per GL texture that the direct renderer passes to
+  its shaders (`tex_px_scale`). Forget the scale at every `glDeleteTextures`.
+- Jak II/3 minimap: district maps are 4-bit `map-*` textures in `*-minimap` pages, icons a 128x128
+  atlas of 20 px cells (`mini-map-icons`, PS2 alpha 128 = opaque). Jak 3's pause-menu big map is a
+  different image (`WOMAP.STR`, uploaded 256x416 at a time while scrolling), not these textures.
+- Minimap size: everything on screen is relative to hud-map's ring position; scale the map sprite
+  (112 px), the icon matrix (rvec/fvec), icon size (20) and ring together around it.
+- Ship only new drawings. For an atlas partly redrawn, leave the cells not redrawn as see-through
+  magenta (RGB 255,0,255, alpha 0) and fill them at load from the game's own texture, enlarged.
+  Upscales of game art are made on the player's machine from their disc (installer asks, with time).
+- Don't ship scripts that need `powershell -ExecutionPolicy Bypass` to end users: do image work in
+  Python (Pillow/NumPy) and call Real-ESRGAN's exe directly.
