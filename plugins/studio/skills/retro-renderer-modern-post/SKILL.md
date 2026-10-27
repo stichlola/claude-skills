@@ -374,3 +374,39 @@ Snow in post: the rain's world-cell columns walked along the view ray (2D DDA), 
 (miss distance and vertical offset as one 2D distance), ~1 m/s fall, the whole column swaying, the
 wind shearing space a little. Hot air over lava: offset the sampling uv with a rising sine pattern,
 stronger where the pixels a little below are lava-colored (red minus blue, bright red).
+
+## Dark nights, light and reflections in post (lesson)
+
+- **Dark nights**: the game's night is a uniformly dim, blue-tinted day. Darken by a zone factor
+  (desert darkest, cities least) but *keep the brightest pixels* (`smoothstep(0.4, 0.85, luma)`):
+  those are windows, fires, signs. Then the dynamic lights re-light the darkened image using the
+  pre-darkening color as albedo (warm-corrected: the game tints night albedo blue). Add a little
+  eye adaptation from a 5x4 grid of scene samples, and spare a few meters around the player.
+- **Everything that reads the scene texture must be darkened too**: reflections (SSR, ray-traced,
+  screen-edge env) sample the undarkened scene and glow in the dark; water's own body color isn't
+  part of the scene pass either. One `night_dim(color)` applied where reflections are returned
+  fixes all of them at once. Fog, mist, rain haze, GI: scale them down at night as well.
+- **Light spill** from emissive pixels: the bloom texture is already "the bright pixels spread
+  wide"; at night add `albedo * min(bloom, 0.5) * k` to surfaces that aren't bright themselves.
+  Cap it hard: in a zone lit by one color (a red factory) the bloom is everywhere and floods it.
+- **Many lamps add up without end**: soft-saturate the summed light (`added /= 1 + 0.35*max`)
+  and let an over-1 colored result bleach toward white (`mix(c, vec3(max), (max-1)*0.35)`)
+  before the highlight roll-off; per-channel clipping alone leaves flat pure-red walls.
+- **Lamp images on water**: a Blinn highlight per light with the water's wave normal (`pow(nh,
+  500)`), *not* limited by the light's radius (you see a lamp's reflection far beyond its light),
+  makes the shimmering column of a harbor at night. Headlights: only from in front of the beam.
+- **Cloud shadows**: march from the ground point toward the sun to 2-3 heights in the same 3D
+  cloud field the sky draws (2 noise octaves is enough); patches drift with the clouds for free.
+  Fade when the sky is fully overcast (all shade then).
+- **Lights placed by hand**: a JSON list per game (world position in meters, radius, color,
+  flicker, night-only) merged into the light candidates, plus a menu button "add a light where
+  the player stands" that writes the file. A light with no visible source looks fake: place them
+  at real lamps/windows, don't sprinkle them blind. Log the player's world position in the
+  periodic stats line so you can place them from test runs.
+- **Testing a screen-anchored effect (lens flare)**: force its anchor and multiply the output x20
+  with a magenta tint in a throwaway shader edit to see that it draws and where; then hunt the
+  real-world multipliers (a sun-height factor near 0 hid it). Remove the hack with a marker grep.
+- Before blaming your post pass for an artifact, take the same shot with the post pass off: a
+  checkerboard over a Haven district at night was the game's own.
+- Patch scripts: normalize CRLF (`git stash pop` can bring a file back with CRLF and an exact-match
+  assert fails); and never put a `//` comment between `if (...)` and its `{` in a sed edit.
