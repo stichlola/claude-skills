@@ -451,3 +451,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - **Driving it from a script**: `WScript.Shell.AppActivate(pid)` + `SendKeys` works for Enter and
   letters, but `{LEFT}`/`{RIGHT}` arrive without the extended-key flag, which SDL reads as the
   keypad (KP_4/KP_6): bind A/D as well (useful anyway) and test with those.
+
+## Holding the boot behind a menu, and HD art for streamed windows (lesson)
+
+- **Holding the boot** (wait before the game's main until the menu closes): the IOP/overlord and the
+  debugger link are already waiting for the EE. To leave without booting, release them first
+  (send the overlord its stop status, kill the IOP library, disable DECI2) or shutdown hangs.
+  While held, the window shows nothing: bind the default framebuffer, clear it and draw the menu
+  yourself every frame; switch a windowed start to borderless on the first menu frame.
+- **HD replacement of a texture the game streams in windows** (e.g. a pause map uploaded 256x416 at
+  a time from a bigger image): have the game script tell the runtime which image is up (one kernel
+  call with its index and address), recognise the window upload by destination and size, derive
+  strip/row from the upload address minus the image's pixel start, crop the same window from the
+  HD picture and register a texel scale so the game's UVs (in its own texels) still land right.
+  Forget the scale when the normal path reuses that GL texture.

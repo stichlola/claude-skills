@@ -195,3 +195,9 @@ Details: `reference/creature-animation.md`.
 - `reference/api.md` - endpoints and request bodies.
 - `reference/blender-sheets.md` - splitting a sheet into pieces, with the bmesh code.
 - `reference/creature-animation.md` - animating non-human creatures from generated two-camera video: the pipeline, the exam, what failed.
+
+- Two generations at once on the same key can fail with HTTP 429: run batches one after another.
+- Image-to-image redraws do not keep positions: anything that must line up with game data (map
+  icons, borders) has to be checked after, and masks computed on the original won't fit; crop
+  bands measured on Tripo's own picture instead. Empty placeholder inputs make Tripo invent content:
+  generate those procedurally.
