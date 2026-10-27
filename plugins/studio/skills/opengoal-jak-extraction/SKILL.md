@@ -147,3 +147,27 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   up (`JAK_ENHANCED_SCENE`). The Jak 2 hour override must wait for `*target*`.
 - A release's launcher runs `gk.exe --game jakN -- -boot -fakeiso` from its folder; testing a
   fresh install with `--proj-path` makes gk quit at once with an empty log.
+
+## New animations for Jak (build-actor, lesson)
+
+- Retarget a Mixamo clip in Blender headless (`--factory-startup`, or the user's addons break it):
+  Mixamo X Bot and the ripped `jakb-lod0.glb` / `eichar-lod0.glb` are both T-pose facing -Y; give
+  each Jak joint the world delta rotation of its Mixamo joint from the T-pose, unmapped joints follow
+  their parent. Bind pose `main` is scaled 1.4; animations run at 1.0 (`main` 1.028 m up).
+- `build-actor "<name>" :master-art-group "jakb-ag"` (Jak 1: `"eichar-ag"`) turns a glb into
+  `<name>-ag.go`. The glb skeleton starts at `prejoint` (build-actor adds `align` itself); every
+  joint needs T, R and S on every frame (missing channels become identity, not the rest pose); the
+  mesh needs indices, a material and u8 JOINTS_0, or build-actor crashes (0xC0000005 / 0xC0000409).
+  A one-triangle mesh is enough for an animation-only group.
+- Put the .go in GAME.CGO (`game.gd`); Jak II/3 also need `(hash-table-set! *file-entry-map*
+  "<name>-ag.go" #f)` before `cgo-file "game.gd"`, or "multiple ways to make output".
+- Only Jak 3 links GAME.CGO sub-groups into `jakb-ag`. Jak 1 and II link only art groups whose
+  first entry is an animation: keep the group in a global from `art-group` `relocate` (joint.gc)
+  and `get-art-by-name` from there.
+- The decompiler's `rip_levels` writes glbs to `decompiler_out/<game>/levels/common` whatever the
+  output folder, and a GAME.CGO-only rip rewrites `out/<game>/fr3/GAME.fr3` without the levels'
+  animated textures (Jak II crashes: "no texture named security-env-dest"). Rerun the full
+  decompiler afterwards.
+- Jak 1 screen UI: sprites and text use 512 x 224 (y halved from 448), `draw-string-xy` with
+  `middle` centers on x, no font scale, and the large font has only capitals and the pad glyphs
+  (lowercase comes out as kanji).
