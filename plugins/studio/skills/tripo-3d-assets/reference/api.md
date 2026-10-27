@@ -26,3 +26,8 @@ Notes
 - Seen costs on v3.1: image-to-image 5, image→3D (`texture: true`, `smart_low_poly`, `face_limit`
   4000-8000) 40.
 - A failed task (`status` not success) was not charged.
+- Image-to-image `model` values (the 400 for an unknown one lists them, free): `banana`, `banana2`,
+  `banana_pro` (Gemini image editing), `chat_image_1`, `chat_image_1.5`, `chat_image_2`,
+  `chat_image_2.5_flare`, `chat_image_2.5_sunburst`, `seedream_v5` (default, 5 credits).
+  `banana_pro` cost **15** credits and answers at 2048 px: the one that restyles a picture while keeping
+  its layout exactly (a game map redrawn as parchment, every coastline in place). Quote 15, not 5.
