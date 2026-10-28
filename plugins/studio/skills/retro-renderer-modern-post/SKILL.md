@@ -465,3 +465,19 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   strip/row from the upload address minus the image's pixel start, crop the same window from the
   HD picture and register a texel scale so the game's UVs (in its own texels) still land right.
   Forget the scale when the normal path reuses that GL texture.
+
+## Scripted cameras, screen-space light shadows, normal targets (lesson)
+
+- **A scripted shot inside gameplay** (e.g. a nap on a bed): OpenGOAL's external camera has a
+  `'locked` mode: set `*math-camera*` trans, a look-at matrix in `*save-camera-inv-rot*`
+  (`forward-up->inv-matrix`), `*external-cam-mode*` = `'locked`; reset it to `#f` in the state's
+  `:exit` so any way out of the state gives the camera back.
+- **Shadows for a spot light far from the surface** (headlights): reuse the point lights' screen-space
+  march but cap the reach (~12 m) and stop a few meters short of the lamp: the vehicle carrying it is
+  in the depth buffer and would shadow everything.
+- **Before adding normals to a renderer**, check what reads them: the composite already used an
+  analytic normal for the sea and skipped the G-buffer there, so the visible gain was small. A
+  surface drawn with depth test ALWAYS under the level (the far sea) must not write the normal target:
+  later draws that write none (generic) would inherit it.
+- Heredoc Python writing C++: `"\n"` inside the heredoc becomes a real newline in the C++ string;
+  fix string escapes with the Edit tool.
