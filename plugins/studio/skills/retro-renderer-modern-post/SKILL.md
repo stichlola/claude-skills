@@ -515,3 +515,23 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   (loading hitches are CPU and inflate GPU clocks); remember what each step saved in post-pass time;
   step back up when other + post + saved fits in ~15.3 ms, or after a minute at 60 fps as a retry.
 - Measure at the same hour of the game: day vs night changed the same spot from 60 to 50 fps.
+- **Even the post pass alone reads flat under vsync**: at 60 fps the driver lowers the GPU clock to just
+  meet the frame, so a 1.3 ms cheaper composite still showed "post 13 ms". Compare passes only in the
+  glFinish profile mode (it drops the frame rate, so the clock is at full speed).
+- A switch that zeroes named uniforms of the big shader just before its draw (type from
+  `glGetActiveUniform`) measures each feature without new settings; but the auto quality moves between
+  runs and changes which passes run, so pin the level or read the deltas as +-0.5 ms noise.
+- Cheap wins in a big hand-written composite: a `sin`-based `hash2` inside gradient noise called ~20
+  times a pixel -> an arithmetic hash (Dave Hoskins') saved 1.3 ms of 8.5 with no visible change;
+  the occlusion + contact shadows at half resolution (depth-aware blur at half too, normals still from
+  full-res depth) went 1.65 -> 0.95 ms, no halos; auto-quality levels past "passes off" that lower the
+  game's internal resolution (85%, 72%) stretched by the final blit.
+- Before GPU culling / Hi-Z for a PS2-era scene, measure: all the geometry buckets together were ~4 ms
+  against 8 ms of post; the work belongs in the post pass.
+- Rock detail over a game's cliffs, as AAA terrain does: each tiling size only within its own distance
+  band (1.6 m tile to ~45 m, 7 m tile to ~160 m), past that only a soft macro light/dark noise; a huge
+  tile (30 m) printed a repeated pattern on far faces that fought their own texture.
+- Mountain shadows in a sunlit haze from the screen: in the god-rays pass (half res) march ~24 taps
+  toward the sun's screen point (away from the anti-sun point when it's behind), count far surfaces
+  closer than the pixel; exclude near things (no shafts from the player) and anything kilometers away
+  (the game's sky clouds write depth); output in the shafts texture's alpha, blur 5 taps when reading.
