@@ -178,6 +178,14 @@ camera the game hands over each frame.
   normal from derivatives (color the pixels where each agrees within ~35 degrees) - one wins
   everywhere. Write the smooth normal where it agrees with the face, else the face's.
 - Once the stored normals exist, feed them to SSAO/SSGI too (same texture, same conversion).
+- **Marking a material in the normal target**: RGB10_A2's alpha has only **2 bits** (0, 1/3, 2/3,
+  1), so a marker like a = 0.92 reads back as 1. Encode it in the **normal's length** instead (sand:
+  `n * 0.9`, detected with `length(rgb*2-1)` in 0.85-0.95) and have every other reader normalize.
+  Tag the material by texture name at load (e.g. contains "sand" but not "stone/rock/wall/bag").
+- **Procedural detail in post** (sand ripples, grain) faded by distance shows as a ring that follows
+  the player. Fade each octave only by its **pixel footprint** (m per pixel = dist x pixel angle /
+  |cos of the view to the surface|; visible while a wave spans ~3+ pixels) and add bigger octaves
+  (0.24, 1.1, 3.6, 11 m) so a fading small one is never the edge.
 
 ## Grass that reacts to the player
 

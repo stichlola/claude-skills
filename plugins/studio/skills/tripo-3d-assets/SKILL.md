@@ -155,6 +155,15 @@ Used to replace a PS2 game's low-poly rocks, trees and grass in Unreal (jak3-ue5
 6. **Tint in the engine**, not with a new generation: Tripo's sandstone came out orange; a material
    colour factor (e.g. ×0.36/0.38/0.42 RGB) fixed it for free.
 
+7. **Many variants from few pieces**: rocks and pebbles are small on screen, so 9 stones on one
+   3x3 sheet beat one stone per generation. Cut them, then build variants in Blender by copying pieces
+   of the **same sheet** (they share one texture, so a heap of different stones stays one material):
+   random yaw, small tilt, ±size, flattened (x1.3 wide, x0.55 tall), pairs, heaps, scatters.
+   A "layered slab" prompt gave wooden planks and bread twice; what worked: "built of three or four
+   stacked horizontal rock layers, each layer's edge sticking out a little over the one below,
+   darker shadowed groove under each". Bring the result to the scene's colour by a target average
+   (tint = target / texture average) rather than the texture's own: the raw sandstone read white.
+
 A **tileable texture** works too (picture only, 5 credits): image-to-image from the current texture,
 "seamless tileable top-down texture ... seen straight from above". It still came back in perspective
 (blurred far edge): crop the sharp, even part and make it tile yourself (blend the crop with itself
