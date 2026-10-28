@@ -535,3 +535,29 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   toward the sun's screen point (away from the anti-sun point when it's behind), count far surfaces
   closer than the pixel; exclude near things (no shafts from the player) and anything kilometers away
   (the game's sky clouds write depth); output in the shafts texture's alpha, blur 5 taps when reading.
+
+## TAA goes after every depth-based post effect (measured)
+
+- If TAA resolves the raw scene and a later composite builds AO, shadows, lights or procedural
+  ground detail from the *jittered* depth buffer, those edges move a fraction of a pixel every frame
+  and nothing averages them: thin things (grass blades, pebbles) flicker, and turning TAA off "fixes"
+  it. Resolve TAA on the finished composite instead (blit the composite out, resolve, blit back).
+- Measure flicker objectively: camera and character still, burst of 8 window captures, mean
+  per-pixel |frame[i+1]-frame[i]| over the ground (mask the character and HUD). Cycle the variants
+  inside one run (env switch that changes mode every 6 s and logs it; capture right after each
+  switch). Jak 3 desert: early 1.40 / late 0.30 / off 2.11; pixels changing >8 levels 2.1% -> 0.16%.
+- Half-res AO read with plain bilinear also bleeds across depth edges: upsample it with the four
+  texels weighted by depth similarity to the full-res pixel.
+
+## Bright desert ground: exposure, not a highlight squeeze
+
+- Compressing everything above the mid tones (a strong "shoulder") kills the ground's own variation:
+  the sand reads flat and still looks overexposed. Darken the sunlit ground with a multiply that
+  depends on sun height (keeps relative contrast), keep the shoulder only for near-whites.
+- A per-zone grade with gain > 1 and high contrast is the usual culprit for burned-out noon; hue-based
+  recolors (olive -> sand) must cap saturation at a sand's (~0.3), or the yellower patches turn
+  orange in blotches and bands; pale near-white slopes need their own branch (no hue to key on).
+- Game glows and torch spawners turned into dynamic lights must fade out in full daylight, or they lay
+  bright colored pools with hard shadows on sunlit ground.
+- Far cloud "cards" (sky geometry kilometers out) need the same sky treatment at night/dusk as by day,
+  or their sharp painted silhouettes drift across the dim sky.
