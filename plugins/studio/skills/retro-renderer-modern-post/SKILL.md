@@ -350,6 +350,15 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   intensity and wind globals), have it call a kernel function each frame to hand those to the
   renderer, and time the values out when the process stops sending. The post effect then follows
   the game's own triggers and matches its particles' wind.
+- **Adding kernel functions can break boot (OpenGOAL jak3)**: one more `make_func_symbol_func`
+  made gk crash a few seconds into gameplay (access violation in GOAL code, no useful stack), with
+  the game's GOAL code untouched. Bisect C++ and GOAL separately (revert GOAL to HEAD first: if it
+  still crashes, it's the kernel). Instead of a new symbol, widen an existing call's buffer (a
+  `(new 'static 'inline-array vector 2)` passed to the same function) and pass values in and out
+  through the extra slots; guard the extra slots by game version when the C function is shared.
+- **Analog L2 on PC**: the game only sees L2 as a button; read the SDL trigger axis
+  (`SDL_GAMEPAD_AXIS_LEFT_TRIGGER`, 0..32767, small deadzone) in the controller code and hand it to
+  the game through a kernel call, falling back to the digital button (keyboard).
 - **Showcase weather states**: a "changing" cycle (clouds build, rain, thunderstorm with bolts and
   flashes, sun back on wet ground with shafts, steam and a rainbow at 42/51 degrees from the
   antisolar point, slow drying) shows off wet reflections, halos and shafts far better than a
