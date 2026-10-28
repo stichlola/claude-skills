@@ -570,3 +570,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   bright colored pools with hard shadows on sunlit ground.
 - Far cloud "cards" (sky geometry kilometers out) need the same sky treatment at night/dusk as by day,
   or their sharp painted silhouettes drift across the dim sky.
+
+## Matching a reference picture fast
+
+- Don't restart the game per attempt: hot-reload the post shaders (poll the files' mtime once a second,
+  compile, swap the program only if it compiled; uniform locations looked up per frame) and keep the
+  tuning values in a hot-reloaded JSON. One boot, then ~10 s per attempt.
+- Sweep a value inside the same run (rewrite the JSON key, wait for the easing, capture; restore at
+  the end) and judge all variants on one sheet.
+- Score each zone as the Lab delta E of its mean color against the reference AND against the last
+  accepted shot, flagging zones that got worse: stops fixing one zone while silently breaking another.
+- Check the framing automatically, on edge maps rather than luma (a lighting change drops luma
+  correlation like a moved camera does).
+- Before relighting to darken a region, ask whether it is dark in the reference because of the
+  material (a rock texture) or the light. Lowering the sun to shade a "slope" darkened the flat plain
+  that the reference keeps bright: a content problem cannot be fixed with light.
