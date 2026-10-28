@@ -195,3 +195,12 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   `/VERYSILENT /CURRENTUSER /DIR=<tmp> /LOG=<file>` then `unins000.exe /VERYSILENT`.
 - Don't ship scripts that need `powershell -ExecutionPolicy Bypass` to end users: do image work in
   Python (Pillow/NumPy) and call Real-ESRGAN's exe directly.
+
+## Game text is not rebuilt when the encoder changes (lesson)
+
+- The `text` tool reruns only when the text sources change: a change in the C++ text encoder (e.g. button
+  glyph sequences in `font_utils.cpp`) never reaches `out/jakN/iso/*COMMON.TXT`. Delete those files and
+  `(make-group "text")`, and make the launcher delete them on a version change before recompiling.
+  Hand-drawn test strings in GOAL won't show the stale text: test a real game message.
+- OpenGOAL's `AI_POLICY.md`: no AI-co-authored commits, no AI code in `goal_src/` from new contributors,
+  no AI media. An AI-built fork belongs in its own repo / a launcher mod source, not upstream PRs.

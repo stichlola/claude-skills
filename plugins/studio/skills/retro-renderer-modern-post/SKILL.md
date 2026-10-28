@@ -481,3 +481,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   later draws that write none (generic) would inherit it.
 - Heredoc Python writing C++: `"\n"` inside the heredoc becomes a real newline in the C++ string;
   fix string escapes with the Edit tool.
+
+## Profiling and auto quality on a vsynced renderer (lesson)
+
+- **Per-pass GPU cost**: wrap each pass in `glFinish(); child node; pass; glFinish();` behind an env
+  switch, and force the renderer's per-bucket sync; dump the profiler tree every few seconds. A pass
+  with no finish after it leaks its cost into the next bucket's time (the "HUD" bucket looked like 11 ms).
+- Toggling one setting at a time from a copied settings file (one game run per variant) showed no single
+  feature dominating the big composite shader; the wins were whole passes (volume + GI ~1.7 ms).
+- **GPU timestamps across a whole frame lie under vsync**: with spare time the GPU waits for the screen
+  inside the frame, so frame start->end reads ~16.5 ms at 60 fps whatever the load. Only trust it while
+  the frame rate is actually below target; measure the post pass alone (no waits inside) for headroom.
+- **Auto quality** that works: step down only after ~3 s continuously under ~58 fps but above ~40
+  (loading hitches are CPU and inflate GPU clocks); remember what each step saved in post-pass time;
+  step back up when other + post + saved fits in ~15.3 ms, or after a minute at 60 fps as a retry.
+- Measure at the same hour of the game: day vs night changed the same spot from 60 to 50 fps.
