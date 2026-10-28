@@ -83,6 +83,32 @@ texture 20. Always read `credits_consumed` from the finished task and stop if it
   hero height). Check it in a Blender contact sheet with a figure next to it.
 - Stone/metal parts in a **neutral pale stone** so the game can tint them (bronze, gold, basalt).
 
+## How many pieces in one generation: by how close they are seen
+
+A sheet is one model: its `face_limit` and its one texture (2048 x 2048 from image→3D) are **shared**
+by the pieces. Per piece, roughly:
+
+| Pieces | Texture each | Faces each at a 20000 limit |
+|---|---|---|
+| 1 | 2048² | 20000 |
+| 2 | ~1450² | ~10000 |
+| 4 | ~1024² | ~5000 |
+| 8 | ~512² | ~2500 (at an 8000 limit: ~1000-2000) |
+
+- **Seen from mid or far** (rocks, pebbles, props, houses from the street, a top-down game): sheets of
+  6-12, the price does not change with the count. This is where sheets pay.
+- **Seen up close** (grass at the player's feet, a hero prop, anything the camera can reach): **1-2
+  pieces** per generation with a high `face_limit` (10000-20000) and `texture_quality: "detailed"`.
+  A sheet of 8 desert grass tufts (8000 faces, one 2K texture) looked like blurry crystals at 1 m.
+- If the engine draws copies instanced with a distance swap to a cheap version (the game's own model
+  or a low LOD), high face counts near the camera cost little: budget for the close view.
+- **Thin blades and leaves: `smart_low_poly: false`** for close-up pieces. Low-poly mode rebuilds each
+  blade as a chunky 4-5 sided prism; without it Tripo reduces its detailed mesh to the `face_limit`
+  and blades stay thin strips. Keep low-poly mode for solid, chunky shapes.
+- Variety without more credits: one or two detailed pieces, then the variants in Blender (copies
+  merged and offset, a wedge of blades removed, squashed or stretched), plus a random scale and tilt
+  per copy in the engine.
+
 ## Sheets of parts (the cheap way)
 
 1. Picture prompt: "Game asset sheet: the separate pieces laid out on an even grid with wide empty
