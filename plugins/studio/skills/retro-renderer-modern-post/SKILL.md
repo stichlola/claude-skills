@@ -186,6 +186,17 @@ camera the game hands over each frame.
   the player. Fade each octave only by its **pixel footprint** (m per pixel = dist x pixel angle /
   |cos of the view to the surface|; visible while a wave spans ~3+ pixels) and add bigger octaves
   (0.24, 1.1, 3.6, 11 m) so a fading small one is never the edge.
+  Better still (what the user accepted): measure the footprint **across the crests** with
+  `fwidth(dot(world_xz, across))` computed outside any branch - crests running toward the camera stay
+  sharp far beyond the isotropic worst case. Make each size a scaled copy of the smallest (wiggles
+  too) and **renormalize** the octave weights so contrast stays constant as small ones drop out; then
+  fade crests that run across the view with distance (they read as strong horizon stripes).
+- **Don't gate post detail on the color** when a haze runs earlier in the same shader: the warm haze
+  turned far sand orange, the hue test failed and the ripples "stopped" at a fixed distance.
+- **Triplanar detail in post**: don't fade by texel size; read with `textureLod` at
+  `log2(m_per_pixel * tex_size / tile_m)` (no implicit derivatives inside branches) and let the mips
+  average it out; add a big tile (~40 m) so whole mountains get strata. Debug a material marker by
+  painting marked pixels pure red first - it showed the marker was fine and the fade was the bug.
 
 ## Grass that reacts to the player
 
