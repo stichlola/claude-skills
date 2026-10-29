@@ -606,3 +606,10 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   was a real building behind the camera. Things that should never cast: alpha-blended draws (veils,
   decals), water, envmap second draws. Not alpha-tested ones: in Jak 3 every draw has the test on, so
   dropping them dropped every static shadow (and only looked like a fix).
+- When the reference lights its mountains from a side the game's sun isn't on, sweep a rotation of
+  the bearing used to light them (here +57 degrees won); don't move the warm backlit glow with it, that
+  put the glow on the mountains in view.
+- An exposure cut for a bright ground (the high sun) applied evenly blackens the dark things (rocks):
+  scale it by brightness, and keep it out of hours tuned separately (the low sun).
+- A single scored shot can mislead about distance gates: a "far" fade already at 1 for a big far
+  rock makes threshold sweeps change nothing. Paint the tags/gates in debug colors before tuning.
