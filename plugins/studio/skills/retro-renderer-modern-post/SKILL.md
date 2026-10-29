@@ -613,3 +613,20 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   scale it by brightness, and keep it out of hours tuned separately (the low sun).
 - A single scored shot can mislead about distance gates: a "far" fade already at 1 for a big far
   rock makes threshold sweeps change nothing. Paint the tags/gates in debug colors before tuning.
+
+## Depthless sprites in post: flames, glows (lesson)
+
+- A transparent sprite (a torch's flame) writes no depth or normals: every post effect shades it as
+  whatever is behind it. In front of a palm trunk in shadow it got the trunk's sun shadow, SSAO
+  and tag-based recolors: dim, green-blue, see-through. It only showed with something dark behind.
+- Don't trust the game's object list to find them: not every flame is a particle spawner (the
+  desert's torches weren't). Log the names/distances the hook receives before assuming the mask
+  works; a debug overlay of the mask (`c = vec3(mask)`) plus one of the raw scene color settles it
+  in two shots.
+- A color mask that works: the raw pre-post color, very bright (luma > 0.85), full red, yellow to
+  white (g >= 0.9 r, b <= g), and NOT over a land tag (sunlit pale sand matches the same color).
+  Then at the end of the composite put back the raw color (`mix(c, raw, mask)`), not `max(c, raw)`
+  (max keeps the blue tint).
+- Hot-reload pitfall: editing GLSL with PowerShell string replacements, a `\n` inside a single-quoted
+  string stays a literal backslash-n: the new code ended up inside a `//` comment and silently did
+  nothing. Grep the result after a scripted edit.
