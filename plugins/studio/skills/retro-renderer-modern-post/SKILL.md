@@ -596,3 +596,13 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   mix, so fade the effect over the gap instead of thresholding (hard-edged patches otherwise).
 - When the reference is backlit and the game's sun is not, light far objects by the sun's glow bearing
   (a low sun where the sky glows) instead of the scene's sun: faces toward the camera fall into shade.
+- A relief from a tiling crack picture's gradient still crosses into a hatching up close: take the height
+  from smooth noise lumps (half a meter and more) and keep the picture as a faint crust on them.
+- Impostors (flat quads of a model's pictures) miss the shade the model's blades or stones cast on each
+  other: the detailed copies read dark, their far pictures bright puffs. Darken the picture toward its
+  foot. Check which batch flag a fix keys on (a "foliage" flag that was never set made it a no-op).
+- A hard-edged "phantom" shadow: bisect its casters before fixing the receiver, with a test switch
+  that skips a level, then a tree, then a draw range (one build, then restarts only). Here the culprit
+  was a real building behind the camera. Things that should never cast: alpha-blended draws (veils,
+  decals), water, envmap second draws. Not alpha-tested ones: in Jak 3 every draw has the test on, so
+  dropping them dropped every static shadow (and only looked like a fix).
