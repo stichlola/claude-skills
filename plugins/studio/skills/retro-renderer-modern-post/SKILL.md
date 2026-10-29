@@ -585,3 +585,14 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Before relighting to darken a region, ask whether it is dark in the reference because of the
   material (a rock texture) or the light. Lowering the sun to shade a "slope" darkened the flat plain
   that the reference keeps bright: a content problem cannot be fixed with light.
+- Hold everything that moves still for scored shots (a test switch pinning the cloud time): drifting
+  cloud shadows swung a zone's delta E by 10+ between identical shaders and hid real changes.
+- After tuning one hour (golden), shoot another (noon) in the same run: effects keyed to a material tag
+  but not to the hour (darkening a rocky ground) regress the rest of the day silently.
+- A tiling detail picture laid over a flat ground shows its tile as a grid. Use it small and rotated
+  (two sizes, turned differently), keep its dark crack lines faint (asymmetric gain) and carry the
+  larger variation with noise; a relief from its finite-difference gradient lit by the sun reads as 3D.
+- Tags packed in the normal's length get blended at alpha-blended edges: lengths between two tags are a
+  mix, so fade the effect over the gap instead of thresholding (hard-edged patches otherwise).
+- When the reference is backlit and the game's sun is not, light far objects by the sun's glow bearing
+  (a low sun where the sky glows) instead of the scene's sun: faces toward the camera fall into shade.
