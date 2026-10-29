@@ -204,3 +204,23 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   Hand-drawn test strings in GOAL won't show the stale text: test a real game message.
 - OpenGOAL's `AI_POLICY.md`: no AI-co-authored commits, no AI code in `goal_src/` from new contributors,
   no AI media. An AI-built fork belongs in its own repo / a launcher mod source, not upstream PRs.
+
+## Fast test boots through the REPL (lesson)
+
+A test run went from ~37 s to ~20 s (game boot only) with the screenshot taken the moment Jak stands
+at the saved spot:
+
+- **Keep goalc running between game restarts.** `(mi)` takes ~35 s every time goalc starts (it needs
+  the types to compile forms that touch `*target*`); kill only gk, and `(lt)` reconnects the same goalc
+  to the new game. Start goalc and its `(mi)` in parallel with the game's boot the first time.
+- **Don't wait on a periodic log line** (an fps average every 5 s): wait for the first one that means
+  "frames are coming", then ask the game itself.
+- **The nREPL socket returns nothing**: read answers from goalc's stdout log. Send
+  `(if <condition> 7777 0)` and count `7777` in the log before/after.
+- **Jak is there before he is in place**: `*target*` exists at once, then the continue point and the
+  camera intro put him back. Wait for `(= (-> *target* next-state name) 'target-stance)`, place him,
+  check `(vector-vector-distance (-> *target* control trans) <spot>)` a moment later, repeat; and send
+  the placement once more ~1.5 s after it holds.
+- **One form per call**: each og_repl call reconnects (~0.5 s); wrap setup forms in one `(begin ... 0)`.
+- Window capture (PrintWindow/BitBlt of the client rect) takes 0.2 s: capture right after "ready", no
+  sleeps.
