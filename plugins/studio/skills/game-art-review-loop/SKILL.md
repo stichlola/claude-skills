@@ -147,3 +147,15 @@ more rounds while the defect lists changed every round. What that taught:
 - A section that costs far more than its arithmetic suggests may not be its arithmetic. Turn it off at runtime: if the time stays, the compiled form of the code is the cost, not the running of it.
 - On NVIDIA's OpenGL driver, const or local arrays indexed in a loop slowed a 4000-line fragment shader as a whole, even in branches that never ran. Removing them took one pass from 20.9 to 9.4 ms with the picture unchanged, more than any effect could give back. Use ternaries, small functions, or bit math instead, and try this before cutting an effect.
 - Prove "the look didn't change" by swapping old and new in one run with hot reload. Separate runs drift, and the camera settles differently when the frame rate differs. Also compare two shots of the same version, so that normal drift isn't read as a change.
+
+## Testing an in-game editor with no mouse
+
+- Give the game a test switch that plays mouse, keys and text from a file. The desktop stays free, and the same script can film the tool. Write the file only when the game is ready, so that the steps don't start during boot.
+- Send the script's cursor position again on every frame. On a focused window the backend polls the real mouse each frame and otherwise overrides the scripted position, so clicks land wherever the real cursor happens to be.
+- Run the script in every UI state. If it's only called from the tool's own UI, it stops silently when a menu takes over, and the steps after it never run.
+- Script verbs that skip a menu also skip the menu's guards. A verb that exported "the current level" while no level was open packed the whole main world. Put the check in the function, not only on the button.
+- When a test sets up its own file by hand, a wrong field type can make the loader refuse it, and the steps after it then run on the wrong state and look like results. Check the log line saying the setup loaded before reading what follows.
+- A forced teleport or level change from the console may do nothing. Boot in the far place instead, and photograph the start, so that "it came from far away" is shown and not assumed.
+- Test import with the assets really gone, using copies under a test name, then compare hashes. Never delete the user's own assets to do it. Importing while the files are still there proves nothing, because they are simply reused.
+- For import of files from other people: test garbage, a wrong magic, a huge declared size, a truncated file and path traversal in names and ids. Record hashes of the main project files before and after.
+- Keep the files the test made apart from the user's, and remove them at the end by their exact test prefix.
