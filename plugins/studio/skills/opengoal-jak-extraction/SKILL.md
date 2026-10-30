@@ -256,3 +256,5 @@ at the saved spot:
 - Test scripts: let the running game reload a changed script file when the last one has finished, so each
   try doesn't need a boot. Drive the real UI, and have a real run read the files back before a release
   (undo, save, export, import).
+
+- When a game has two ways of drawing the same models (replacing the game's props, and objects placed by an editor), check level-of-detail on both: having the files doesn't mean a path loads them. To compare a change, switch it with a temporary flag file inside one run and log the triangles drawn: with vsync on, fps stays at the cap and shows nothing (here 3.57 M against 0.71 M triangles, both about 58 fps).
