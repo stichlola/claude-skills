@@ -239,3 +239,20 @@ at the saved spot:
   `'attack` with `static-attack-info`, then read `fact health` and `next-state`. (`(lt)` fails while
   another goalc still holds the listener: restart both.)
 - `.gc` files are CRLF: patch scripts convert their search text to CRLF or the match fails silently.
+
+## Crossing from GOAL to C++, and testing an editor (lesson)
+
+- GOAL's `#f` is not a null pointer in C++: it's the address of the false symbol. An optional pointer
+  argument must be checked against `bool_to_symbol(false)` too, or C++ reads garbage from it. The symptom
+  looks random (here: collision lost terrain and placed objects now and then).
+- An incremental `(mi)` doesn't always see a global defined in another file: add `define-extern` at the
+  top of the file using it. After every GOAL change, search goalc's log for "Compilation failed": the game
+  still starts, with the old code.
+- Processes are paused while a full-screen tool is open. Anything that must happen then goes in the display
+  loop (`display-loop-main`), not in a process's update. Test the path a user takes (tool open), not only
+  a script's shortcut.
+- A light or color borrowed from "the first vertex of the first tree drawn" depends on the camera and on
+  the place: painted content came out black in one area only. Pick a percentile over the tree's vertices.
+- Test scripts: let the running game reload a changed script file when the last one has finished, so each
+  try doesn't need a boot. Drive the real UI, and have a real run read the files back before a release
+  (undo, save, export, import).
