@@ -142,7 +142,7 @@ more rounds while the defect lists changed every round. What that taught:
 
 ## Finding what a big shader really costs
 
-- Time cuts with the frame cap and vsync off. At a capped 60 fps a section's cost is hidden: a real 8 ms region read as a flat 9 ms, then jumped when the frame rate fell under the cap.
+- Time cuts with the frame cap and vsync off. At a capped 60 fps a section's cost is hidden: sections really costing 3.6 to 7.6 ms all read as a flat 9 ms, then jumped when the frame rate fell under the cap.
 - Cut only at the shader's top level. An early return inside an `if` stops only those pixels and the others run on, so the numbers rise and fall without meaning.
 - A section that costs far more than its arithmetic suggests may not be its arithmetic. Turn it off at runtime: if the time stays, the compiled form of the code is the cost, not the running of it.
 - On NVIDIA's OpenGL driver, const or local arrays indexed in a loop slowed a 4000-line fragment shader as a whole, even in branches that never ran. Removing them took one pass from 20.9 to 9.4 ms with the picture unchanged, more than any effect could give back. Use ternaries, small functions, or bit math instead, and try this before cutting an effect.
