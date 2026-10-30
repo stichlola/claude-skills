@@ -224,3 +224,18 @@ at the saved spot:
 - **One form per call**: each og_repl call reconnects (~0.5 s); wrap setup forms in one `(begin ... 0)`.
 - Window capture (PrintWindow/BitBlt of the client rect) takes 0.2 s: capture right after "ready", no
   sleeps.
+
+## Gameplay options gated from C++ (lesson)
+
+- A menu switch reaches GOAL as a kernel function: an atomic in C++, `make_func_symbol_func("pc-x?", ...)`
+  in kmachine, `(define-extern pc-x? (function symbol))` in kernel-defs. Read it where each value is set
+  (`(if (pc-x?) new old)`), so off means byte-for-byte the original game; off by default.
+- Where to hook: enemy damage taken is one method (`damage-enemy-from-attack!` in enemy.gc: multiply a
+  blow, reward a kill when hit points cross 0); the player's knockdown is `target-attacked`
+  (target-handler.gc): turning an ordinary hit's mode into `'damage` costs health without the stagger,
+  but keep `attack-mode-is-invinc` modes (lava, falls, crush) as they are. Ammo per shot: the
+  `ammo-required` case in target-gun.gc (pickup-type numbers from game-info-h).
+- Test through the REPL: give the power (`features`, `eco-pill-dark`), `'change-mode`, send an
+  `'attack` with `static-attack-info`, then read `fact health` and `next-state`. (`(lt)` fails while
+  another goalc still holds the listener: restart both.)
+- `.gc` files are CRLF: patch scripts convert their search text to CRLF or the match fails silently.

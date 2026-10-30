@@ -630,3 +630,13 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Hot-reload pitfall: editing GLSL with PowerShell string replacements, a `\n` inside a single-quoted
   string stays a literal backslash-n: the new code ended up inside a `//` comment and silently did
   nothing. Grep the result after a scripted edit.
+
+## Small traps (lesson)
+
+- `far` and `near` are Windows macros: a variable or parameter with that name breaks the build in an
+  unrelated-looking way; a build script that echoes its exit can still "succeed", so grep the log for
+  ` error[: ]`.
+- A NaN in a history buffer (clouds, TAA) stays forever and grows into a black block: guard every fetch
+  and every result with `isnan`/`isinf` and fall back to "nothing" (alpha -1), not to a color.
+- Shader hot reload only runs when its env switch is set in the test script; without it a "fixed" shader
+  silently isn't the one on screen.
