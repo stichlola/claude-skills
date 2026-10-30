@@ -124,3 +124,18 @@ more rounds while the defect lists changed every round. What that taught:
   reviewers' list says the approach is wrong.
 - Long Blender jobs: headless, in the background, with a wait that notifies (the MCP call times out
   while Blender keeps working).
+
+## Parallel feature agents on one renderer
+
+- Give each agent its own git worktree and branch, and a list of the shared files it may touch only with small, local hunks. Agents don't build or run the game: only one instance of the shared build exists, so they check with syntax-only compiles and a hidden-context shader compile.
+- Merge into a separate integration worktree while a test is using the main tree, then fast-forward main when the test ends. A game running with shader hot reload reads the main tree, so merging there falsifies the test.
+- Conflicts will cluster on "append next to the last setting" lines (save, load, menu, struct). They all resolve by keeping both sides. Telling agents to insert at different anchors would avoid them.
+- Treat an agent's "done" as unrun code: the report must say what ran. Verify on/off pairs from a spot where the camera doesn't move (no enemies nearby), and compare frame time with one instance only.
+- A scratchpad shared between agents gets overwritten: give each agent its own subfolder.
+
+## Tests forced from a REPL
+
+- A state forced from the console can break the process in ways normal play can't (missing art for the level, skipped setup). If a forced test fails, retry through real input in a level where the feature belongs before calling it a bug.
+- Order destructive steps last, or use one game run per group, so that one broken step doesn't hide the results after it.
+- A helper that fails to compile silently takes every form using it with it: check the REPL log for compile errors before reading values.
+- A value that "didn't change" means nothing unless the state it depends on was printed too.
