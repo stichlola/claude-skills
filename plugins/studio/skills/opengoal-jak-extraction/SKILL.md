@@ -268,3 +268,12 @@ at the saved spot:
 - Finding which post effect draws an artifact: `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders while the game runs. A script that swaps one line of the shader per variant and takes a shot of each compares them all in one run, with the same camera. Restore the files in a `finally`.
 - PowerShell: a negative number passed to a function arrives as a string, and `$z * 4096` then repeats the string. Cast with `[int]`.
 - Prompts for a remake: "same shapes, exactly the same colors and scale" gets a faithful copy that barely shows in game. Ask for more detail and allow new forms; match the colors afterwards.
+
+## Testing post-process shaders by hot reload (lesson)
+
+- A reload can lag several seconds: a shot may show the previous variant, and two "different" results are then the same one. Paint the variant's number in a corner of the frame and have the capture wait for that value. A second pass (AO) reloads on its own: send its mark through to the final image too (write it into the AO output, show it in the composite).
+- A scene that changes over time (a fight, a passing hour, a moire drifting with the camera) makes frames incomparable. Compare inside one frame: left half unchanged, right half variant, `uv.x > 0.5` in the shader.
+- `HEAD~1` as "the old shader" breaks when another agent commits meanwhile: name the commit by hash. Getting this wrong made me clear my own change of a bug it had caused.
+- Check the hour really changed before reading a test: send the REPL's `'change 'hour` twice, the first after a boot can be lost.
+- Normals rebuilt from depth with 1-pixel neighbours give a moire of dark rows on ground nearly level along the screen's rows (rounding of depth, a period of tens of rows). Take them from about 32 pixels apart on what's flat, and keep the renderer's own smooth normals on the terrain's grid.
+- Lights at night: don't apply eye adaptation and night boosts on top of dynamic lights, adaptation measures only the dark scene. And every glow sprite as a light includes the sky's: the sun, moon and stars sit 1 m from the camera, kilometers wide.
