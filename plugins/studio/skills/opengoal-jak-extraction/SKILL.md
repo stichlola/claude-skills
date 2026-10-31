@@ -258,3 +258,13 @@ at the saved spot:
   (undo, save, export, import).
 
 - When a game has two ways of drawing the same models (replacing the game's props, and objects placed by an editor), check level-of-detail on both: having the files doesn't mean a path loads them. To compare a change, switch it with a temporary flag file inside one run and log the triangles drawn: with vsync on, fps stays at the cap and shows nothing (here 3.57 M against 0.71 M triangles, both about 58 fps).
+
+## Replacing a static actor's model (tested: Jak 3 market props)
+
+- `custom_assets/jak3/merc_replacements/<model>-lod0.glb` (and `.json`) works for a one-bone prop with no skin: fit the mesh to the ripped glb's box, keep +y up, nearest-vertex weights do the rest.
+- No need for a full extraction: pass `"inputs_file"` in `--config-override`, pointing at a copy of `inputs.jsonc` whose `levels_to_extract` lists only the DGOs that hold the model (about 2 minutes). `GAME.fr3` is rewritten too: back up what changes first.
+- A glb without `COLOR_0` loads as white (0xff), twice the game's neutral 0x80, despite what the doc says: it looks washed out. Halve the picture's values, or export the colors.
+- Each model embeds its own copy of a shared Tripo atlas, uncompressed in the fr3: at 2048 a level went from 42 to 181 MB, at 1024 to 52 MB.
+- Finding which post effect draws an artifact: `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders while the game runs. A script that swaps one line of the shader per variant and takes a shot of each compares them all in one run, with the same camera. Restore the files in a `finally`.
+- PowerShell: a negative number passed to a function arrives as a string, and `$z * 4096` then repeats the string. Cast with `[int]`.
+- Prompts for a remake: "same shapes, exactly the same colors and scale" gets a faithful copy that barely shows in game. Ask for more detail and allow new forms; match the colors afterwards.
