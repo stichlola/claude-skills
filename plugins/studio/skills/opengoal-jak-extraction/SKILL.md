@@ -284,3 +284,6 @@ at the saved spot:
 Before tuning, show every ingredient by itself in one run (hot-reloaded shader, same view, the hour set again before each capture because it keeps moving): the raw image, the normals, the relight mask, the shadow term, the material tags. Then switch each system off in turn. Rock that `broke'' at noon took three wrong guesses until the views showed it: the relight went by normals alone on rock the shadow map had in shade. Read the helper before testing it: a soft normal that stops at 40 m can't prove anything on far rock. A hypothesis that changes no pixel is wrong, so test it before telling the user.
 
 - Impostor looks taken from another angle: compute the elevation of the lowest atlas view. A plain hemi-octahedral 8x8 grid starts at 8-11 degrees, but far objects are seen at 3-6, so flat stones show their top. Square the view height in both bake and shader (lowest about 1 degree), then rebake everything.
+
+- Impostors vs tilted copies: compare near and far in ONE run (flip the detail distance every few seconds), not across runs. A tilted copy seen from below its own horizon has no view in a hemisphere atlas and a flat quad shows what the ground hides: keep its LOD instead of baking more views (16x16 with views below the horizon looked worse: fatter rocks). Scale mip alpha per atlas cell, not per atlas.
+
