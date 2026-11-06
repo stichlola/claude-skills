@@ -16,8 +16,11 @@ asking, then report in the user's language. Running it again on a project that h
 
    ```markdown
    - **Skill condivise** in `.claude/skills/` (copiate da `stichlola/claude-skills`): Tripo, Blender (scavo e
-     indossabili, dadi incisi), prestazioni three.js, pipeline Unreal Engine, estrazione OpenGOAL (Jak), flusso di lavoro. Le scoperte utili anche ad altri progetti vanno aggiunte lì (poi si
-     ricopiano qui con "apri stichlola/claude-skills e fai quanto scritto nel README").
+     indossabili, dadi incisi), prestazioni three.js, pipeline Unreal Engine, estrazione OpenGOAL (Jak), flusso di lavoro.
+     A inizio lavoro (anche ogni sotto-agente) leggi tutte le skill generali (`multi-agent-orchestration`,
+     `cloud-agent-workflow`: risparmio token, workflow, git), poi quelle per argomento che servono. Le scoperte
+     utili anche ad altri progetti vanno aggiunte lì, con commit e push subito (poi si ricopiano qui con "apri
+     stichlola/claude-skills e fai quanto scritto nel README").
    ```
 
    English:

@@ -7,6 +7,16 @@ description: How to run sub-agents and dynamic workflows cheaply and safely on a
 
 Lessons from long sessions on Jak Enhanced (OpenGOAL fork: C++, GOAL, shaders, Blender, releases).
 
+## Keeping these skills alive (user rule)
+
+- Every session and every sub-agent/workflow agent reads **all the general skills** (this one and
+  `cloud-agent-workflow`) before working, and skims the topic skills' descriptions in the README.
+- When you learn something reusable, or notice a missing lesson, add it to the right skill (or a new
+  one; a skill for every project also goes in the README's "general skills" table), then **commit and
+  push `stichlola/claude-skills` right away, without asking** — an unpushed skill is invisible to other
+  projects and chats.
+- In a workflow script, tell agents to read the general skills in the shared prompt context.
+
 ## Token economy (user rule)
 
 Most tokens go to agents reading big files and logs, screenshots and retries — not to prose. So:
