@@ -302,5 +302,21 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Keep an unfinished character out of the menu with a gate (env override for developers) so a release
   can ship while it's in progress.
 
+## Invisible particles and borrowed-level crashes (lesson, Jak 3)
+
+- OpenGOAL sprite shader (`sprite3_3d.vert`): the camera w is **negative in front** for 2D and 3D sprites
+  alike (as pfog0). A behind-camera cull must test `Q = pfog0 / w <= 0`, never `w <= 0`, or every
+  particle in view vanishes (here: the arena training's orbs). To tell "not spawned" from "not drawn",
+  count live particles by owner in the REPL: walk `*sp-particle-system-2d*` `cpuinfo-table` (valid,
+  `key proc` type). Shaders load from the source tree at boot: a restart tests a shader change.
+- A level borrowed in another level's slot (`master-level`) must leave the want list no later than its
+  master, or `unload!` breaks ("level X is unloading but level Y depends on it"). Code that keeps it
+  wanted must check the master is still in `load-state want` (not just loaded), and in `want-levels`
+  look the master up before the loop clears matched names from the new list. Test a trip with
+  `(process-spawn scene-player :init scene-player-init "<scene>" #t "<continue>")` (air train:
+  `desert-air-train-in`, from `desert-warp` to `ctyport-warp`); start a mission with
+  `(dm-play-task-with-continue (game-task <task>) (the-as string #f))`. PowerShell strips `"` from native
+  arguments: write `\"` inside the form.
+
 - Impostors vs tilted copies: compare near and far in ONE run (flip the detail distance every few seconds), not across runs. A tilted copy seen from below its own horizon has no view in a hemisphere atlas and a flat quad shows what the ground hides: keep its LOD instead of baking more views (16x16 with views below the horizon looked worse: fatter rocks). Scale mip alpha per atlas cell, not per atlas.
 
