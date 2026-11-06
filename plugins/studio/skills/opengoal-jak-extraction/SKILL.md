@@ -285,5 +285,22 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 
 - Impostor looks taken from another angle: compute the elevation of the lowest atlas view. A plain hemi-octahedral 8x8 grid starts at 8-11 degrees, but far objects are seen at 3-6, so flat stones show their top. Square the view height in both bake and shader (lowest about 1 degree), then rebake everything.
 
+## Playable NPCs in Jak's place (lesson: Jak 3 Ashelin, Sig)
+
+- Use the NPC's own art group first: its idle/walk and the clip where it holds its gun (Sig's
+  `wasdoors` idle holds the Peacemaker upright like a staff); fall back to Jak's clips only for actions
+  the NPC lacks (run, jump). Moving: overlay the NPC clip's arm hold (captured at init, hold-local) on
+  the walk/run. Firing: tip the forearm/hand toward the fire direction procedurally (check the
+  arm-along-shot dot ~1.0 in the log); muzzle = the NPC model's own blast joint.
+- No long-idle fidgets: Jak's random idle variations look wrong on another body.
+- Unarmed rest pose: small turns on the upper arms/forearms (arms in, elbows a bit bent); a pose the
+  user makes by hand in Blender (dump the bone rotations to JSON) can be applied as turns on idle0.
+- One gun per D-pad direction; reuse Jak's gun HUD (same frame, slide-in) with the character's icon
+  swapped by texture name and only that direction's arrow lit; hide ammo for a gun without ammo.
+- The NPC's own fire sound lives in a level bank (Ashelin's in DESERT4): load that bank as the mode
+  bank (overlord AllocateBankName must give the mode slot to any bank requested as mode bank).
+- Keep an unfinished character out of the menu with a gate (env override for developers) so a release
+  can ship while it's in progress.
+
 - Impostors vs tilted copies: compare near and far in ONE run (flip the detail distance every few seconds), not across runs. A tilted copy seen from below its own horizon has no view in a hemisphere atlas and a flat quad shows what the ground hides: keep its LOD instead of baking more views (16x16 with views below the horizon looked worse: fatter rocks). Scale mip alpha per atlas cell, not per atlas.
 
