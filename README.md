@@ -4,7 +4,22 @@
 > [`SETUP.md`](SETUP.md) now, step by step, for the project you are working in.**
 
 Skill condivise per tutti i progetti di stichlola: quello che gli agenti hanno imparato lavorando su
-QuestBoard, scritto in modo che qualsiasi agente, in qualsiasi progetto, lo usi da solo quando serve.
+QuestBoard, Jak Enhanced e gli altri progetti, scritto in modo che qualsiasi agente, in qualsiasi progetto,
+lo usi da solo quando serve.
+
+> **Agent, every session and every sub-agent:** before starting work, read **all the general skills**
+> below (whole `SKILL.md`), then skim the names/descriptions of the topic skills and open the ones that
+> fit. When you learn something reusable, or notice a lesson that is missing here, add it to the right
+> skill (or a new one), commit **and push** this repository right away.
+
+## Skill generali (per ogni progetto: gli agenti le leggono sempre tutte)
+
+| Skill | Cosa contiene |
+|---|---|
+| `multi-agent-orchestration` | **risparmio token** (effort basso per i compiti meccanici, pochi screenshot ridotti, rapporti brevi a formato fisso, letture parziali, pochi agenti paralleli), forma dei workflow (ricerca in parallelo → un solo implementatore → verifica indipendente → correzione), riprendere un workflow senza rifare il lavoro, fermare agenti senza lasciare modifiche di debug, release su linea lenta, pulizia del disco. |
+| `cloud-agent-workflow` | regole di lavoro nelle sessioni lunghe e cloud: git sicuro (worktree, commit firmati, main allineato), niente `pkill`, lavori lunghi in background, Playwright senza GPU, controlli prima di dire "fatto". |
+
+## Skill per argomento
 
 | Skill | Quando la usa l'agente |
 |---|---|
@@ -17,7 +32,6 @@ QuestBoard, scritto in modo che qualsiasi agente, in qualsiasi progetto, lo usi 
 | `blender-world-building` | costruire e modificare un mondo di gioco in Blender e portarlo nel motore: livelli spostati con un file di layout, terreno che chiude una città tra le montagne e si unisce senza giunture, pennelli Vertex Paint per sabbia/roccia/prato, pennelli Weight Paint che spargono erba, alberi, rocce e case, città procedurali, tunnel, scritte, esportazione come istanze, materiale triplanare in UE, rilevatore automatico di buchi. |
 | `game-art-review-loop` | migliorare una zona di gioco a giri con agenti che giudicano: foto dal gioco in un solo avvio, un art director AAA che dà i voti, un QA che elenca i difetti con le coordinate, un ingegnere che legge il codice, localizzatore dei difetti dalla camera del gioco, correzione automatica, confronto tra giri, macerie fatte dai muri tagliati e assestate con la fisica, trappole viste (culling, UV, colori di vertice, collisioni che spostano la camera). |
 | `retro-renderer-modern-post` | effetti grafici moderni nel renderer PC di un gioco vecchio (OpenGOAL): un passaggio sulla scena prima dell'HUD, posizioni ricostruite dalla profondità, TAA con jitter iniettato negli shader del mondo, nebbia volumetrica, ombre e luce indiretta in screen space, come provare gli effetti legati al sole, cosa lo screen space non può fare. |
-| `cloud-agent-workflow` | regole di lavoro nelle sessioni cloud: git sicuro (worktree, commit firmati, main allineato), niente `pkill`, lavori lunghi in background, Playwright senza GPU, controlli prima di dire "fatto". |
 
 Le skill sono in inglese (le leggono gli agenti); l'agente risponde comunque nella tua lingua.
 
@@ -63,14 +77,16 @@ dentro lo zip) e caricala da Customize → Skills → "+" → Upload a skill.
 ### 4. Una riga nel CLAUDE.md del progetto (facoltativo ma utile)
 
 ```markdown
-- Skill condivise in `.claude/skills/` (da `stichlola/claude-skills`): usale per Tripo, three.js, Blender (scavo/indossabili) e il
-  flusso di lavoro; quando scopri qualcosa di utile per altri progetti, proponi di aggiungerlo lì.
+- Skill condivise in `.claude/skills/` (da `stichlola/claude-skills`): a inizio lavoro leggi tutte le skill
+  generali (`multi-agent-orchestration`, `cloud-agent-workflow`), poi quelle per argomento che servono;
+  quando scopri qualcosa di utile per altri progetti, aggiungilo lì e fai push.
 ```
 
 ## Come si aggiunge una scoperta
 
 Si modifica la skill giusta in `plugins/studio/skills/<skill>/SKILL.md` (o se ne crea una nuova cartella
-con il suo `SKILL.md`: in alto `name` e `description`, che dice **quando** usarla), commit e push qui,
+con il suo `SKILL.md`: in alto `name` e `description`, che dice **quando** usarla; se vale per ogni
+progetto va anche nella tabella delle skill generali), commit e **push subito** qui,
 poi `tools/install-into.sh` nei progetti che la usano. Basta chiedere a un agente: "aggiungi questa
 scoperta alle skill condivise".
 
