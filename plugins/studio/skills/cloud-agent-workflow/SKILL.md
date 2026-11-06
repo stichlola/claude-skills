@@ -76,6 +76,13 @@ const browser = await chromium.launch({
   there. Pitfall seen: `MultipartFormDataContent.Add(content, 'note')` writes `name=note` without quotes,
   which a Cloudflare Worker's `request.formData()` rejects (400) — pass `'"note"'` / `'"file.zip"'`.
   Also make an upload's failure path say *why* (status + body in the log), so "couldn't send" is traceable.
+- Windows player UI from PowerShell (WinForms) / Inno Setup: emoji render as empty boxes — draw small
+  icons in code (and export them as BMP for Inno). Strip ANSI colour codes from tool output before
+  showing it in a dialog. Inno 6 hides the Welcome page by default (`DisableWelcomePage=no`). A
+  `MessageBox` with DefaultDesktopOnly is owned by Windows and outlives the killed script: tests must
+  close it. Never test an installer with /SILENT if it shares the AppId of the user's real install.
+- Tests that open real windows show up on the user's screen: close every window/dialog you open and
+  don't leave files (report ZIPs) on their Desktop.
 
 ## Before saying "done"
 
