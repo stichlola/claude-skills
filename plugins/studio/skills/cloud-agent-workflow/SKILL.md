@@ -72,6 +72,10 @@ const browser = await chromium.launch({
   match once (CSS often has duplicate blocks).
 - CSS specificity fights: raise specificity deliberately (doubled classes) and check `[hidden]` rules too.
 - Remove helpers your change made unused; keep docs and on-screen help text in step with UI changes.
+- Scripts that ship to Windows players run on PowerShell 5.1 (.NET Framework), not pwsh 7: test them
+  there. Pitfall seen: `MultipartFormDataContent.Add(content, 'note')` writes `name=note` without quotes,
+  which a Cloudflare Worker's `request.formData()` rejects (400) — pass `'"note"'` / `'"file.zip"'`.
+  Also make an upload's failure path say *why* (status + body in the log), so "couldn't send" is traceable.
 
 ## Before saying "done"
 
