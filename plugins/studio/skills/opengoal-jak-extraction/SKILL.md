@@ -455,11 +455,29 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   skin's 0.8-1.0 walk is Jak-level, not "0.12" or "bad". Main-joint xz jump per frame (main - control
   trans): walking ~0.01 m; Jak's own running attacks reach 1.3 m (prejoint data), a prejoint-placed skin
   0.1-0.45 m.
-- Jak 3's gun goes away by itself ~13-14 s after the last shot/move: a scripted "D-pad right = put away"
-  then brings it OUT. Read `using-gun?` before toggling. Stick input into water (`target-swim-stance`)
-  also drops the gun: pick a dry test spot (ctygenb-start has water a few metres away).
-- `JAK_ENHANCED_PLAYER_TEST=shoot` at `ctygenb-start`: headless has no city population (census 0, camera
-  at origin); windowed, gk dies with 0xC0000005 in GOAL code at the robot spawn (frame ~620), Jak too.
+- **Scripted pad input must update `cpad change-time`** (as `service-cpads` does for a real pad), or the
+  game thinks nobody touched the pad: `target-gun-stance` puts the gun away via `can-play-stance-amibent?`
+  (30 s without input + 30 s since the last ambient), which looked like "the gun goes away by itself
+  ~13 s after the last shot" and made a scripted "D-pad right = put away" bring it OUT. Fixed in
+  `enhanced-test-pad` (drawable.gc); still read `using-gun?` before toggling. Stick input into water
+  (`target-swim-stance`) also drops the gun: pick a dry test spot (ctygenb-start has water nearby).
+- Spawning a traffic type whose code/art isn't loaded crashes gk (0xC0000005 in GOAL): `citizen-spawn`
+  takes the type from `type-from-traffic-object-type`, unbound when its level is out (roboguard-city lives
+  in a mission level, not ctygenb). Check `(art-group-get-by-name *level* "skel-<name>" #f)` first. The
+  city's own population (flitters, guards, citizens) is enough to test shots: windowed only (headless:
+  census 0). A level's start can reset `*game-info* features`: re-lend a lent gun, log it once.
+- **Foot lock for a skin on Jak's pose:** Jak's prejoint runs up to 0.9 m ahead of his root in the run
+  (and more with the gun out), so ankles taken against it slide ~2 m/s. Per leg: when Jak's ankle comes
+  within 5 cm of its bind height (on-surface, not attacking) store the IK target's world xz; hold it
+  while down, let go past 0.4 m from the unlocked target, fade out in 0.1 s. Sig: run slide 1.17 vs Jak's
+  1.76, gun run 0.85 vs 4.10 (same run). Measure with a `*display-pool*` watcher that drives phases
+  (lefty 0 run / 90 walk / 128 stop: -1 leaves the stick where it was) and counts only the lowest ankle
+  within bind height + 6 cm; run-to-run noise is ~±1 m/s (terrain), so compare inside one run.
+- Hot-load pitfalls: dev_reload says NEEDS "type definition changed" for any file with a deftype (use
+  `-Force` when the type is unchanged); a `define-extern` must match the defun's inferred return type
+  (`or` -> `object`, not `symbol`); after a temporary (ml) of an edited copy, restore the source and
+  **touch it** before `(mi)`, or the newer .o keeps the test code in the CGO. A restarted gk needs
+  `(lt "127.0.0.1" <port>)` before evals ("generated code, but wasn't supposed to").
 
 ## Invisible particles and borrowed-level crashes (lesson, Jak 3)
 
