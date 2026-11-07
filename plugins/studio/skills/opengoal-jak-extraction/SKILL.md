@@ -258,6 +258,25 @@ at the saved spot:
   "Compilation generated code, but wasn't supposed to". Test configs on the Performance preset may have a
   pass (SSAO) off: a test on its shader shows nothing; use the composite.
 
+## Hot-loading GOAL with answers (lesson, Jak Enhanced `scripts/enhanced/dev_reload.ps1`)
+
+- Jak Enhanced has it ready: `dev_launch.ps1` (gk from a shadow bin + dev goalc), `dev_reload.ps1
+  -Instance n` ((ml) of each changed file: OK/ERROR file:line/NEEDS, 0.2-0.6 s, was 35-90 s).
+- **gk accepts one goalc connection per run** (`Deci2Server::accept_thread_func` returns after the first
+  client): a second goalc gets "Failed to get version number". So keep one goalc alive and restart
+  only gk. **Never probe the gk port with a connect** (it uses up that one accept): test it by binding.
+- goalc's stdout to a pipe is **block-buffered**: GOOS `print`, prompts and some compiler output sit in
+  the buffer; lines through the logger (`lg::print`: warnings, "-- Compilation Error! --") flush it. To
+  delimit an answer, send after each form a marker that fails on purpose, `(seval (error "TAG"))`: its
+  error block flushes everything before it; wait for the block's last line ("REPL Error: ...") too, or
+  its tail lands in the next answer. Prompts (`g >`/`gc>`) come out late and out of order: read the
+  listener state from text ("Got version", "already connected", "listener isn't connected").
+- Don't stop goalc with `(e)` while connected: its exit path sends a reset to the game. Kill it.
+- Put goalc in a job object with KILL_ON_JOB_CLOSE when a daemon owns its stdin pipe: if the daemon
+  dies, a goalc with a closed stdin spins a core forever.
+- `(lt)` with no game retries for a long time (each refused localhost connect costs ~2 s on Windows):
+  check the port first. Same for clients: `TcpClient.ConnectAsync(...).Wait(300)`, not `Connect`.
+
 ## Gameplay options gated from C++ (lesson)
 
 - A menu switch reaches GOAL as a kernel function: an atomic in C++, `make_func_symbol_func("pc-x?", ...)`

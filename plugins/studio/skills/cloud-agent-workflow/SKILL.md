@@ -72,6 +72,11 @@ const browser = await chromium.launch({
   match once (CSS often has duplicate blocks).
 - CSS specificity fights: raise specificity deliberately (doubled classes) and check `[hidden]` rules too.
 - Remove helpers your change made unused; keep docs and on-screen help text in step with UI changes.
+- PowerShell 5.1 pitfalls for agents: a helper function named `R` (or any alias: `r` = Invoke-History)
+  silently calls the alias; `git commit -m @'...'@` with quotes inside splits into pathspecs — write
+  the message to a file and `git commit -F`; `exit` inside a script run as
+  `& ([scriptblock]::Create(...))` closes the caller's shell (exit only when
+  `$MyInvocation.MyCommand.CommandType -eq 'ExternalScript'`, else set `$global:LASTEXITCODE`).
 - Scripts that ship to Windows players run on PowerShell 5.1 (.NET Framework), not pwsh 7: test them
   there. Pitfall seen: `MultipartFormDataContent.Add(content, 'note')` writes `name=note` without quotes,
   which a Cloudflare Worker's `request.formData()` rejects (400) — pass `'"note"'` / `'"file.zip"'`.
