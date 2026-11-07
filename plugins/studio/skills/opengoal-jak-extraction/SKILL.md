@@ -249,6 +249,17 @@ at the saved spot:
 - C++: a one-line change in EnhancedPost.cpp = 8-15 s compile (2.4 s parse, the rest -O3 codegen) + 0.2 s
   lib + 0.2 s link + 1.5 s `vcvars64.bat`; a small Enhanced TU still costs ~3 s (json/imgui headers).
   `--target gk goalc` costs nothing extra when goalc's sources didn't change.
+  **Fix that worked**: split the 8 k-line renderer TU by topic (Light, Menu, Passes, Scene + an
+  `...Internal.h` with the shared state as `inline` in a namespace) and add a precompiled header
+  (`target_precompile_headers` with json/imgui/fmt/GL): one renderer edit compiles in ~2 s (was 8.3 s),
+  `dev_build.ps1` 2.8 s wall, no-op 0.5 s. Check a split is purely structural with a line-multiset diff.
+- **Bind the REPL/listener sockets to 127.0.0.1, not INADDR_ANY**: on any address Windows' firewall asks
+  for every new gk/goalc path (each test instance's shadow copy is a new path), the user keeps getting
+  "allow access" dialogs. Old binaries keep asking until rebuilt; "Cancel" is harmless.
+- Jak Enhanced's loop scripts (`scripts/enhanced/`): `dev_launch.ps1` (shadow bin, dev goalc, waits for
+  the port), `dev_reload.ps1` (GOAL), `dev_build.ps1` (C++), `dev_test.ps1 <scenario.json>` (headless or
+  windowed, expects log lines / REPL answers, exit code = pass/fail), shader and tuning reload on save.
+  Measured: GOAL change in game 0.44 s, C++ change ~3 s + relaunch, shader 2-9 s, tuning ~1 s.
 - A .bat calling `vcvars64.bat` prints "vswhere.exe is not recognized" (harmless) unless
   `%ProgramFiles(x86)%\Microsoft Visual Studio\Installer` is on PATH; write .bat files with CRLF (an
   LF-only .bat with a `rem` line gave "filename syntax is incorrect"). In Windows PowerShell 5.1,
