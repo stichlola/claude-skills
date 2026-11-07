@@ -225,6 +225,28 @@ at the saved spot:
 - Window capture (PrintWindow/BitBlt of the client rect) takes 0.2 s: capture right after "ready", no
   sleeps.
 
+## Dev loop timings and shortcuts (measured, Jak 3, Jak Enhanced)
+
+- **`(ml "goal_src/jak3/<file>.gc")` hot-loads one file into the running game in ~1 s** (most of it
+  og_repl's Python start and sleeps; compile+load is tens of ms); top-level forms run again (globals are
+  re-created). Compile errors show in goalc's stdout ("-- Compilation Error! --"). A form that generates
+  code (`(begin (m ...) 7777)`) fails without a listener: send `(m ...)` alone.
+- `(mi)`: cold ~30 s (1169 targets "need rebuilding" in a fresh goalc), warm no-change ~1.5 s, but one
+  changed **engine** file cascades to every later file of the sequence (target2.gc → 828 targets, 24-65 s).
+  `(ml)` doesn't spare that: the next `(mi)` still cascades, it is only needed for the next boot's CGO.
+- goalc started with stdin at EOF (redirected file) **spins one core at 100%**: keep stdin an open pipe.
+- `multi_run.ps1` skips an instance number whose goalc port is taken, even by your own goalc: the gk then
+  lands on n+1 and `(lt "127.0.0.1" <port>)` must name its port.
+- **`gk --no-display` works for Jak 3**: boots to desert-start in ~5.5 s (windowed 14-20 s), runs at real
+  speed (300 ticks/s), ~240 MB, little CPU; no renderer, so no "[enhanced] average fps" lines.
+- gk run from a copy of `bin` (gk.exe + DLLs, 63 MB, 0.05 s to copy) with `--proj-path` works, and the
+  build can relink `out/build/Release/bin` meanwhile.
+- C++: a one-line change in EnhancedPost.cpp = 8-15 s compile (2.4 s parse, the rest -O3 codegen) + 0.2 s
+  lib + 0.2 s link + 1.5 s `vcvars64.bat`; a small Enhanced TU still costs ~3 s (json/imgui headers).
+  `--target gk goalc` costs nothing extra when goalc's sources didn't change.
+- `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders in 0.1-2 s (poll every 60 frames; the 247 KB
+  composite compiles ~1 s); world.json already reloads on save.
+
 ## Gameplay options gated from C++ (lesson)
 
 - A menu switch reaches GOAL as a kernel function: an atomic in C++, `make_func_symbol_func("pc-x?", ...)`
