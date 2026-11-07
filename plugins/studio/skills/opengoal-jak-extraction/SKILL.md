@@ -445,6 +445,21 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - To see a frame where numbers look wrong (Jak's node-list 1.9-3.5 m off control trans for ~5 frames at a
   walk start), a watcher child calls `(set-master-mode 'freeze)` on the condition and you screenshot the
   frozen frame: Jak was drawn centred, so it was data only.
+- **Verifying a playable NPC from the REPL (no repo edits):** switch character at runtime by redefining
+  `(defun enhanced-player-name () *my-name*)` (the C++ menu answer wins over the env buffer, so writing the
+  buffer does nothing); measure with a `process-spawn-function` watcher in `*display-pool*` gated by a global
+  (kill it later by pid via `iterate-process-tree`). An env test step (`*enhanced-sig-gun-test*`) rewrites
+  the pad globals every frame: set it to #f before driving `*enhanced-pad-lefty*`/`hold` yourself.
+- **Foot-slide numbers need Jak's baseline under the same metric.** "Lowest ankle within bind height +
+  6 cm, same foot as last frame, xz speed" gives Jak himself 0.7-1.06 m/s walking and ~1.2 running, so a
+  skin's 0.8-1.0 walk is Jak-level, not "0.12" or "bad". Main-joint xz jump per frame (main - control
+  trans): walking ~0.01 m; Jak's own running attacks reach 1.3 m (prejoint data), a prejoint-placed skin
+  0.1-0.45 m.
+- Jak 3's gun goes away by itself ~13-14 s after the last shot/move: a scripted "D-pad right = put away"
+  then brings it OUT. Read `using-gun?` before toggling. Stick input into water (`target-swim-stance`)
+  also drops the gun: pick a dry test spot (ctygenb-start has water a few metres away).
+- `JAK_ENHANCED_PLAYER_TEST=shoot` at `ctygenb-start`: headless has no city population (census 0, camera
+  at origin); windowed, gk dies with 0xC0000005 in GOAL code at the robot spawn (frame ~620), Jak too.
 
 ## Invisible particles and borrowed-level crashes (lesson, Jak 3)
 
