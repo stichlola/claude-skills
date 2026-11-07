@@ -640,3 +640,10 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   and every result with `isnan`/`isinf` and fall back to "nothing" (alpha -1), not to a color.
 - Shader hot reload only runs when its env switch is set in the test script; without it a "fixed" shader
   silently isn't the one on screen.
+- Finding which pass draws an artifact without editing code: measure it as a number (e.g. a dark row =
+  row mean minus the mean of rows +-2, over the affected columns) and compare it against vanilla and per
+  env switch, one short boot each (~28 s); then bisect the composite's uniform groups with a "zero group X
+  every 3 s" probe, capturing once a second and reading the dips (the probe starts ~10 s after the first
+  frame, so a dip's slot is ambiguous: test the suspect alone, a toggle every 3 s shows as alternating
+  values). Then open the pass's debug view. Jak 3 Enhanced: dark ground rows at fixed screen heights were
+  SSAO (`JAK_ENHANCED_AO_DEBUG=1` showed them), only made visible by the point-light term it multiplies.

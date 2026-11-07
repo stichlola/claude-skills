@@ -631,6 +631,10 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   in `decompiler_out\jak3\` and misses `game_text.txt`), junction `iso_data\jak3_pal` from the main tree,
   and hardlink the main tree's `out\jak3\fr3` files the worktree lacks (a half copy loads the desert but
   dies at the first missing level). `goalc --proj-path <wt> --user-auto --cmd "(mi)"` builds it.
+  Also needed (fresh worktree, measured 87 s `(mi)`): junction `decompiler_out\jak3_pal` (else "tpage-dir.txt
+  does not exist"), `iso_data\jak3\<CGO,DGO,...,VAG>` dirs, `custom_assets\jak3\<merc_replacements,
+  texture_*>` and `out\enhanced`. Hardlinked fr3 files are safe: `(mi)` writes new files (custom levels
+  came out with 1 link), it never writes through into the main tree.
 - **Headless rows in parallel (gate v2):** rows that only read log lines run `gk --no-display` (~240 MB,
   4 at once beside 1 windowed). Headless has no renderer, so anything driven from the renderer's frame
   (env test switches read in a post-process update, fps lines) does nothing: move such switches to the
