@@ -379,3 +379,22 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Capacity (RTX 5070 Laptop, Ryzen AI 9 365, 32 GB, jak3 desert-start, Performance, 640x360): each gk
   ~2.8 GB peak working set; 2-4 instances all held ~50-58 fps, 4 left 0.5 GB available RAM, so 3 is
   the default max. RAM, not GPU, is the limit. Script: `scripts/enhanced/multi_run.ps1`.
+
+## A themed in-game menu and capturing it (lesson, Jak Enhanced)
+
+- Restyle one ImGui window without touching the others: push the style vars and colors in an RAII
+  object at the top of its draw function (popped on every way out), and draw custom widgets (switches,
+  segmented rows, filled sliders) only while a "styled" flag is set, falling back to ImGui's own outside.
+- A theme per game: keep the palette in a struct table indexed by the game, copied into the globals the
+  widgets read when the window opens; an env override (`JAK_ENHANCED_MENU_THEME=1..3`) lets one game
+  show every theme for screenshots. `JAK_ENHANCED_MENU=1` opens the menu at boot.
+- Long switch grids read badly: group them in collapsible tree nodes by topic (image, light and
+  shadows, night, sky and weather, surfaces, world, effects, water, sound), keep only the master switch,
+  auto quality and the presets always visible, and move non-graphics buttons (nap, feedback) out.
+- Capturing the game window for review: `SetProcessDPIAware()` first (else a 125% screen crops it),
+  then `PrintWindow(hwnd, dc, 2)` on the biggest visible window of the gk PID. A minimized window
+  captures as 199x34: start the test window normal (small, windowed config) and close it after.
+- While a gk is running the dev build can't relink (its DLLs are locked); to check a C++ edit for
+  errors meanwhile, build only the object: `ninja game/CMakeFiles/runtime.dir/<path>.cpp.obj`.
+- Dev gk started from the real repo path fails with "Failed to initialize project path": start it from
+  the `jak-project` junction (or pass `--proj-path`).

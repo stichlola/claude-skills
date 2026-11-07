@@ -58,6 +58,31 @@ Fix       (only if verify.ok is false: one round with the verifier's problems)
   untouched. Changing `effort` also breaks the cache.
 - Check `journal.jsonl` in the run's transcript dir to see which agents finished.
 
+## Several workflows on one machine
+
+- Budget the shared resource across all running workflows, not per workflow: game instances are
+  RAM-bound (~2.8 GB each, 3 in all on a 32 GB laptop), so give each workflow a quota ("at most 2", "only
+  1") and say in every prompt that another workflow runs beside it.
+- Code-only workflows (release scripts, log tools) run in their own git worktree beside the
+  game-testing ones: no builds, no goalc, no game in the main tree.
+- Every test process gets an instance number whose ports never collide with the user's game; never let a
+  test reach the default ports.
+- When the user changes scope (e.g. "only Jak 3 for now"), stop, add one SCOPE line to the shared
+  prompt, and relaunch. For workflows whose finished agents you want to keep, append the new rule only
+  to the prompts of agents that haven't run yet (a suffix constant), so the cache still replays the
+  finished ones.
+- Keep the approved queue of workflows (order, scope, rejected ideas) in memory, so it survives
+  a compacted context.
+
+## Pausing everything for a priority
+
+- Stop the workflows and agents, then close their leftover test processes. Match the processes by
+  command line (their per-instance config path), never by name only: the user's game is a gk too.
+- `git status`: stash a paused workflow's work in progress under a named stash
+  (`git stash push -m "chars-wip: ..." -- <files>`), so the priority work starts from a clean tree.
+- Tell the new agents never to pop or drop that stash. When the paused workflow resumes, tell it to
+  pop the stash first.
+
 ## Stopping agents
 
 - After stopping an agent, run `git status`: it may leave uncommitted debug edits (e.g. a shader
