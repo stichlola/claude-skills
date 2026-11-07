@@ -335,3 +335,25 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   env-gated hook in GOAL instead (`pc-enhanced-getenv`, log values every frame), start your gk
   minimized so it doesn't take their keystrokes, and remove the hook before committing.
 - GOAL `format` takes at most 8 arguments in all (destination and string included).
+
+## Running several game instances in parallel (lesson, Jak Enhanced)
+
+- Stock gk/goalc ports are fixed per game (Deci2 8112-8114, goalc nREPL 8181, debug 8128-8130; and
+  `runtime.cpp` ignores `--port`, which is a CLI *flag* anyway). Jak Enhanced: `JAK_ENHANCED_INSTANCE=<n>`
+  moves all of them by **10*n** (not n: +1 would land on the next game's default port), logs go to
+  `<game>_i<n>.*.log`; start goalc with the same variable, `og_repl.py --instance n`. Unset = stock.
+- One config dir per instance (`--config-path <dir>`, which holds `OpenGOAL\<game>\settings`), copied
+  from a test config: never the user's `%APPDATA%\OpenGOAL`. Windowed = `display_mode 0` in
+  `display-settings.json`; a `window_xpos/ypos` at or left of the screen edge (0) is reset to 50.
+  Set `window-size` in `pc-settings.gc` but leave `game-size`: it is the fullscreen resolution and
+  640x360 there is "invalid" (falls back to the desktop's); windowed renders at the window size.
+  Quality: `JAK_ENHANCED_PRESET=3` (Performance).
+- A worktree's own gk can't find the data (it looks for a parent named `jak-project`): pass
+  `--proj-path <main tree>`; logs then land in the main tree's `log\`.
+- Launch with `ProcessStartInfo` (`UseShellExecute=false`, `CreateNoWindow=true`, per-instance
+  `EnvironmentVariables`), place the window with `SetWindowPos(...NOACTIVATE)` and hand focus back with
+  `SetForegroundWindow(previous)`; `GetClientRect` from DPI-unaware PowerShell reports 640x360 as 512x288
+  at 125%. Crashes: exit code plus Application event 1000 whose property 8 is the faulting PID (hex).
+- Capacity (RTX 5070 Laptop, Ryzen AI 9 365, 32 GB, jak3 desert-start, Performance, 640x360): each gk
+  ~2.8 GB peak working set; 2-4 instances all held ~50-58 fps, 4 left 0.5 GB available RAM, so 3 is
+  the default max. RAM, not GPU, is the limit. Script: `scripts/enhanced/multi_run.ps1`.
