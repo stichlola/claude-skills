@@ -620,3 +620,23 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   `JAK_RELEASE_BIN`, but the gate copied `out\build\Release\bin` (the dev build) - it tested the wrong exe.
 - Don't `tail -f` (Git Bash) a log a PowerShell job writes with Add-Content: the tail's handle makes every
   write fail silently. Read the file in polls, or watch the job's own output dir.
+
+## Readable game and compiler logs (lesson, Jak Enhanced)
+
+- Measure first: group log lines by a key with digits/hex replaced (`\d+` -> N), count per minute, and
+  grep every regex the test scripts expect (gate rows, dev_test `ready`/`expect`, crash collector) before
+  touching a line. Measure before/after on the same gate rows (boot-desert, boot-spargus,
+  spargus-to-desert): the baseline gk can be a copy of `bin` passed as `-GkPath`; revert the GOAL diff
+  with `git apply -R` + `(mi)` (~40 s) for the baseline, re-apply after.
+- Biggest win: stock `game/main.cpp` writes `lg::debug` to the file even without `-v` (~500 "link and exec"
+  lines per boot). File level info: Jak 3 desert boot 111 KB / 1400 lines -> 22 KB / 320.
+- Harmless repeats: once per name (duplicate texture names, were 77 `[error]` per boot and drowned the real
+  ones) or "1st, then powers of two with the count" (texture pool, GOAL warnings: `(zero? (logand n (+ n -1)))`);
+  per-texture lines -> one line per page, flushed when the next page starts and when a level's upload is done.
+  Never rename lines a script expects; summaries must avoid the crash collector's words (fatal, abort, exception).
+- Test-mode lines printed every N frames: print on change of the values instead (gun test 54 -> 8 lines).
+- goalc: progress lines to the console only (launchers parse `[ NN%]` from stdout), strip ANSI in the file
+  sink, and mute the file during the REPL marker form (`(seval (error "DEVMARK-..."))`): 229 KB -> 1.3 KB per
+  `(mi)`. A wrapper that logs goalc's stdout needs its own line filter (fixed-width progress entries run
+  together once `\r` is dropped: `\[\s*\d{1,3}%\] \[.{8}\] (?: {6}|\d+\.\d{3} ).{0,70}`).
+- The gate picks the next instance number per row: with an instance range rule (13-15), run 3 rows per call.
