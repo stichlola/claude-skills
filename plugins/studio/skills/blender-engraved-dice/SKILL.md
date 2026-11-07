@@ -84,5 +84,5 @@ the lift there if it peels badly.
 
 ## Before exporting the STL
 
-Run the STL checklist of `blender-wearable-hollowing` (`scripts/stl_clean.py`): duplicate vertices/edges, degenerate
+Follow the general skill `mesh-hygiene` (`scripts/mesh_clean.py`): duplicate vertices/edges, degenerate
 zero-thickness triangles, non-manifold edges. Booleans for engraving leave them and slicers flag them.

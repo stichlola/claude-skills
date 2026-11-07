@@ -1,6 +1,6 @@
-# Check and clean meshes before exporting STL: duplicate vertices/edges, degenerate (zero-thickness) triangles,
+# mesh-hygiene: check and clean meshes before export or hand-off: duplicate vertices/edges, degenerate (zero-thickness) triangles,
 # non-manifold edges, tiny loose islands. Run in a background Blender on a COPY of the file:
-#   blender -b copy.blend --python stl_clean.py -- <out_dir> [object names...]     (no names = every visible mesh)
+#   blender -b copy.blend --python mesh_clean.py -- <out_dir> [object names...]     (no names = every visible mesh)
 #   add --check to only report.
 # Prints, per object: duplicates, zero-area faces, flat faces (height < 1 micron), non-manifold edges, loose islands,
 # volume, before and after. Writes <out_dir>/<name>.stl and <out_dir>/cleaned.blend with the cleaned objects.
