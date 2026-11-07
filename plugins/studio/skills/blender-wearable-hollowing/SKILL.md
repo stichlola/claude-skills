@@ -198,6 +198,16 @@ Verified on the king head: 400 mm → 375 mm so a real pair of glasses (STL from
 - A parity `inside()` test can report solid inside an empty pocket on thin shells: confirm with a ray
   along the pocket axis and by counting faces inside the cylinder before "fixing" anything.
 
+## Slicer says "zero-thickness geometry" after booleans
+
+MANIFOLD booleans on multi-million-face scans leave needle triangles: OrcaSlicer reported 1060 "geometries with
+zero thickness" on a mask body that Blender called closed (0 non-manifold). Check every part before export:
+triangulate, count faces with area < 1e-8 or height (2*area/longest edge) < 0.001 mm. Fix in a background run:
+`remove_doubles(0.002)` + `dissolve_degenerate(0.002)`, collapse the shortest edge of still-flat faces, then a
+loop until manifold: delete the faces around each non-manifold edge (two rings), `split_edges` on bowties,
+`holes_fill(sides=0)`, triangulate. Volumes change < 0.5 cm3; pins and sockets stay intact. Re-export the STLs
+from the repaired meshes and swap the mesh data in the live file.
+
 ## Magnet sizes used (real mm, never scaled)
 
 | Use | Magnet | Pocket | Depth | Notes |
