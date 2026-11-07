@@ -392,6 +392,21 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   it on the clip's hips, up to 5 m off the drawn body (culling, lights, shadow).
 - Measure jumps in one test run with an env-gated hook: per frame, |skin main - skin root| change; run
   the old and new code paths in two phases of the same run (a global toggle) and print max per phase.
+- **A new move with no clip anywhere (Ashelin's front kick):** key it in GOAL on top of the skin's idle,
+  not via build-actor. Per bone, a target direction (bone -> child joint) in model space (+z forward,
+  +y up, -x right) for each key pose, lerped by phase; turn the bone and everything under it about the
+  joint with `quaternion-from-two-vectors-partial!` + `quaternion->matrix` + `vector-rotate*!` on the
+  rows and on (trans - pivot). Independent of the rig's local axes; parents first. Check numerically
+  (dir dots with fwd/up) before trusting a 640x360 screenshot: an elevated camera made a vertical shin
+  look diagonal.
+- Swap one of Jak's attacks for a character: in the vanilla state's `:enter`, `(go <new-state>)` when
+  `next-state` is still the vanilla one (as darkjak does), and reuse its `:event/:enter/:exit/:trans`.
+  Hit window = `target-danger-set! 'punch` on/off by phase (same damage); put collision-spheres 6 on the
+  skin's foot: transform-index -2 is an UNROTATED world offset from control trans; zero sphere 7 (Jak's
+  hidden forearm). The skin poses a frame after the target: measure the pose one frame later.
+- Screenshots of a fast move: a REPL-set freeze global that holds the phase (pose and hit sphere).
+- A character's own magazine on Jak's gun HUD: `sv-72` (max) and `values 1` from hooks; the shells and
+  "n/max" then draw as for Jak's guns.
 - goalc for Jak Enhanced needs `--user-auto` (jak3 maps to jak3_pal); `dev_goalc.ps1 -Instance n`
   already passes it. Headless gk (~240 MB) is enough for skeleton/state measurements when RAM is tight.
 
