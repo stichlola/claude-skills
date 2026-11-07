@@ -607,5 +607,16 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - `-f` and `{0:N1}` follow the current culture (Italian: `1,18%`): set the thread culture to invariant
   in report scripts. Screenshot regressions: keep downscaled shots per version, compare at 64x36 (mean
   luma diff + SSIM over 8x8 windows) and WARN, never FAIL (weather, time and NPCs move).
+- **Verifying a gate (lesson):** (1) negative check: copy the script outside the repo, break one range
+  (`hour reached` 22-24 -> 30-31), run `-Only <row>`: must print FAIL with the value and exit 1; (2) headless
+  really windowless: `EnumWindows` + `GetWindowThreadProcessId` per gk PID (headless: 0 windows, ~236 MB;
+  windowed: 7, 1 visible, ~2.8 GB); (3) baseline: a fake baseline.json pointing a row at another scene's
+  shot must WARN. Measure the metric offline first (load the gate's C# with the class renamed): at 64x36,
+  a 20 %-of-frame magenta box gave sim 0.76-0.79 / diff 7-9, a different camera in the same desert 0.50,
+  another level 0.15; an unchanged build rerun 0.88-1.00 (minimap present or not at 14 s, ground decals,
+  pose). So MinSim 0.5 misses big partial changes and 0.92 false-WARNs on identical builds: pick per-row
+  limits from several reruns, not one.
+- Check what a release script hands its gate: Jak Enhanced's release.ps1 builds `Release-static` and sets
+  `JAK_RELEASE_BIN`, but the gate copied `out\build\Release\bin` (the dev build) - it tested the wrong exe.
 - Don't `tail -f` (Git Bash) a log a PowerShell job writes with Add-Content: the tail's handle makes every
   write fail silently. Read the file in polls, or watch the job's own output dir.
