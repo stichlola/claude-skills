@@ -262,6 +262,9 @@ at the saved spot:
 
 - Jak Enhanced has it ready: `dev_launch.ps1` (gk from a shadow bin + dev goalc), `dev_reload.ps1
   -Instance n` ((ml) of each changed file: OK/ERROR file:line/NEEDS, 0.2-0.6 s, was 35-90 s).
+  Run as `& ([scriptblock]::Create(...))` they have no `$PSScriptRoot`: pass `-Repo <jak-enhanced>`
+  unless the cwd is the repo ("-Repo: not a jak-enhanced tree"). Verified end to end: build.bat
+  relinks while a game runs from a shadow bin; a first composite reload compiles ~8 s (later ~30 ms).
 - **gk accepts one goalc connection per run** (`Deci2Server::accept_thread_func` returns after the first
   client): a second goalc gets "Failed to get version number". So keep one goalc alive and restart
   only gk. **Never probe the gk port with a connect** (it uses up that one accept): test it by binding.
