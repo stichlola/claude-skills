@@ -661,3 +661,12 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   `finally`; a bad continue point = `JAK_ENHANCED_MENU=2:<cp>` windowed (`continue request "x": "no such
   continue point"`). A bad `JAK_ENHANCED_START` logs nothing even in stock (Jak falls from 0,0), and a
   headless gk ignores the menu request.
+- Without debug in the file, keep the context of a stop: a small ring of the last debug lines the file
+  skipped (16), written after `[die]` (asserts go through `lg::die`) and from a Windows
+  `SetUnhandledExceptionFilter` that also flushes the file (info lines are buffered: flush level warn).
+  Forced missing level showed the last DVD/texture lines right after the assert.
+- **Worktree GOAL builds**: `dev_goalc.ps1 -Repo <worktree>` still compiles the *main* tree (it passes
+  `--proj $main`), so it rewrites the main tree's `out\` from the main sources. For a worktree run
+  `goalc.exe --user-auto --game jak3 --proj-path <wt> --cmd "(mi)"` with `JAK_ENHANCED_INSTANCE` set
+  (~45 s); without `--user-auto` the text step fails (`$DECOMP` must be `jak3_pal`, from the user's
+  `user.gp`: "Cannot read ...\jak3\assets\game_text.txt").
