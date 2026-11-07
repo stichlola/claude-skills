@@ -616,8 +616,19 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   another level 0.15; an unchanged build rerun 0.88-1.00 (minimap present or not at 14 s, ground decals,
   pose). So MinSim 0.5 misses big partial changes and 0.92 false-WARNs on identical builds: pick per-row
   limits from several reruns, not one.
+- **Fix that worked (gate v3):** the baseline keeps up to 4 rerun samples per shot (each `-MakeBaseline`
+  run adds one); compare a new shot with every sample and keep the best match (a minimap shown in one
+  rerun only stops mattering); per-shot limits from the samples' own spread (each sample's best match
+  among the others, the worst of those, sim - 0.05 / diff + 3), carried over to a one-sample baseline from
+  the one it was compared against; row fallback 0.85 / 6. Reruns' diffs are small (0.2-5.8) while a 20 %
+  box is 7-9, so the diff limit catches what SSIM at 0.85 misses. Measure the old run folders offline first:
+  they already hold reruns (one cutscene shot was bimodal, 0.65-0.99).
 - Check what a release script hands its gate: Jak Enhanced's release.ps1 builds `Release-static` and sets
   `JAK_RELEASE_BIN`, but the gate copied `out\build\Release\bin` (the dev build) - it tested the wrong exe.
+  Pass the bin as an explicit argument (`-Bin`) and print the exe's path and time in the gate's first line;
+  a release that never passes `-MakeBaseline` keeps comparing with a stale dev baseline forever.
+- PowerShell variables are case-insensitive: a local `$bin` overwrote the `$Bin` parameter. And
+  `Set-Content -Encoding utf8` (PS 5.1) writes a BOM, which lands in a `git commit -F` message's subject.
 - Don't `tail -f` (Git Bash) a log a PowerShell job writes with Add-Content: the tail's handle makes every
   write fail silently. Read the file in polls, or watch the job's own output dir.
 
