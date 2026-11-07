@@ -320,3 +320,18 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 
 - Impostors vs tilted copies: compare near and far in ONE run (flip the detail distance every few seconds), not across runs. A tilted copy seen from below its own horizon has no view in a hemisphere atlas and a flat quad shows what the ground hides: keep its LOD instead of baking more views (16x16 with views below the horizon looked worse: fatter rocks). Scale mip alpha per atlas cell, not per atlas.
 
+
+## Clock jumps and testing beside the user's game (lesson, Jak 3)
+
+- Never run `bg-clock frame-counter` below 0: just after boot it is only a few hours in, and a
+  "short way round" hour change that goes back past 0 makes the time of day negative; code that
+  steers toward an hour then chases it backward forever (here: a "this evening" log line every frame,
+  then 0xC0000005 in GOAL memory). Go forward round the day when going back would cross 0. A bug
+  "only right after the game starts" often means a counter that is still small.
+- Reproduce with the user's own settings: copy their `enhanced-settings.json` into a test config dir
+  (theirs had another player model, weather, population that the test config lacked).
+- While the user's gk runs it holds the REPL ports (gk's Deci2 port is hard-coded per game): a second
+  gk boots without them and `(lt)` connects goalc to the USER's game. Drive tests with a temporary
+  env-gated hook in GOAL instead (`pc-enhanced-getenv`, log values every frame), start your gk
+  minimized so it doesn't take their keystrokes, and remove the hook before committing.
+- GOAL `format` takes at most 8 arguments in all (destination and string included).
