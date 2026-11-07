@@ -415,6 +415,36 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   with attribution. A real front kick peaks at ~0.75 of head height, not at the head.
 - goalc for Jak Enhanced needs `--user-auto` (jak3 maps to jak3_pal); `dev_goalc.ps1 -Instance n`
   already passes it. Headless gk (~240 MB) is enough for skeleton/state measurements when RAM is tight.
+- **Headless gk stalls STR streaming** (cutscene clips, streamed ambients): the log stops after
+  "STR_RPC for ... chunk" and check-busy never clears. Anything streamed needs a windowed (minimized) gk.
+- **Finding an NPC's own pose for a hold (Sig two-handed):** play each of its cutscene STR clips frame by
+  frame in the skin and score each frame numerically (hand-to-barrel segment distance, barrel level,
+  barrel vs chest facing); log best frame and good ranges per chunk, then capture the joint quaternions of
+  one frame into a static table (hold-local). Apply them, then turn both shoulder subtrees together so the
+  barrel points along the shot, and close each arm back to its shoulder with two-bone IK keeping the hand
+  turn. Check "gun-along-shot" dot ~1.0 in the log.
+- **Walk speed of an NPC clip: measure, don't guess.** Log the planted foot's ground slide (lowest foot
+  within 12 cm of the ground) against Jak's speed at a few speeds; the speed where slide ~0 is walk-speed
+  at rate 1 (Sig: 3.05 m/s, not 2.0; slide 1.3-1.75 -> 0.12-0.27 m/s). Let a long-legged skin's rate go
+  down to ~0.45 or its feet slide when slow.
+- **Sized skin on Jak's run: leg IK.** Scaled up, Jak's pose leaves the feet floating (never within 12 cm
+  of the ground). Target each ankle at Jak's ankle offset from his prejoint: forward component unscaled
+  (stride must match Jak's real speed), sideways scaled, height = skin's bind ankle height + size x (Jak's
+  ankle height - his bind ankle height); two-bone IK on thigh/knee, keep the foot's turn.
+- **Punch/kick with an NPC gun out:** fade the gun-hold overlay out (fast in, slow out, also 0.15 s past
+  the attack end) so Jak's attack arms show; keep the gun matrix at the grip in the right hand.
+- **Shots from a borrowed muzzle with no target:** aim along `(-> *target* gun fire-dir-out)`, not toward a
+  point ahead of Jak's hidden hand (that climbed ~6 deg).
+- REPL tricks: hot reload re-runs top-level `define`s (globals reset: respawn the skin after it); a
+  changed function signature won't hot-load ("Typecheck failed": rename it); a pad-engine connection keeps
+  the old function pointer; `format` takes at most 8 args incl. dest and string (split it); an undefined
+  symbol anywhere fails the whole eval form. Restart the dev goalc when game.gp gains a file ("No rule to
+  make ..."). After a goalc restart run `(lt "127.0.0.1" <port>)` if evals say "generated code, but
+  wasn't supposed to". A temporary scan function calling a helper defined further down compiles only by
+  hot load, not in `(mi)`: remove test code before the build.
+- To see a frame where numbers look wrong (Jak's node-list 1.9-3.5 m off control trans for ~5 frames at a
+  walk start), a watcher child calls `(set-master-mode 'freeze)` on the condition and you screenshot the
+  frozen frame: Jak was drawn centred, so it was data only.
 
 ## Invisible particles and borrowed-level crashes (lesson, Jak 3)
 
