@@ -589,3 +589,23 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   in `decompiler_out\jak3\` and misses `game_text.txt`), junction `iso_data\jak3_pal` from the main tree,
   and hardlink the main tree's `out\jak3\fr3` files the worktree lacks (a half copy loads the desert but
   dies at the first missing level). `goalc --proj-path <wt> --user-auto --cmd "(mi)"` builds it.
+- **Headless rows in parallel (gate v2):** rows that only read log lines run `gk --no-display` (~240 MB,
+  4 at once beside 1 windowed). Headless has no renderer, so anything driven from the renderer's frame
+  (env test switches read in a post-process update, fps lines) does nothing: move such switches to the
+  game thread (a kernel function GOAL calls every frame, e.g. `pc-enhanced-set-scene`) and give headless
+  a frames line of its own (`[camera] ... in <level>` every 2 s). **A headless gk can't change level**:
+  boot levels load, but a level asked mid-run logs "Adding level X" and never finishes (Spargus gate,
+  continue to another level, air train: actors missing too). Those rows stay windowed.
+- `goalc --cmd "(mi)"` needs `--game jak3` too, else it builds Jak 1 ("iso_data/jak1/... does not exist").
+- End a row early once every check holds for ~8 s (expect lines, levels, shots, frames lines scaled to
+  the time run): 25 rows went from ~40 min to 15 min (15 windowed + 10 headless). Put values in the regexes
+  (`(?<v>[\d.]+)`) with ranges, and print every matched check with its value in the PASS line.
+- A per-frame "body jump" metric (drawn main joint minus its root, xz, max per phase) is meaningful for
+  skins only: Jak's own main joint leaves his root by up to 3 m in walk/run blends (drawn centred).
+  A test tap of X is a ~24-frame hop: a double jump needs the second press ~12 frames after the first.
+- Event 1000's PID property is a decimal UInt32: parsing it as hex never matches the crash to its gk.
+- `-f` and `{0:N1}` follow the current culture (Italian: `1,18%`): set the thread culture to invariant
+  in report scripts. Screenshot regressions: keep downscaled shots per version, compare at 64x36 (mean
+  luma diff + SSIM over 8x8 windows) and WARN, never FAIL (weather, time and NPCs move).
+- Don't `tail -f` (Git Bash) a log a PowerShell job writes with Add-Content: the tail's handle makes every
+  write fail silently. Read the file in polls, or watch the job's own output dir.
