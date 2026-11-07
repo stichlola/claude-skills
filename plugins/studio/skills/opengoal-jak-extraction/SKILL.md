@@ -356,10 +356,22 @@ at the saved spot:
 - Lights at night: don't apply eye adaptation and night boosts on top of dynamic lights, adaptation measures only the dark scene. And every glow sprite as a light includes the sky's: the sun, moon and stars sit 1 m from the camera, kilometers wide.
 - Remade tiling textures: detail that looks good in the flat picture can vanish in game, because one tile covers a small part of a mountain. Ask the generator for a few huge features across the whole picture, pull its pure blacks and pale edges toward the rock's median after, and match the median (not the mean) to the original. Compare with a live key that re-uploads from disk, so a new picture needs no restart. Reset the hour before each shot: game time moves on and a dusk shot looks like a broken texture.
 
+## Light effects that vanish by day (lesson, Jak 3 Enhanced)
+
+Additive sprites (shots, thrusters, fire, flares) get crushed by daytime exposure and tonemapping. They are lost against bright sand. Brightening the whole scene is not the fix.
+- Copy the frame just before the first sprite bucket (`TEX_SPRITE`) and just after the last (`GENERIC_SPRITE_3`), both with mips. after − before = what the effects added. Subtract it before the grade, then re-add it after eye adaptation with a gain and a soft knee. Weight it by `1 − night` so night is unchanged. Do the same in the bloom bright pass. Measured: thruster contrast doubled at noon (Weber 0.14 → 0.28), with no cost in fps.
+- Boost only compact sources. Compare the local mean of the difference (a mip around screen_h/6) with the pixel's own value, and check a mip further out too. A wash of light over a whole room (the arena shaft) fails these tests and stays in the grade. Without this test, Jak was blown out and the boost drew rings.
+- A channel the sum clipped kept less than it received. Rebuild it as max(fx, max channel), or flares turn green or pink.
+- A replacement sky wipes whatever the game drew over its sky: smoke, flares, glass. Keep the game pixel where it has local contrast (a 9-tap luma min/max), and re-add the non-compact sprite deltas after the clouds.
+
 ## Diagnosing a broken light: look at each term alone
 
 Before tuning, show every ingredient by itself in one run (hot-reloaded shader, same view, the hour set again before each capture because it keeps moving): the raw image, the normals, the relight mask, the shadow term, the material tags. Then switch each system off in turn. Rock that `broke'' at noon took three wrong guesses until the views showed it: the relight went by normals alone on rock the shadow map had in shade. Read the helper before testing it: a soft normal that stops at 40 m can't prove anything on far rock. A hypothesis that changes no pixel is wrong, so test it before telling the user.
 
+- A shadow that "shouldn't be there": before blaming the map, show the gap between receiver and caster in meters along the light (debug view). In the Jak 3 desert basin it was ~125 m: a real cliff under a key light kept at 18 deg all day. The fix was the light (raise it around noon), not the shadow code. What's left after that is often a slope facing away from the sun, not a caster.
+- Draws with no depth write, or with alpha test NEVER, must not cast shadows (glass, glows, decals). Alpha-tested ones cast with their texture and alpha ref, or leaves cast solid squares.
+- Shadow swimming as the sun moves: quantize the light direction (redraw only past ~0.15 deg). Scale the near bias with the map span instead of a fixed constant.
+- A worktree build must be launched with `--proj-path <worktree>`, or gk loads the main tree's shaders and hot-reload edits seem to do nothing.
 - Impostor looks taken from another angle: compute the elevation of the lowest atlas view. A plain hemi-octahedral 8x8 grid starts at 8-11 degrees, but far objects are seen at 3-6, so flat stones show their top. Square the view height in both bake and shader (lowest about 1 degree), then rebake everything.
 
 ## Playable NPCs in Jak's place (lesson: Jak 3 Ashelin, Sig)
