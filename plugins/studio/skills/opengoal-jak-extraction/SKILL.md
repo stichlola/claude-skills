@@ -651,3 +651,13 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   `(mi)`. A wrapper that logs goalc's stdout needs its own line filter (fixed-width progress entries run
   together once `\r` is dropped: `\[\s*\d{1,3}%\] \[.{8}\] (?: {6}|\d+\.\d{3} ).{0,70}`).
 - The gate picks the next instance number per row: with an instance range rule (13-15), run 3 rows per call.
+- Verifying a cleanup: grepping the scripts' regexes is not enough, run each one on a **baseline** log and
+  look at *which* line it matched. `dev_launch.ps1 -Headless -Wait` waits for `\[enhanced\]|target`, which in
+  a headless boot only matched the debug `[link and exec] target-util` lines: with the file at info it waits
+  its whole BootTimeout. Also check what debug->info hides besides spam (stock `runtime.cpp` "Failed to
+  initialize main memory!" is `lg::debug`; the last `[link and exec]` named the object a boot crashed in).
+- Forcing real errors without touching the repo: a missing level = rename a worktree `out\jak3\fr3\<lvl>.fr3`
+  for one windowed run (desinter at desert-start: `[die] Assertion ... cannot be opened`), restore in
+  `finally`; a bad continue point = `JAK_ENHANCED_MENU=2:<cp>` windowed (`continue request "x": "no such
+  continue point"`). A bad `JAK_ENHANCED_START` logs nothing even in stock (Jak falls from 0,0), and a
+  headless gk ignores the menu request.
