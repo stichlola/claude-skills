@@ -239,6 +239,11 @@ at the saved spot:
   lands on n+1 and `(lt "127.0.0.1" <port>)` must name its port.
 - **`gk --no-display` works for Jak 3**: boots to desert-start in ~5.5 s (windowed 14-20 s), runs at real
   speed (300 ticks/s), ~240 MB, little CPU; no renderer, so no "[enhanced] average fps" lines.
+- State asserts over the REPL: Jak 3 left idle goes from `target-stance` to `target-stance-ambient`
+  after ~45 s, which is when a cold goalc's first `(mi)` finishes: a check for `'target-stance` passes
+  warm (t=6 s) and fails cold (t=50 s). Accept both, or match the prefix, or check right after boot.
+- Back-to-back windowed test runs on the same instance: the next launch can find the gk port still
+  taken for a few seconds after the last game closed; wait for the port, don't fail at once.
 - gk run from a copy of `bin` (gk.exe + DLLs, 63 MB, 0.05 s to copy) with `--proj-path` works, and the
   build can relink `out/build/Release/bin` meanwhile.
 - C++: a one-line change in EnhancedPost.cpp = 8-15 s compile (2.4 s parse, the rest -O3 codegen) + 0.2 s
