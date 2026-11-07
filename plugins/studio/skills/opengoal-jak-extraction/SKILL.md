@@ -378,6 +378,22 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   bank (overlord AllocateBankName must give the mode slot to any bank requested as mode bank).
 - Keep an unfinished character out of the menu with a gate (env override for developers) so a release
   can ship while it's in progress.
+- **Retargeting onto Jak's bones: measure against his prejoint, not his root.** Jak 3's prejoint
+  (node-list 2, parent of main) leaves his root by up to 3 m for a few frames in the walk/run channel
+  blends (stance->walk stack, tiny walk-left/down weights) and slides back 0.6 m/frame; seen with Jak alone,
+  headless and windowed. A skin placed "where Jak's main is" jumped away and back ("teleports while
+  moving / after a punch"). Fix: take Jak's root with its translation replaced by the prejoint's (keep the
+  root's turn: the dive tilts the prejoint for real), except pilot/ledge/pole/vehicle states.
+  Jak's bones are current when a child process runs (target has sync-math), so no frame lag.
+- A scaled (taller) skin: scale Jak's joints around the skin's own drawn root (control trans +
+  cspace-offset), never around control trans, or cspace-offset gets multiplied by the size.
+- After moving bones in a post, recompute `draw origin` as do-joint-math does (bounds xyz through
+  `vector-norm-matrix*!` of `(-> draw skeleton bones origin-joint-index)`, w = bounds w): ja-post left
+  it on the clip's hips, up to 5 m off the drawn body (culling, lights, shadow).
+- Measure jumps in one test run with an env-gated hook: per frame, |skin main - skin root| change; run
+  the old and new code paths in two phases of the same run (a global toggle) and print max per phase.
+- goalc for Jak Enhanced needs `--user-auto` (jak3 maps to jak3_pal); `dev_goalc.ps1 -Instance n`
+  already passes it. Headless gk (~240 MB) is enough for skeleton/state measurements when RAM is tight.
 
 ## Invisible particles and borrowed-level crashes (lesson, Jak 3)
 
