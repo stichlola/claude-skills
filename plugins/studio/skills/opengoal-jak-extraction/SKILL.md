@@ -480,3 +480,28 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   errors meanwhile, build only the object: `ninja game/CMakeFiles/runtime.dir/<path>.cpp.obj`.
 - Dev gk started from the real repo path fails with "Failed to initialize project path": start it from
   the `jak-project` junction (or pass `--proj-path`).
+
+## A release gate and test hooks from GOAL (lesson, Jak Enhanced `scripts/enhanced/release_gate.ps1`)
+
+- One windowed test boot per scenario row, judged from the outside: process alive, no Application
+  event 1000 for its PID, enough `[enhanced] average N fps ... in <level>` lines (level order for level
+  changes; count the boot's own line too, a fast change happens before the run's first line),
+  screenshots not black (PrintWindow + mean luma), and the row's log lines in order. Give every check a
+  log line of its own (env-free, one per event): "hour request/reached", "nap start/end", "weather mode
+  <n>", "scene <name> start/end", "auto-save <mode> done|error". A full Jak 3 pass: ~25 rows, ~40 min.
+- **A GOAL global's value is 32 bits**: a `handle` (pid in the high half) stored in a `define`d global
+  loses its pid, and `handle->process` then always says #f. Keep the process pointer and its pid as two
+  globals, or find the process by name (`process-by-name "scene-player" *active-pool*`).
+- **`format`'s `~A` prints strings with quotes, `~S` without** (`[x] "ashelin"`): write the checks'
+  regexes with optional quotes, or log names with `~S`.
+- A GOAL `lambda` can't see the enclosing `let`'s variables: pass data through globals.
+- A request queued at boot (`JAK_ENHANCED_MENU=2:<cp>`) is taken in the first frames, before the first
+  fps line: to test a level change *from* the start point, queue it on a timeline
+  (`JAK_ENHANCED_MENU_SCRIPT=<s>:<kind>:<value>,...`).
+- Gated game content needs its task: Jak 3's desert air train only runs to Haven after
+  `city-destroy-grid-resolution` (its on-notice); a test closes it with `(task-close! "...")` first.
+- A worktree that builds its own game: configure CMake in `out\build\Release` (Ninja, clang, ~2.5 min
+  for gk+goalc with -j 10), copy `goal_src\user\<user>\repl-config.json` + `user.txt` (else `(mi)` looks
+  in `decompiler_out\jak3\` and misses `game_text.txt`), junction `iso_data\jak3_pal` from the main tree,
+  and hardlink the main tree's `out\jak3\fr3` files the worktree lacks (a half copy loads the desert but
+  dies at the first missing level). `goalc --proj-path <wt> --user-auto --cmd "(mi)"` builds it.
