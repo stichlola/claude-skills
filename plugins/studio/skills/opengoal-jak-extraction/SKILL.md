@@ -430,7 +430,18 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Launch with `ProcessStartInfo` (`UseShellExecute=false`, `CreateNoWindow=true`, per-instance
   `EnvironmentVariables`), place the window with `SetWindowPos(...NOACTIVATE)` and hand focus back with
   `SetForegroundWindow(previous)`; `GetClientRect` from DPI-unaware PowerShell reports 640x360 as 512x288
-  at 125%. Crashes: exit code plus Application event 1000 whose property 8 is the faulting PID (hex).
+  at 125%. Crashes: exit code plus Application event 1000 (see below).
+- **Collecting crashes** (`scripts/enhanced/crash_collect.ps1`): event 1000 `Properties` are
+  0 app, 3 module, 6 code, 7 offset, 8 PID (a UInt32, decimal: only the Message text shows it in hex),
+  9 process start (FILETIME), 10 exe path. Module `unknown` = GOAL/JIT code, the offset is then an
+  absolute address. Event 1001 (WER) carries the ReportArchive folder; match it by time + offset.
+  Minidumps: `%LOCALAPPDATA%\CrashDumps\gk.exe.<decimal pid>.dmp`. The gk log is named after the
+  process start (`jak3_i3.2026-11-07T11-02-13.log` = start 11:02:13): match on it, tie-break on the last
+  write time (instances often start in the same second). gk keeps only ~10 logs per name, so a
+  crash from a few hours of tests ago has lost its log: collect right away or watch. `jak-project` is
+  often a junction to the real tree: follow it or each log is listed twice. Open live logs with
+  `FileShare ReadWrite`. In a script run via `[scriptblock]::Create`, `$PSScriptRoot` is empty and
+  `exit` closes the caller's console: use `return`; `$Pid` is PowerShell's read-only `$PID`.
 - Capacity (RTX 5070 Laptop, Ryzen AI 9 365, 32 GB, jak3 desert-start, Performance, 640x360): each gk
   ~2.8 GB peak working set; 2-4 instances all held ~50-58 fps, 4 left 0.5 GB available RAM, so 3 is
   the default max. RAM, not GPU, is the limit. Script: `scripts/enhanced/multi_run.ps1`.
