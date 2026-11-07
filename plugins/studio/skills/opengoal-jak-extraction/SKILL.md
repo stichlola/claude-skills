@@ -407,6 +407,12 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Screenshots of a fast move: a REPL-set freeze global that holds the phase (pose and hit sphere).
 - A character's own magazine on Jak's gun HUD: `sv-72` (max) and `values 1` from hooks; the shells and
   "n/max" then draw as for Jak's guns.
+- Mocap from markers only (ACCAD C3D, CC BY 3.0, Z up, mm, 120 Hz, DEC floats: swap 16-bit words, /4):
+  a ~100-line pure-Python C3D reader is enough (no Blender). Joint centres: hips = pelvis centre + 0.7 of
+  half-width - 8 cm down; knee/ankle markers moved ~4 cm medially; shoulder marker 5 cm down. Store per
+  sample bone directions + pelvis up/forward + height fraction in the kicker's model frame (left = up x
+  forward) as a GOAL static float table; feed the same bone-aiming code. Commit only the derived table,
+  with attribution. A real front kick peaks at ~0.75 of head height, not at the head.
 - goalc for Jak Enhanced needs `--user-auto` (jak3 maps to jak3_pal); `dev_goalc.ps1 -Instance n`
   already passes it. Headless gk (~240 MB) is enough for skeleton/state measurements when RAM is tight.
 
