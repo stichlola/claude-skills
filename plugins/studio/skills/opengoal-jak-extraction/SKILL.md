@@ -244,8 +244,19 @@ at the saved spot:
 - C++: a one-line change in EnhancedPost.cpp = 8-15 s compile (2.4 s parse, the rest -O3 codegen) + 0.2 s
   lib + 0.2 s link + 1.5 s `vcvars64.bat`; a small Enhanced TU still costs ~3 s (json/imgui headers).
   `--target gk goalc` costs nothing extra when goalc's sources didn't change.
-- `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders in 0.1-2 s (poll every 60 frames; the 247 KB
-  composite compiles ~1 s); world.json already reloads on save.
+- `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders on save (poll 4x a second: enh_ssao 0.2 s save to
+  reloaded; the 247 KB composite 2.6 s for a comment change, but 11.5 s once `main` was wrapped in another
+  function: the NVIDIA optimizer, and the frame stalls meanwhile). `=all` also reloads the game's shaders:
+  their renderers look uniform locations up once (and TextureAnimator keeps the program id), so copy every
+  uniform value into the new program and keep the old one if a location moved. world.json and
+  tuning.json (EnhancedTune: `shaders.tune_*` feeds `uniform float tune_x = <default>;`) reload on save.
+- **Call C++ from the REPL without `(mi)` and without touching kernel-defs** (which cascades every file):
+  put the `define-extern` in the form, and pass commands as pseudo variables of an existing kernel
+  function: `(begin (define-extern pc-enhanced-getenv (function string string int symbol))
+  (pc-enhanced-getenv "JAK_ENHANCED_DO_RELOAD_SHADERS" "" 0))` round-trips in ~0.3 s.
+- After gk restarts, the kept goalc must `(lt "127.0.0.1" <port>)` again, or every form fails with
+  "Compilation generated code, but wasn't supposed to". Test configs on the Performance preset may have a
+  pass (SSAO) off: a test on its shader shows nothing; use the composite.
 
 ## Gameplay options gated from C++ (lesson)
 
