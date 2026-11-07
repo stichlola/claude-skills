@@ -249,6 +249,12 @@ at the saved spot:
 - C++: a one-line change in EnhancedPost.cpp = 8-15 s compile (2.4 s parse, the rest -O3 codegen) + 0.2 s
   lib + 0.2 s link + 1.5 s `vcvars64.bat`; a small Enhanced TU still costs ~3 s (json/imgui headers).
   `--target gk goalc` costs nothing extra when goalc's sources didn't change.
+- A .bat calling `vcvars64.bat` prints "vswhere.exe is not recognized" (harmless) unless
+  `%ProgramFiles(x86)%\Microsoft Visual Studio\Installer` is on PATH; write .bat files with CRLF (an
+  LF-only .bat with a `rem` line gave "filename syntax is incorrect"). In Windows PowerShell 5.1,
+  `git commit -F -` fed a here-string fails (pathspec error): write the message to a file.
+- Scenario variants (dev_test.ps1): `wait` = game time to let pass before the variant acts, `settle`
+  = after it; a single "wait" applied after the eval was misread as "before" and tested nothing.
 - `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders on save (poll 4x a second: enh_ssao 0.2 s save to
   reloaded; the 247 KB composite 2.6 s for a comment change, but 11.5 s once `main` was wrapped in another
   function: the NVIDIA optimizer, and the frame stalls meanwhile). `=all` also reloads the game's shaders:
