@@ -561,6 +561,10 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - The testcfg (`-debug`) keeps the ImGui toolbar strip and "outside of bsp" text in every shot: same on both
   sides, ignore. Fights (slums) and particles are not deterministic between boots: don't call an enemy or
   spark "missing" from one pair.
+- Second-opinion pass: re-look at every pair yourself; one contact sheet (2 pairs per row at 796 px, PIL,
+  caption per tile coloured by severity, `[D]` for issues another workflow owns) reads faster than 12 files.
+  Ground darker than vanilla with **bright outlines around decals/slabs** = ground receives a shadow (or tint)
+  the decal layer does not: toggle shadows on that spot before calling it a material bug.
 
 ## A themed in-game menu and capturing it (lesson, Jak Enhanced)
 
