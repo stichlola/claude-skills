@@ -546,6 +546,22 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   ~2.8 GB peak working set; 2-4 instances all held ~50-58 fps, 4 left 0.5 GB available RAM, so 3 is
   the default max. RAM, not GPU, is the limit. Script: `scripts/enhanced/multi_run.ps1`.
 
+## An Enhanced vs vanilla screenshot tour (lesson, Jak Enhanced)
+
+- Vanilla look = `JAK_ENHANCED=0` (same flag as the menu's "Enhanced graphics (all)"; replaced scenery and
+  HD textures may still load). One windowed boot per spot and mode: `dev_launch.ps1 -Instance 19 -TestCfg
+  -Width 960 -Height 540 -Start <cp> -NoGoalc -NoShaderReload -Wait -Env @{...}`, settle 12 s, `capture_window.ps1
+  -ProcessId <pid>`, `Stop-Process` that PID: ~29 s per shot, 24 shots in 12 min with one instance.
+- Hour: `JAK_ENHANCED_HOUR=<h>`, **not** `JAK_ENHANCED_MENU=1:<h>`: any `JAK_ENHANCED_MENU` value also opens
+  the menu over half the frame. Clear sky: `JAK_ENHANCED_WEATHER_SCRIPT=0:0`. Quality: `JAK_ENHANCED_PRESET=2`.
+- Spots that boot directly: `desert-start`, `wascitya-start` (Spargus), `waspala-start` (palace), `ctyport-start`,
+  `ctysluma-alley`, `game-start` (arena); Hellcat in flight = `JAK_ENHANCED_HELLCAT_TEST=1`, shoot on the
+  `[hellcat-test] "firing"` log line; characters = `JAK_ENHANCED_PLAYER=jak|ashelin|sig` at desert-start, then
+  crop around the character (no camera-distance switch exists).
+- The testcfg (`-debug`) keeps the ImGui toolbar strip and "outside of bsp" text in every shot: same on both
+  sides, ignore. Fights (slums) and particles are not deterministic between boots: don't call an enemy or
+  spark "missing" from one pair.
+
 ## A themed in-game menu and capturing it (lesson, Jak Enhanced)
 
 - Restyle one ImGui window without touching the others: push the style vars and colors in an RAII
