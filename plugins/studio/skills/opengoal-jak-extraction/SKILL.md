@@ -619,10 +619,13 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - **Fix that worked (gate v3):** the baseline keeps up to 4 rerun samples per shot (each `-MakeBaseline`
   run adds one); compare a new shot with every sample and keep the best match (a minimap shown in one
   rerun only stops mattering); per-shot limits from the samples' own spread (each sample's best match
-  among the others, the worst of those, sim - 0.05 / diff + 3), carried over to a one-sample baseline from
-  the one it was compared against; row fallback 0.85 / 6. Reruns' diffs are small (0.2-5.8) while a 20 %
-  box is 7-9, so the diff limit catches what SSIM at 0.85 misses. Measure the old run folders offline first:
-  they already hold reruns (one cutscene shot was bimodal, 0.65-0.99).
+  among the others, the worst of those, less a margin that shrinks with samples: sim 0.04+0.06/(n-1), diff
+  2+2/(n-1); worked out at compare time so old baselines follow rule changes), carried over to a one-sample
+  baseline from the one it was compared against; row fallback 0.85 / 6. A flat 0.05 margin on 2 samples
+  left player-jak at 0.92 against 0.91: too tight. Result: 2 reruns -> boot-desert limits sim 0.88 / diff
+  4.9, magenta box 0.80 / 7.8 WARNs, player rows 0.98-0.99 PASS. Reruns' diffs are small (0.2-5.8) while a
+  20 % box is 7-9. Measure the old run folders offline first: they already hold reruns (a cutscene shot
+  bimodal 0.63-0.99; after a level change Jak/camera stop elsewhere, 0.59): such rows need wide fallbacks.
 - Check what a release script hands its gate: Jak Enhanced's release.ps1 builds `Release-static` and sets
   `JAK_RELEASE_BIN`, but the gate copied `out\build\Release\bin` (the dev build) - it tested the wrong exe.
   Pass the bin as an explicit argument (`-Bin`) and print the exe's path and time in the gate's first line;
