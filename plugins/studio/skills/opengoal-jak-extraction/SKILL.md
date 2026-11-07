@@ -363,6 +363,9 @@ Additive sprites (shots, thrusters, fire, flares) get crushed by daytime exposur
 - Boost only compact sources. Compare the local mean of the difference (a mip around screen_h/6) with the pixel's own value, and check a mip further out too. A wash of light over a whole room (the arena shaft) fails these tests and stays in the grade. Without this test, Jak was blown out and the boost drew rings.
 - A channel the sum clipped kept less than it received. Rebuild it as max(fx, max channel), or flares turn green or pink.
 - A replacement sky wipes whatever the game drew over its sky: smoke, flares, glass. Keep the game pixel where it has local contrast (a 9-tap luma min/max), and re-add the non-compact sprite deltas after the clouds.
+  Trap (verified): that contrast test also fires on every sky pixel next to a silhouette and on the game's own painted cloud wisps: grey halos around mountains and dirty vanilla streaks over the new sky. Restrict it (depth-less draws only, a mask from the sprite/glass buckets), and check a desert skyline with the keep on/off in one run.
+- Verify looks at `JAK_ENHANCED_PRESET=2` (the tour's): the testcfg default 3 (Performance) drops the area grade and most sun shadow, the desert noon looks near vanilla and shadows on/off are identical, so a "fixed" shadow bug can't even show there.
+- Before claiming "the scene is not brighter", run the feature's kill switch (`JAK_ENHANCED_FX=0`) against on, same spot and time, with no effect on screen: the sprite copies brightened the whole desert noon ~8% (luma 103 → 111.5, every region, reproducible) with fx_d = 0 everywhere.
 
 ## Diagnosing a broken light: look at each term alone
 
