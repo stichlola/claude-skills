@@ -81,3 +81,8 @@ the lift there if it peels badly.
 
 - `scripts/engrave_die.py` - parametric D8 build: clean solid, bevel, fitted text per face, joined
   cutters, paint masks, optional SDF engraving. Change `TEXTS`, `EDGE_MM`, `FONT_PATH`, `ENGRAVE`.
+
+## Before exporting the STL
+
+Run the STL checklist of `blender-wearable-hollowing` (`scripts/stl_clean.py`): duplicate vertices/edges, degenerate
+zero-thickness triangles, non-manifold edges. Booleans for engraving leave them and slicers flag them.

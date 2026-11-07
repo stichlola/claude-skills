@@ -1,6 +1,6 @@
 ---
 name: blender-wearable-hollowing
-description: Turn a solid sculpt (Tripo or any dense mesh) into a 3D-printable wearable shell in Blender - hollow it with Geometry Nodes SDF grids, open the bottom without touching the visible outline, extend hair or a collar, cut removable parts (eyes) with magnet pockets at real-world millimetres, verify fit with numbers, bake a real mesh for hand sculpting, render client previews, scale the head to a real accessory (glasses: blind arm pockets with tolerance), rebuild magnet pockets at real size after scaling and perpendicular to the joint, check every pocket with axial profiles and the assembled parts for interference, fit-test a scanned head and carve room locally. Includes the MCP-for-Blender pitfalls (empty Grid to Mesh, Object Info spaces, no re-evaluation after Python edits, call timeouts) and a full working build script. Use for mascot heads, helmets, masks, cosplay shells, any "make it hollow so a person fits inside" job, and whenever driving Blender 4.x/5.x through MCP with SDF or boolean nodes.
+description: Turn a solid sculpt (Tripo or any dense mesh) into a 3D-printable wearable shell in Blender - hollow it with Geometry Nodes SDF grids, open the bottom without touching the visible outline, extend hair or a collar, cut removable parts (eyes) with magnet pockets at real-world millimetres, verify fit with numbers, bake a real mesh for hand sculpting, render client previews, scale the head to a real accessory (glasses: blind arm pockets with tolerance), rebuild magnet pockets at real size after scaling and perpendicular to the joint, check every pocket with axial profiles and the assembled parts for interference, fit-test a scanned head and carve room locally. Includes the MCP-for-Blender pitfalls (empty Grid to Mesh, Object Info spaces, no re-evaluation after Python edits, call timeouts) and a full working build script. Also the STL export checklist (duplicate vertices/edges, degenerate zero-thickness triangles, non-manifold, loose specks) with a cleaning script - use it before exporting ANY STL. Use for mascot heads, helmets, masks, cosplay shells, any "make it hollow so a person fits inside" job, and whenever driving Blender 4.x/5.x through MCP with SDF or boolean nodes.
 ---
 
 # Hollow wearables in Blender (Geometry Nodes SDF + MCP)
@@ -198,7 +198,16 @@ Verified on the king head: 400 mm → 375 mm so a real pair of glasses (STL from
 - A parity `inside()` test can report solid inside an empty pocket on thin shells: confirm with a ray
   along the pocket axis and by counting faces inside the cylinder before "fixing" anything.
 
-## Slicer says "zero-thickness geometry" after booleans
+## Before exporting any STL (always, user rule)
+
+Every time you hand over or export an STL (after booleans, remesh, cuts, imports from other tools), check the mesh
+and clean it, then put the numbers in your report: duplicate vertices and edges, degenerate triangles (area ~0 or
+height < 0.001 mm, which slicers call "zero thickness"), non-manifold edges and holes, tiny loose islands, volume
+before/after. "0 non-manifold" in Blender is not enough: a body with 0 non-manifold edges still had 1060
+zero-thickness faces and 738 doubled vertices. `scripts/stl_clean.py` does all of it in a background Blender on a
+copy of the file (`--check` only reports); swap the cleaned mesh data back into the live file and re-export.
+
+### Slicer says "zero-thickness geometry" after booleans
 
 MANIFOLD booleans on multi-million-face scans leave needle triangles: OrcaSlicer reported 1060 "geometries with
 zero thickness" on a mask body that Blender called closed (0 non-manifold). Check every part before export:
@@ -263,6 +272,8 @@ below into the cavity. Restore every scene setting afterwards.
   parts share a frame but have different object offsets.
 
 ## Files
+
+- `scripts/stl_clean.py` - check/clean meshes before STL export (duplicates, degenerate faces, non-manifold, specks).
 
 - `scripts/wearable_head_build.py` - the full build (profiles, skirt, cutters, eyes, pockets, two
   Geometry Nodes variants, output objects, report). Re-run it in Blender's Text Editor after changing
