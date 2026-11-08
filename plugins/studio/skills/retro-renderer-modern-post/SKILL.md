@@ -572,6 +572,15 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   the occlusion + contact shadows at half resolution (depth-aware blur at half too, normals still from
   full-res depth) went 1.65 -> 0.95 ms, no halos; auto-quality levels past "passes off" that lower the
   game's internal resolution (85%, 72%) stretched by the final blit.
+- **A pass that reuses an uber-shader behind a uniform branch pays the whole shader's registers** (Jak 3
+  Enhanced clouds: `if (cloud_pass == 1) { color = cloud_march(); return; }` at the top of a 4000-line
+  composite). Compile the same file a second time with `#define ONLY_X` inserted after `#version` (main
+  calls only that function; the rest moves into an uncalled function and is stripped), and copy the
+  values of its few active uniforms from the big program each frame (`glGetActiveUniform` list built once
+  per program pair, `glGetUniform*v` -> `glUniform*`; 30 uniforms, no visible CPU cost). Same picture,
+  0.75 -> 0.51 ms at 2560x1600. At that resolution the composite itself is 11-16 ms, and zeroing each
+  feature's uniforms in turn finds only ~2 ms (lights 1.4, rock detail 0.4, water 0.35): the rest is the
+  shader's size and occupancy, so the next win is splitting it, not trimming features.
 - Before GPU culling / Hi-Z for a PS2-era scene, measure: all the geometry buckets together were ~4 ms
   against 8 ms of post; the work belongs in the post pass.
 - Rock detail over a game's cliffs, as AAA terrain does: each tiling size only within its own distance
