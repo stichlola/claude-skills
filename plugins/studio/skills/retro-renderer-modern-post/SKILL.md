@@ -546,6 +546,11 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   the attachment's own type (`GL_HALF_FLOAT`; query `GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE`) and
   convert halves yourself. When a format switch looks expensive, profile CPU per pass before blaming
   bandwidth. A second game instance on the same GPU makes GPU ms swing 6-14 ms: alternate A/B 3x.
+- **Screen blend (`GL_ONE_MINUS_DST_COLOR`) breaks in a float frame**: past 1 the factor goes negative
+  and subtracts light. The 8-bit trick that tamed big additive glow pools can't follow into RGBA16F, where
+  the plain sum no longer clips and spreads as a wide saturated wash. Scale only the big quads with a
+  constant factor (`glBlendColor` + `GL_CONSTANT_COLOR`, 0.7 in Jak 3's arena) and let the final
+  shoulder roll the core to white; small lamp/thruster glows keep the full sum.
 - **Auto quality** that works: step down only after ~3 s continuously under ~58 fps but above ~40
   (loading hitches are CPU and inflate GPU clocks); remember what each step saved in post-pass time;
   step back up when other + post + saved fits in ~15.3 ms, or after a minute at 60 fps as a retry.
