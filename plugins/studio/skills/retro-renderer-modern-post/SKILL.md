@@ -323,6 +323,13 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   the mip from the hit distance. Combine the per-level arrays with glCopyImageSubData.
 - Never switch traced/untraced reflections at a hard distance on water: it draws a horizon line.
   Fade the traced contribution over a band (150-200 m).
+- Far water's SSR found nothing (Jak Enhanced, Haven harbour 120-200 m off): from a low camera the
+  view grazes the water by 2-5 deg, so a ripple normal tilted ~1 deg toward the eye sends the reflected
+  ray down into the sea. Past ~25-50 m march the calm plane's mirror ray (`reflect(v, up)`) instead and
+  wobble the hit's uv by the ripple slope (a screen-space planar mirror); loosen the "occluder in front"
+  reject there too (a quay rises only 2-5 m behind the water's edge, inside a 3%-of-depth margin).
+  Debug first with a hit/distance/fresnel false-color view: it showed the harbour lay at 150-200 m,
+  past the march's 80 m cutoff, before any tuning. Cost at 640x360 within noise (32 growing steps).
 - Ray-traced AO falls out of the same BVH: 6 cosine-weighted 3 m rays per pixel in the SSAO pass
   (nearest-hit traversal, linear distance weight). Take min(traced, SSAO): characters aren't in
   the BVH and keep their screen-space contact shadows. In open squares it barely shows; check in
