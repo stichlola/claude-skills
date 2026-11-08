@@ -1078,4 +1078,9 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - An A/B pixel diff is "equal" when it matches the diff between two frames of the same variant
   (TAA jitter noise), not when it is zero.
 - Another game on the same GPU (the user playing) inflates every absolute GPU time: compare variants
-  cycled in one run, never across runs.
+  cycled in one run, never across runs.- A flame the "is it a fire" test misses: dump the glows near the camera (Jak Enhanced `lights.dump <m>`
+  in the tuning file) before guessing. Spargus palace braziers drew only 8-18 m warm halos, past the
+  6 m size cap of a fire glow, so no flame mask and the grade dimmed the flame: count wide warm halos
+  as fires with the flame size clamped (0.2x, max 2.5 m), behind a tuning key.
+- Char look checks at golden hour need a backlit sunlit spot (desert-start 18h: Jak's shadow points at
+  the camera); a street in shade shows nothing for a sun_lit-masked effect.
