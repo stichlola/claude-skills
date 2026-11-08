@@ -616,6 +616,11 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   HD textures may still load). One windowed boot per spot and mode: `dev_launch.ps1 -Instance 19 -TestCfg
   -Width 960 -Height 540 -Start <cp> -NoGoalc -NoShaderReload -Wait -Env @{...}`, settle 12 s, `capture_window.ps1
   -ProcessId <pid>`, `Stop-Process` that PID: ~29 s per shot, 24 shots in 12 min with one instance.
+- Teleport tests (Jak Enhanced gfx-tech2): `JAK_ENHANCED_TP` fires at camlog frame 90, often before the boot's
+  own continue, which then puts Jak back at the start (the `[camera]` lines return to the start spot). Teleport
+  late with `JAK_ENHANCED_MENU_SCRIPT=22:3:x/y/z` (`/` stands for `,` in a script value). A spot from the sky
+  map's roofed-floor finder can be a false floor: Jak falls and respawns at the start, so check the last
+  `[camera]` line before trusting a shot. Quick roofed spot that boots directly: `waspala-start` (palace hall).
 - Hour: `JAK_ENHANCED_HOUR=<h>`, **not** `JAK_ENHANCED_MENU=1:<h>`: any `JAK_ENHANCED_MENU` value also opens
   the menu over half the frame. Clear sky: `JAK_ENHANCED_WEATHER_SCRIPT=0:0`. Quality: `JAK_ENHANCED_PRESET=2`.
 - Spots that boot directly: `desert-start`, `wascitya-start` (Spargus), `waspala-start` (palace), `ctyport-start`,
