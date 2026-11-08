@@ -352,6 +352,19 @@ at the saved spot:
 - A scene that changes over time (a fight, a passing hour, a moire drifting with the camera) makes frames incomparable. Compare inside one frame: left half unchanged, right half variant, `uv.x > 0.5` in the shader.
 - `HEAD~1` as "the old shader" breaks when another agent commits meanwhile: name the commit by hash. Getting this wrong made me clear my own change of a bug it had caused.
 - Check the hour really changed before reading a test: send the REPL's `'change 'hour` twice, the first after a boot can be lost.
+- **Pin the hour for a whole sweep**: game time runs on (the arena at 20h lost its sun shadow two minutes in, and a
+  "fix" looked like it worked). Boot with `JAK_ENHANCED_MENU_SCRIPT` repeating the same hour every 15 s
+  (`25:1:20,40:1:20,...`, 40 steps = 10 min): every tuning variant then sees the same light.
+- The composite's reload after a shader *edit* lags 6-12 s+ (tuning-only changes ~1 s): a 3 s wait shot the old
+  shader and made two variants swap results. After an edit wait >= 12 s, or mark the variant on screen.
+- The post's `sky_sun` is not where the game draws its sun sprite: Haven's port at noon has the sprite low in view
+  while `sky_sun` is ~55 deg up, off screen. An analytic sun disc at `sky_sun` can't replace that sprite (tested,
+  reverted): take the glow sprite's own screen position instead.
+- Characters darkened "in the sun's shade" inside a pool of the game's own light (Jak 3 arena shaft at dusk)
+  go silhouette: the map only knows the sun. Gate it by the bloom on the floor *beside and below* the
+  character (its own pixel's bloom is low, it's the dark thing in the pool), and only with a low sun.
+- Night water "columns" with hard sides in a harbor: `tune_water_dbg 2` (no far beacons) removed them; the cap
+  on the beacons' summed reflection was the fix, not SSR or the night sky keep.
 - Normals rebuilt from depth with 1-pixel neighbours give a moire of dark rows on ground nearly level along the screen's rows (rounding of depth, a period of tens of rows). Taps 32 pixels apart on what's flat helped but still left straight dark lines at the same screen rows in every level (Jak 3 SSAO, y ~198/225/314 of 360). What fixed it: the G-buffer's normal on any up-facing ground (weight `smoothstep(0.7, 0.85, abs(world_n.y))`), the depth's elsewhere (crates' smoothed edges lean out of "up"). AO-view row metric -27 -> -1.7.
 - Bisecting a pass by writing constants: if an artifact survives "output a constant here", the artifact's pixels took another branch. Encode the branch conditions as grey levels (0.25/0.5/1.0) instead: it shows which test those pixels fail.
 - Debug switches on one shared tune value (`tune_dbgx` 1..5 = views) collide with a test switch reusing the same value: a ">4.5 = albedo view" silently ate a "6 = variant" test. One uniform per test.
