@@ -52,6 +52,10 @@ stopping at a score >= 8 or after N rounds. Ten rounds taught what follows.
   decide with numbers, not more looks: crop mean/max luma and counts of "hot colour" pixels (magenta,
   yellow core) per box. A sprite present in vanilla (296 px) and absent in the mod (0) or a blob that
   grew 9 -> 297 px is a finding; a "fixed" box that now matches the surrounding area is a pass.
+- **Before fixing a single-shot finding, burst it**: 24-30 frames 1 s apart in both modes. A palace
+  glow "missing" in the mod was a flicker on in ~1/6 of frames in both (0/1 in single shots). A
+  "magenta blob 9 -> 297 px" in a slums fight was enemy shots at different moments; compare a
+  hue-energy sum (`min(r,b) - g`) over interleaved A/B bursts and against the raw scene view instead.
 
 ## Placement that survives review
 

@@ -544,6 +544,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   toward the sun's screen point (away from the anti-sun point when it's behind), count far surfaces
   closer than the pixel; exclude near things (no shafts from the player) and anything kilometers away
   (the game's sky clouds write depth); output in the shafts texture's alpha, blur 5 taps when reading.
+- **Plan perf work from the profile mode, not from the vsynced log**: "post 12.9 ms of 15 ms GPU"
+  under vsync was the downclocked GPU; in the glFinish profile the whole post was 2.4-3.0 ms and the
+  4000-line composite 0.6-0.9 ms. Screen-tile culling of its 32-light loop (Jak 3, CPU-binned masks
+  in a `uvec4[144]` uniform, `findLSB` loop) measured 0.00 ms gained: at that count the loop is no
+  bottleneck. Toggle such a switch from the tuning file and split the profile lines by switch time.
+- Reusing a flag slot for a new light class (alpha 2 = "flash" in a list where branches test
+  `a < 0.5`) silently moves the new lights into the *other* branch (wrap lighting, no shadow), and the
+  feature's "off" no longer equals the old code: the A/B baseline lied (floor 59 vs 36). Make every
+  existing test treat the new value as before, then check off == old.
+- A flash (explosion) under a lamp list's soft ceiling (`added /= 1 + k*max(added)`) can't light a
+  torch-lit room more than a torch: give it its own accumulator, on top of the lamp term, with a much
+  higher roll-off.
+- Golden-hour "black slope" in the desert was not the sun shadow (shadows off changed nothing): stage
+  views showed four multiplies stacking on one material class (rocky ground's low-light x0.5, relight,
+  stop-down, dark-part deepening): x0.3 of the game's color. A floor relative to the game's own color
+  (`max(c, raw * 0.75)` by the hour, by tags) fixes it without touching sunlit ground.
 
 ## TAA goes after every depth-based post effect (measured)
 
