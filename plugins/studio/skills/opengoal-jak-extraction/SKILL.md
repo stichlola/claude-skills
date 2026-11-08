@@ -831,3 +831,5 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Splitting one file's hunks over several commits without `git add -p`: a script that applies the chosen
   hunks of `git diff -U0` to `git show HEAD:<file>` (LF, as the index holds it), `git hash-object -w` +
   `update-index --cacheinfo`. `dev_build.ps1` runs clang-format, so edited lines may come back reflowed.
+
+- Before chasing an Enhanced artifact, boot the same spot and hour with `JAK_ENHANCED=0` and count it with the same pixel mask (~2 min): Spargus palace's lime-yellow streaks at 18h showed in 7/15 stock frames too, after an hour of hot-reload bisection (glow quads painted, sprite3 painted, fx gain/knee). For bisection in a hot-reloaded game shader (`JAK_ENHANCED_SHADER_RELOAD=all`), keep every uniform referenced (`mix(c, debug, 0.999)`, `max(tex.a, 1.0)`) or the reload is refused with "uniform X moved".
