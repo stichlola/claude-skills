@@ -1093,6 +1093,19 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   reads the finished map back once (glReadPixels, 1 MB) and logs the roofed floors nearest the camera
   (lowest surface, next one 2.2-12 m over it, over a whole 5x5 block); then teleport there. Expect
   false "floors" (under a pier deck, inside closed buildings: teleport lands black), so try 2-3.
+- Probes on a game with **baked vertex light** (Jak 3, gfx-tech2 M2/M3): the baked light already holds
+  the indoor darkness, and a deliberately dark look forbids adding bounce brightness, so the probes can
+  only steer hues (characters' night rim by open sky, shade's sky-blue -> bounce hue under a roof).
+  Both measured at or under frame noise (palace 12h: diff 5.7 vs 5.3-6.2 between frames of one variant,
+  because that area's sun shadow strength is low) for 0.3-2 ms: kept opt-in. Judge "is the effect bigger
+  than two frames of the same variant" before spending more milestones on it. The probe pass cost did
+  not scale with rays (2 rays 0.5 ms, 8 rays 1-2 ms, 16 ~ 8): divergence and the per-level BVH restarts
+  dominate. A finder spot can also land the camera looking straight down on Jak (no view of the cover).
+- **Physical sun color** (Rayleigh lambda^-4 + Angstrom aerosols lambda^-1.3 at 680/550/440 nm over the
+  Kasten-Young air mass, relative to the sun overhead, hue only with the old ramp's luma): map the area's
+  haze to aerosols gently (beta 0.04 + 0.08 x haze); 0.2 x haze turned the desert's 18h sun blood red. Pin
+  the hour while comparing (menu script hour every 10 s, 4 s per variant): the clock otherwise moves the
+  sunset more between two shots than the variant does.
 
 ## Measure GPU cost at the player's resolution, tile every light loop (lesson, Jak 3 Enhanced, Nov 2026)
 
