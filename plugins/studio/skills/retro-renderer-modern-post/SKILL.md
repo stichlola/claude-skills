@@ -1163,3 +1163,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   as fires with the flame size clamped (0.2x, max 2.5 m), behind a tuning key.
 - Char look checks at golden hour need a backlit sunlit spot (desert-start 18h: Jak's shadow points at
   the camera); a street in shade shows nothing for a sun_lit-masked effect.
+
+## Splitting an uber composite: what pays and what doesn't (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Before splitting work out of a big composite, test whether its cost is registers or work: move
+  one costly feature into its own full-size program (same file, a define compiles only it) and
+  compare the composite's drop with the new pass's time. Jak Enhanced's rock detail + sand ripples:
+  composite -1.22 ms, own pass 1.21 ms at 2560x1600: pure per-pixel work, no occupancy win. A
+  split pays only when the new pass runs at fewer pixels (cloud rays at a quarter: -0.75 ms net).
+- Pack many per-pixel factors into one RGBA32UI target with packHalf2x16 (eight halves, one
+  texelFetch), and `discard` the pixels the composite won't read, to save the write bandwidth.
+- Refactoring inline code into a function with outs cost the NVIDIA build +0.15 ms: re-measure the
+  old path after any refactor, not only the new one.
+- Cheap A/B of "what if X were free": swap one helper's body for a trivial one by hot reload
+  (a cheap gnoise: -0.55 ms), then decide if a real replacement is worth building. A bilinear
+  lookup of the same noise (1024^2 R16F, 16 texels a cell, period 64 cells, exact at the lattice)
+  kept only -0.12 ms: the fetch latency ate most of the ALU saved.
+- No gain: Vogel disc taps turned incrementally instead of sin/cos per tap, and fewer PCF taps for
+  narrow penumbrae. Zeroing uniform groups one at a time (cost probe) showed a 12 ms composite with
+  only ~3.5 ms in nameable features: the rest is base cost spread over every pixel.
