@@ -113,6 +113,10 @@ camera the game hands over each frame.
   several glows that come and go): a fire is one that has glowed there for a second in most frames
   (~60%+); a gun fired from a standing enemy glows in bursts, shots move on.
 - Texture names don't help (fires and lamps share the generic glow texture).
+- Don't key the lamps' and fires' strength only on the clock (night factor): indoors (temples,
+  caves, palace halls) at noon they then stay at day strength (Jak 3 temple: ~1/4 of the night's), so
+  the torches light nothing on the floor. Give the light rig an "enclosed" factor too (area flag, or
+  little sky visible on screen / no sun shadow coverage).
 - With the fire positions: flicker their light, wobble the scene's uv in a column above each flame
   (only for pixels behind it), and draw procedural embers in the composite (hash per ember and per
   life cycle, rise + sway, depth-tested against the scene, a screen-rect early-out per fire).
