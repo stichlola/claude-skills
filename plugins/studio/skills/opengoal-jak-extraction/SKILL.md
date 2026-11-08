@@ -624,6 +624,13 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   ~40 s). 6 shots / 3 spots / 4.5 min. A worktree has no `out\jak3`, so dev_launch always runs `--proj-path`
   of the main tree; a no-edit scout at the main tree's commit can reuse its bin. To scout a worktree's own build, skip dev_launch: copy `<wt>\out\build\Release\bin` to a scratch bin and start gk with `--proj-path <wt>` (the worktree has `out\jak3` once built), the testcfg copied as dev_launch does, and the menu script; logs then land in `<wt>\log`. A Enhanced boot and a `JAK_ENHANCED=0` boot with the same script give same-spot vanilla pairs (~4 min each). 640x360 shots downscaled
   in the viewer show fake vertical stripes at night: zoom a crop before calling it a glitch.
+- Glitch-hunt scouting that worked (gfx-polish, Nov 2026): capture the window every 2.5 s for the whole menu-script
+  run (~170 frames / 8 min), then pick frames per segment into contact sheets (4 x 360 px) and run a numpy
+  32x32-block diff of consecutive frames to spot flicker/pops without viewing them all. Pair Enhanced vs
+  `JAK_ENHANCED=0` by the logged `menu script <t> s` times, not wall time: vanilla boots ~2 s sooner and its
+  hour change lands later, so the "same" second shows another hour or a black load frame. `wasall-start`
+  lands on desert-start; `ctyinda-start` requested from `mhcityb` (Metal Head tower) did not travel.
+  `JAK_ENHANCED_PLAYER=ashelin` in the same run covers a character at every spot.
 - Improvement scouts: grep `enh_composite.frag` (~5000 lines) before proposing "add X". Already there by round 5:
   hot air + embers over fires (`fire` uniform), light flicker, SSR + RT reflections, caustics, shore foam and
   wakes, cloud shadows, PCSS, eye adaptation, CAS sharpen, rain puddles, material classes. Real gaps are
