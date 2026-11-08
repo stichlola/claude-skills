@@ -47,6 +47,11 @@ stopping at a score >= 8 or after N rounds. Ten rounds taught what follows.
 - **Verify the locator once** by rendering the DCC scene from the logged game camera and comparing
   with the screenshot: when they differ, the engine is hiding or showing something the DCC isn't
   (see traps) - that difference is itself the bug.
+- **Glitch hunt on a small screenshot budget**: run the same timed spot/hour script once modded and
+  once vanilla, paste each pair side by side, two spots per sheet at 960 px (7 spots = 4 looks). Then
+  decide with numbers, not more looks: crop mean/max luma and counts of "hot colour" pixels (magenta,
+  yellow core) per box. A sprite present in vanilla (296 px) and absent in the mod (0) or a blob that
+  grew 9 -> 297 px is a finding; a "fixed" box that now matches the surrounding area is a pass.
 
 ## Placement that survives review
 
