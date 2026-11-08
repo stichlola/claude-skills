@@ -792,6 +792,10 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Jak Enhanced `JAK_ENHANCED_TP=x,y,z,yaw` (meters, degrees) to frame a spot no continue point shows:
   yaw 180 faces +z, 0 faces -z; read the `[camera] x y z fwd ...` log line of a plain run first for
   coordinates, and put y at the floor's height (too far off it and Jak lands in the water below).
+- Jak Enhanced wet-surface tests (puddles, wet stone): `JAK_ENHANCED_WEATHER_SCRIPT=0:5` (after the
+  rain from the start) gives puddles in ctyport and Spargus at once. Before an A/B run that relies on a
+  changed C++ default, grep that the edit landed: PowerShell `.Replace()` on a CRLF source no-ops
+  silently, and the "default" variant then runs the old value.
 - Without debug in the file, keep the context of a stop: a small ring of the last debug lines the file
   skipped (16), written after `[die]` (asserts go through `lg::die`) and from a Windows
   `SetUnhandledExceptionFilter` that also flushes the file (info lines are buffered: flush level warn).
