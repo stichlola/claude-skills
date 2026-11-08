@@ -636,6 +636,7 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   hour change lands later, so the "same" second shows another hour or a black load frame. `wasall-start`
   lands on desert-start; `ctyinda-start` requested from `mhcityb` (Metal Head tower) did not travel.
   `JAK_ENHANCED_PLAYER=ashelin` in the same run covers a character at every spot.
+- Own capture loop for a worktree build: a script run via `[scriptblock]::Create(ReadAllText)` has an empty `$PSScriptRoot` (pass the dir as a param); frame names written with `'{0:000.0}' -f` get the Italian locale's comma (`039,9.png`), so parse with `replace(',', '.')`. Desert dust can stay alive after travel (`rogue level entity desert-dust-storm still alive` in the log): Spargus at noon then shows an orange veil that vanilla doesn't have, check this line before blaming a haze change.
 - Improvement scouts: grep `enh_composite.frag` (~5000 lines) before proposing "add X". Already there by round 5:
   hot air + embers over fires (`fire` uniform), light flicker, SSR + RT reflections, caustics, shore foam and
   wakes, cloud shadows, PCSS, eye adaptation, CAS sharpen, rain puddles, material classes. Real gaps are
