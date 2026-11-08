@@ -403,6 +403,12 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   real matrix): take main against the root (joint 0) instead.
 - A stylised walk clip (Sig's museum walk swings each arm to shoulder height) can be calmed by blending both
   arms' locals part way (~0.5) toward a hanging-arm pose while walking unarmed; also on Jak's retargeted run.
+- A big skin with no run clip of its own (Sig: only `sig-highres-sig-walk` exists) on Jak's retargeted run
+  looks crouched and wide-legged: Jak's knees are bent for his own height. Fade in by speed (top walk speed to
+  +3 m/s), raise main/hips (Sig 0.35 m), move the IK foot targets ~30% toward the midline and scale the foot
+  lift down (~0.45). Measure it numerically, not by eye: leg extension (hip-ankle / thigh+shin) and ankle
+  spread / hip width, averaged over 150 frames at full speed on open sand (teleport there; near walls the run
+  stalls at 1-2 m/s). Sig 0.77 -> 0.88 extension (Jak 0.74), spread 0.85 -> 0.71.
 - release_gate.ps1 with a single instance (`-FirstInstance 19 -LastInstance 19`) runs only one row per call
   (it never frees the instance): loop over rows. Stop your own dev goalc first, it holds the nREPL port.
 - A fresh worktree for goalc needs: `goal_src/user/user.txt` + `goal_src/user/enhanced/` copied (jak3 ->
