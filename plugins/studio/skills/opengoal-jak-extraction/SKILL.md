@@ -388,6 +388,26 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   the walk/run. Firing: tip the forearm/hand toward the fire direction procedurally (check the
   arm-along-shot dot ~1.0 in the log); muzzle = the NPC model's own blast joint.
 - No long-idle fidgets: Jak's random idle variations look wrong on another body.
+- **Check an NPC clip's data before using it as an idle** (glb from the ripper: keys, duration, per-bone
+  rotation/translation/scale range). Sig's `sig-highres-idle` is ONE key (a cutscene base pose: he stood
+  frozen, "a T-pose"); his `idle-wasdoors` is the real one (11 s, weight shift). Ashelin's `idle0` is an AI
+  combat-ready loop (0.93 s, body rocking 7 cm, chest scale 0.93-1.20) that looks like heavy deformation under a
+  close player camera: play it slower (0.6) and keep ~40% of the motion away from its first frame (lerp each
+  joint's local, parents first, eyes excluded). Measure in game with a watcher (joint row lengths and offset
+  from the root, min/max over 2-3 s) before and after.
+- A clip that holds a prop in one hand: give the free hand's arm to the other side mirrored. Jak 3 rigs mirror
+  across x (left quaternion x y z w, right x -y -z w), so right local = S left local S (negate row 0's y,z,
+  rows 1-2's x, trans x); pair the joints by their order in each arm's chain.
+- Writing bone matrices by hand: zero each row's w (and trans w = 1) after lerping locals. Garbage row w's
+  exploded the next frame's 4x4 inverses (main joint scaled by 9e6). Never invert a prejoint bone (not a
+  real matrix): take main against the root (joint 0) instead.
+- A stylised walk clip (Sig's museum walk swings each arm to shoulder height) can be calmed by blending both
+  arms' locals part way (~0.5) toward a hanging-arm pose while walking unarmed; also on Jak's retargeted run.
+- release_gate.ps1 with a single instance (`-FirstInstance 19 -LastInstance 19`) runs only one row per call
+  (it never frees the instance): loop over rows. Stop your own dev goalc first, it holds the nREPL port.
+- A fresh worktree for goalc needs: `goal_src/user/user.txt` + `goal_src/user/enhanced/` copied (jak3 ->
+  jak3_pal), junctions for `iso_data/jak3/*`, `iso_data/jak3_pal`, `decompiler_out/jak3[_pal]`,
+  `out/enhanced`, hardlinked fr3, and copies (not links) of `out/jak3/iso` and `obj` that goalc writes.
 - Unarmed rest pose: small turns on the upper arms/forearms (arms in, elbows a bit bent); a pose the
   user makes by hand in Blender (dump the bone rotations to JSON) can be applied as turns on idle0.
 - One gun per D-pad direction; reuse Jak's gun HUD (same frame, slide-in) with the character's icon
