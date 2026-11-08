@@ -608,6 +608,10 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   ~40 s). 6 shots / 3 spots / 4.5 min. A worktree has no `out\jak3`, so dev_launch always runs `--proj-path`
   of the main tree; a no-edit scout at the main tree's commit can reuse its bin. To scout a worktree's own build, skip dev_launch: copy `<wt>\out\build\Release\bin` to a scratch bin and start gk with `--proj-path <wt>` (the worktree has `out\jak3` once built), the testcfg copied as dev_launch does, and the menu script; logs then land in `<wt>\log`. A Enhanced boot and a `JAK_ENHANCED=0` boot with the same script give same-spot vanilla pairs (~4 min each). 640x360 shots downscaled
   in the viewer show fake vertical stripes at night: zoom a crop before calling it a glitch.
+- Improvement scouts: grep `enh_composite.frag` (~5000 lines) before proposing "add X". Already there by round 5:
+  hot air + embers over fires (`fire` uniform), light flicker, SSR + RT reflections, caustics, shore foam and
+  wakes, cloud shadows, PCSS, eye adaptation, CAS sharpen, rain puddles, material classes. Real gaps are
+  usually in the *connections* (water vs floating objects, sky outside the desert zones), not missing effects.
 - The testcfg (`-debug`) keeps the ImGui toolbar strip and "outside of bsp" text in every shot: same on both
   sides, ignore. Fights (slums) and particles are not deterministic between boots: don't call an enemy or
   spark "missing" from one pair.
