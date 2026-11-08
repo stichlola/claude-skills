@@ -1066,6 +1066,15 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   same as a good GTAO in the AO debug view. Short per-pixel rays only find corners SSAO already finds;
   the occlusion that matters indoors (a roof 5+ m up blocking the sky) is far and low-frequency, so it
   belongs in probes (sky visibility per probe), not in a per-pixel pass. Kept opt-in.
+- First step toward probes, cheap and useful alone: a top-down **sky map** (rain occlusion) traced
+  through the same BVH: one ray straight down per 0.5 m cell, 256^2 around the camera, a band of rows
+  a frame into a back texture, swapped whole (0.01 ms). Store the first 4 surfaces from the top
+  (continue each ray just past its hit), not only the topmost: for slanted rain the cover that counts
+  is the lowest one over the point (an arch's underside at 3 m, not the roof at 15 m). Covered =
+  topmost surface above point + gap; then 4 taps at (lowest cover - y) x 0.35 around: open if any is.
+  Look it up offset 0.6 m along the normal, or every wall under an eave reads covered. Debug view
+  (green open / red covered) first; most spawn points have no roofed ground, so proving it needs a
+  hand-picked spot (arcade, market awning).
 
 ## Measure GPU cost at the player's resolution, tile every light loop (lesson, Jak 3 Enhanced, Nov 2026)
 
