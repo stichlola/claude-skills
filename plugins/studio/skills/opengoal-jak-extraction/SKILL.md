@@ -346,6 +346,7 @@ at the saved spot:
 - A glb without `COLOR_0` loads as white (0xff), twice the game's neutral 0x80, despite what the doc says: it looks washed out. Halve the picture's values, or export the colors.
 - Each model embeds its own copy of a shared Tripo atlas, uncompressed in the fr3: at 2048 a level went from 42 to 181 MB, at 1024 to 52 MB.
 - Finding which post effect draws an artifact: `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders while the game runs. A script that swaps one line of the shader per variant and takes a shot of each compares them all in one run, with the same camera. Restore the files in a `finally`.
+- Pointing a test at water (Jak Enhanced): a late teleport (`JAK_ENHANCED_MENU_SCRIPT` `22:3:x/y/z/yaw`) moves Jak and turns him, but the camera keeps its heading, so pick the spot along the start camera's own view. Haven port: `ctyport-start` + `22:3:193/17.5/1725/180` puts Jak swimming in the harbour, facing the far quay. Check the water debug mask in the first shot: a "water in view" is not proof the composite treats it as water.
 - PowerShell: a negative number passed to a function arrives as a string, and `$z * 4096` then repeats the string. Cast with `[int]`.
 - Prompts for a remake: "same shapes, exactly the same colors and scale" gets a faithful copy that barely shows in game. Ask for more detail and allow new forms; match the colors afterwards.
 
