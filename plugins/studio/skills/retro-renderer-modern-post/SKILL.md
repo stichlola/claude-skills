@@ -1125,6 +1125,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   haze to aerosols gently (beta 0.04 + 0.08 x haze); 0.2 x haze turned the desert's 18h sun blood red. Pin
   the hour while comparing (menu script hour every 10 s, 4 s per variant): the clock otherwise moves the
   sunset more between two shots than the variant does.
+- **Physical sky dome, cheap** (single scattering over a flat layer, closed form per channel:
+  `L = sum(tau_i P_i)/tau * m_v (e^(-tau m_s) - e^(-tau m_v)) / (m_v - m_s)`, Rayleigh + HG g 0.7 phases,
+  white balanced on the sun overhead, hue only so the art's brightness and dark look stay). Two fixes
+  are mandatory: cap the view air mass at ~10 (the flat layer's 38 at the horizon made the whole low sky
+  deep red at sunset, even away from the sun), and add ozone's Chappuis absorption (300 DU:
+  tau 0.004/0.027/0.001 at 680/550/440, along both paths): without it the morning's low sky goes
+  olive-green, with it the twilight pink/violet appears on its own. Check offline in Python first (a table
+  of hues by sun height x view direction), it costs seconds instead of game runs. Judge it against the
+  user's reference picture by band: mean RGB distance of 3 horizontal sky bands, off 29/37/25 -> on
+  10/23/21 at the reference hour, a measurable win where a side-by-side alone is taste. A `>= 10` debug
+  that returns the hue x 0.5 shows little when the sky's luma is ~0.5 anyway: debug at full saturation.
+  At dusk the game's own painted sky replaces ours (`game_w`), so a sky-dome change is invisible there.
+- **Physical shade tint** (shade loses sun/(sun+sky) per channel, ratio from the shade's own darkness):
+  match the darkening by luma, not by the plain channel mean (3.5% lighter noon shade). It came out equal
+  to the hand-tuned desert lilac (b/r 0.676 vs 0.675): a hand tint already tuned to a reference is often
+  physically right; measure the shaded crop's b/r against frame noise before replacing it.
 
 ## Measure GPU cost at the player's resolution, tile every light loop (lesson, Jak 3 Enhanced, Nov 2026)
 
