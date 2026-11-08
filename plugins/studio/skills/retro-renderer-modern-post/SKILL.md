@@ -1002,3 +1002,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Before "adding" a light flicker or a specular occlusion, grep the CPU side too: glow-detected fires and manual
   lights already flicker (EnhancedPostScene.cpp), glossy/puddle reflections already had Lagarde occlusion.
   An extra occlusion on wet lamp glints measured within noise at the port after rain: reverted.
+
+## Hi-Z pyramid for screen-space reflections (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Build it from the depth copy as R32F *view z* (not raw depth), with sky and the reflector itself (the sea's
+  own depth) written as 1e30: rays then never stop on them, no per-step sky/sea test needed. Levels sized
+  `size >> L` (floor); at an odd edge the last texel takes a 3-wide footprint so the shader can use
+  `min(ivec2(s) >> L, lsize - 1)` and the last tile's far edge = the screen edge.
+- Write level L while reading L-1 of the same texture: set `GL_TEXTURE_BASE_LEVEL = MAX_LEVEL = L-1` per pass
+  (texelFetch lod is relative to the base level), restore 0..N-1 after. One FBO, re-attach per level.
+- Traversal in screen pixels with 1/z linear along the segment: tile fully behind the ray (ray's far z <
+  tile min z) -> skip to the tile exit, one level up; else jump to where 1/z reaches the tile's min, one level
+  down; at level 0 a hit if just behind the surface, and reject surfaces nearer than the reflector (the
+  rock the camera stands on). Clip the segment to the screen and to z > near first.
+- Cost at 640x360: pyramid 0.06-0.1 ms, composite unchanged with 40 tile visits vs 32 linear steps.
+- Texture units: grep every `tex_T<n>` in the big composite shader before picking one (28 was already the
+  light-tile bitmask there: glslang said "redefinition"). Run `check_shaders.py` before booting: a shader
+  that fails to compile at startup asserts the whole game.
+- PowerShell `.Replace()` on a .cpp with CRLF silently misses multi-line needles written with `` `n ``: use the
+  Edit tool, or match one line at a time.
