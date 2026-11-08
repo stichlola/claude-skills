@@ -896,3 +896,27 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   (weights in R/G/B, written at the end of main) showed it in one shot; knee 0.025 then worked (-10%).
 - Fights make A/B noisy: use the same-frame split (`tune_x 2` = right half) and pick measuring boxes away
   from coloured effects (magenta goo made a "no change" box).
+
+## Clipped glow pools, late compression, nested profiler nodes (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A big additive glow over a lit floor clips in the 8-bit frame** (Jak 3 arena light column pool: vanilla
+  too). Without an HDR frame, blend the big quads as a screen, `glBlendFuncSeparate(ONE_MINUS_DST_COLOR,
+  ONE, ONE, ONE)` (D + S(1-D)): a soft knee, the floor's texture stays. Choose per quad by its screen
+  size (GS x span / 512, y / 256; >= 0.2 of the screen) so small lamp/thruster glows keep the plain sum
+  and the effects' day boost (after - before) still finds them. Pool 205 -> 173 at 19h, no cost.
+- **A darkening mid-composite can be undone by what follows**: the night "pale ground" compression at
+  -90% came back as -5% after eye adaptation and the lights. Mark the pixels where the conditions are
+  known (a weight in a global), apply the compression on the final values just before the shoulder.
+  Check the weight's parts in a debug view first: the night factor's gate (0.3..0.8) was only ~0.5 at
+  21h. Slums flagstones 157 -> 87, walls unchanged.
+- `JAK_ENHANCED_ENEMIES=0 JAK_ENHANCED_POPULATION=0` quiets the city for A/B in Haven's slums (no fight,
+  camera stays put).
+- **Profiler nodes in a `std::vector`**: a timing macro that calls `prof.make_scoped_child()` on the outer
+  node from inside a nested timed call adds siblings to the vector holding the still-open node: it
+  reallocates, the scope finishes freed memory ("finish() not called on ..." spam). Bind the child as the
+  wrapped call's `prof` (`[[maybe_unused]] auto& prof = node;` in the macro's block). Don't bracket passes
+  with glFinish to profile: keep the timestamp-query timers on.
+- Hour drift kills low-sun A/B: a menu script that pins the hour ends, and 30 s later the 18h long
+  shadow is gone. Pin the hour for the whole cycle, and test hot reloads only inside the pinned window.
+- Before extending a reflection's range, check it finds anything: Haven harbour 19h far water looked the
+  same with water SSR capped at 80, 200 or 300 m (composite 0.76 ms all); the cap was not the cause.
