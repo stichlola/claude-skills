@@ -1182,3 +1182,26 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - No gain: Vogel disc taps turned incrementally instead of sin/cos per tap, and fewer PCF taps for
   narrow penumbrae. Zeroing uniform groups one at a time (cost probe) showed a 12 ms composite with
   only ~3.5 ms in nameable features: the rest is base cost spread over every pixel.
+
+## Profiling an uber composite: exits lie, skips and compile-outs tell (lesson, Jak 3 Enhanced, Nov 2026)
+
+- An early-exit bisection (`#if EXIT == k  color = c; return;`) does NOT measure each block's cost: every
+  exit also strips the later code (dead), changing the register allocation. Jak Enhanced's sky block read
+  1.7 ms by exits; skipping it at run time (`if (EXIT == k ? false : (cond))`) saved 0.2 ms, and
+  returning early on every sky pixel saved 0.1. Measure with run-time skips of one block at a time, all
+  variants hot-reloaded in ONE run with the baseline repeated (the GPU drifted 12.4 -> 13.1 ms in 15 min).
+- A python helper that wraps every top-level `if (...)` of main() with `ENH_PROF_EXIT == k ? false : (...)`
+  (matching the condition's parentheses across lines) gives the whole per-block table in one ~12 min run.
+  Result there: no block over 0.4 ms except the sun shadows (1.25), rock detail (0.9) and sand (0.7);
+  some skips came out SLOWER (+0.5 ms): the compiler's scheduling swings more than most blocks cost.
+- Compiling out blocks that never run in the frame (water, wet, blasts, headlights, cutscene DoF) gave
+  only -0.26 ms: register pressure was not the hidden cost either. A "lean" program variant chosen per
+  frame wasn't worth an extra 1 MB program (and its gate failed anyway: the far sea, 5 lamp glows and a
+  random dust veil were "on" in the plain desert frame; log the gate's uniforms before building one).
+- What paid: temporal half-sampling of the half-resolution passes. Each frame takes every other tap
+  (`i = frame & 1; i += 2`), the result averaged 50/50 with last frame's other half fetched at the same
+  world point (view -> previous view as the TAA's, an R(G)16F history written as a second colour
+  attachment, rejected when the stored distance differs > 3 % or after a cut). SSAO 0.77 -> 0.55 ms,
+  one-bounce GI 0.53 -> 0.36 ms at 2560x1600; occlusion equal within 0.9/255.
+- An A/B of shots taken a few seconds apart at dusk differs by the clock (the later shot darker): take
+  the pair in both orders before blaming the variant.
