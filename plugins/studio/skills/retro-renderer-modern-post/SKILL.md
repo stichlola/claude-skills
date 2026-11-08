@@ -1030,5 +1030,9 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Texture units: grep every `tex_T<n>` in the big composite shader before picking one (28 was already the
   light-tile bitmask there: glslang said "redefinition"). Run `check_shaders.py` before booting: a shader
   that fails to compile at startup asserts the whole game.
+- Before a staged "move pass X onto the pyramid" milestone, read the per-pass timings in a log you already
+  have: the planned GTAO-on-Hi-Z step was dropped in 2 minutes because GTAO wasn't the shipping AO and the
+  shipping SSAO was 0.07-0.18 ms at 640x360 (nothing left to save), and it ran before the pyramid was built.
+  Short rays (0.5 m contact shadows) gain nothing either. Pyramids pay off for long rays only.
 - PowerShell `.Replace()` on a .cpp with CRLF silently misses multi-line needles written with `` `n ``: use the
   Edit tool, or match one line at a time.
