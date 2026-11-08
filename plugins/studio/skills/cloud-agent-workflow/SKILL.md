@@ -26,6 +26,12 @@ CLAUDE.md always wins where it says something different.
   save time and disk.
 - Commit small, with clear messages; follow the repo's labels and trailers. Check commits are signed
   when the repo needs it: `git cat-file -p HEAD | grep -c gpgsig`.
+- One commit per item when several items changed one file, without `git add -p` (not interactive):
+  parse `git diff -U0` into hunks, split pure-addition hunks (a block of new settings) line by line,
+  tag each by a keyword, rebuild the file from `git show HEAD:<file>` with the chosen hunks applied
+  bottom-up (equal start lines in reverse order), then `git hash-object -w --stdin` +
+  `git update-index --cacheinfo 100644,<sha>,<path>` and commit; repeat with a growing set. Check that
+  the full set rebuilds the working file (compare with line endings normalized: the index has LF).
 - Push with `git push -u origin <branch>`; on network errors retry up to 4 times (2, 4, 8, 16 s).
 - If the project deploys from `main`, fast-forward `main` to the work branch after each push only when
   the user asked for that (`git push origin <branch>:main`), and verify with `git ls-remote origin`.

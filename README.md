@@ -17,7 +17,7 @@ lo usi da solo quando serve.
 | Skill | Cosa contiene |
 |---|---|
 | `multi-agent-orchestration` | **risparmio token** (effort basso per i compiti meccanici, pochi screenshot ridotti, rapporti brevi a formato fisso, letture parziali, pochi agenti paralleli), forma dei workflow (ricerca in parallelo → un solo implementatore → verifica indipendente → correzione), riprendere un workflow senza rifare il lavoro, fermare agenti senza lasciare modifiche di debug, release su linea lenta, pulizia del disco. |
-| `cloud-agent-workflow` | regole di lavoro nelle sessioni lunghe e cloud: git sicuro (worktree, commit firmati, main allineato), niente `pkill`, lavori lunghi in background, Playwright senza GPU, controlli prima di dire "fatto". |
+| `cloud-agent-workflow` | regole di lavoro nelle sessioni lunghe e cloud: git sicuro (worktree, commit firmati, main allineato), niente `pkill`, lavori lunghi in background, Playwright senza GPU, controlli prima di dire "fatto", un commit per voce anche con piu' voci nello stesso file. |
 | `mesh-hygiene` | **in ogni lavoro di modellazione 3D** (Blender, scan, modelli Tripo, booleane, remesh, sculpt, tagli, export STL/OBJ/FBX/GLB): prima di consegnare o esportare una mesh controllare e pulire la geometria sporca e riportare i numeri: vertici e spigoli doppi, triangoli degeneri a spessore zero, spigoli non-manifold e buchi, vertici a farfalla, normali invertite, frammenti staccati, volume prima/dopo. Differenze fra mesh da stampa e da gioco. Script `scripts/mesh_clean.py` per Blender in background. |
 
 ## Skill per argomento

@@ -570,6 +570,16 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   composite that only looks the shadow map up on faces toward the sun leaves the rest lit, so at golden
   hour Jak glowed inside a wall's shadow. Look the map up ~70 cm toward the sun from every character
   pixel (past the body's thickness) and take ~0.85 of that shadow off. One lookup, no measurable cost.
+- That lookup point (70 cm toward the sun) sits inside the body for legs and hips at a high sun: the
+  character shades itself. Better: test the map at the pixel with a bias of ~1.6 m along the light
+  (`s.z - gap_m / depth_span_m`): only casters that far count, so the own body, a shoulder pet and
+  the screen-space contact march stop counting. And never give characters the land's shade tint: a
+  lilac shade (takes much more red than blue) turned yellow hair and an orange sidekick olive green.
+  A neutral tint at noon, toward brown at dusk (darkened yellow under a cool tint also reads olive);
+  less shade under a high sun (bounce from the bright ground), deeper as the sun gets low.
+- Check the shadow debug view before "fixing" a character shadow: here a "Jak in open sun" was really
+  inside a 12 m rock's shadow (gap view: red/green/blue = 2/20/200 m to the caster); only the colour
+  of the shade was wrong.
 - Game glows and torch spawners turned into dynamic lights must fade out in full daylight, or they lay
   bright colored pools with hard shadows on sunlit ground.
 - Far cloud "cards" (sky geometry kilometers out) need the same sky treatment at night/dusk as by day,
@@ -643,6 +653,16 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   1 - their coverage. Added light (`ONE, ONE` / `SRC_ALPHA, ONE`) only adds to an alpha that is
   already 1, so it never marks. The post-sprite copy then carries the mask for free; leave marked
   pixels in the scene's grade (composite and bloom key alike).
+- Sky glows (sun, moon) must stay out of that recovery: the weight's threshold cut in at the glow
+  quad's edge and the gain saturated it, the sun became a purple diamond. Give sky pixels (depth 0
+  or km away) weight 0; their glow then comes back as drawn with the rest of the sprites' difference.
+- A blown light shape on water: give every reflection term its own test switch (lamp columns,
+  far-beacon columns, screen/RT reflection, mask view) and shoot them in one run. Here the "SSR
+  rectangles" were the far beacons' columns: near beacons summed with no occlusion and no roll-off.
+  Mask them with the SSR hit (a wall in front hides the lamp) and soft-saturate the sum.
+- Before blaming the TAA for a missing 1 px lamp (the jitter draws it on only some frames), shoot
+  the same spot twice with the history off: tower beacons blink, and a single "TAA off shows it"
+  pair proved nothing.
 - Characters spared from a grade step (the land's evening deepening) and see-through cloth restored
   from the game's own color both skip the shadow's darkening: in a wall's shade Jak's hair and Daxter
   stayed sunlit. Darken character pixels by their shadow once more after the grade, last.
