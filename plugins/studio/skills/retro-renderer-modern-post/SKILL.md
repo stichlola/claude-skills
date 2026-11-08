@@ -683,3 +683,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   frame, so a dip's slot is ambiguous: test the suspect alone, a toggle every 3 s shows as alternating
   values). Then open the pass's debug view. Jak 3 Enhanced: dark ground rows at fixed screen heights were
   SSAO (`JAK_ENHANCED_AO_DEBUG=1` showed them), only made visible by the point-light term it multiplies.
+- A black blotch over a transparent effect (Jak 3 arena's light shaft): check the normal target's tag
+  length there. A draw that blended into it left vectors longer than any tag (> 1.02); SSAO took them for
+  the surface's normal and returned 0.07. Treat |n| > 1.02 as "no normal" in every reader (AO, GI,
+  composite), then find the writer. Locate the stage cheaply: a `tune_stage` uniform plus one line per
+  top-level section (`if (abs(tune_stage - K) < 0.5) dbg_c = c;`, final `c = dbg_c`), swept through the
+  tuning file in one run, mean of a crop per stage: the drop showed at the AO multiply (159 -> 52).
+  Commit with those lines stripped (tag them `// STAGEDBG`, filter them out of the staged blob, LF only:
+  hashing the CRLF working file rewrote every line).
+- Night skies that smooth the game's sky (painted cloud cards) also erase the lights drawn over it
+  (beacons, searchlight beams). Keep the sky copy by night too and add back `max(scene - sky copy, 0)`
+  where it is brighter than the sky, as light after the stars; replacing the pixel instead drew a dark box
+  around the glow, and a sharpness test kept only a hollow ring of an even core.
+- A sky glow kept out of an effects' gain and re-added as `after - before` loses its core where the sum
+  clipped to white (almost nothing left to add): keep at least white where the copy after the sprites is
+  clipped and they brightened it, and drop the faintest light (its quad's edge shows over a new sky).
