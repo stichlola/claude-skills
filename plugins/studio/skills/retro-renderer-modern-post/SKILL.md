@@ -1083,7 +1083,10 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   topmost surface above point + gap; then 4 taps at (lowest cover - y) x 0.35 around: open if any is.
   Look it up offset 0.6 m along the normal, or every wall under an eave reads covered. Debug view
   (green open / red covered) first; most spawn points have no roofed ground, so proving it needs a
-  hand-picked spot (arcade, market awning).
+  hand-picked spot (arcade, market awning). Don't guess spots: let the map find them. A debug switch
+  reads the finished map back once (glReadPixels, 1 MB) and logs the roofed floors nearest the camera
+  (lowest surface, next one 2.2-12 m over it, over a whole 5x5 block); then teleport there. Expect
+  false "floors" (under a pier deck, inside closed buildings: teleport lands black), so try 2-3.
 
 ## Measure GPU cost at the player's resolution, tile every light loop (lesson, Jak 3 Enhanced, Nov 2026)
 
