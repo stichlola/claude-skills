@@ -731,3 +731,24 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Uniform budget: an experimental `uniform uvec4 x[144]` on a composite already at ~860 vectors risks the
   1024 minimum of Intel/Mesa. Put it behind `#ifdef` (off by default); the C++ `glUniform*` on location -1
   is a silent no-op, so nothing else changes.
+
+## Per-pass GPU timers, light columns, clipped pools (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **Time every pass with timestamp pairs, not the frame's "post" interval**: two `glQueryCounter(GL_TIMESTAMP)`
+  per pass in a 4-frame ring, read only when `GL_QUERY_RESULT_AVAILABLE` (never wait; timestamps nest, unlike
+  `GL_TIME_ELAPSED`), one log line every 5 s. Jak 3 at 640x360: the named passes summed 1.3-1.7 ms
+  (composite 0.7, shadow near/far 0.25 each, clouds 0.1) inside an 11.4 ms "post" interval measured the same
+  way: the interval is mostly the GPU idling for the CPU's submissions and the vsync clock, not shading.
+  A plan to save 2-4 ms by halving passes would have saved < 0.5 ms; measure before planning perf work.
+- **A translucent light column the game draws over a wall (Jak 3 arena shaft)** vanishes under post shade,
+  AO and dusk grade: the wall behind is taken for the surface. Its blended draw leaves the normal target
+  longer than any tag (|n|^2 > 1.04): there use `max(c, game picture - effects)` (gated by the game
+  picture's luma > 0.3-0.5, decal strips mark it too). Restored the beam, nothing changed in the desert.
+- **A jagged, blobby edge on a bright additive pool** (arena sun pool at dusk) is the 8-bit target's clip
+  contour: where floor + pool >= 1 the copy holds 1 - floor (the texture upside down). Toggling the night
+  keep, the effects' gain, a softened threshold or a mip of the difference changed nothing; it needs an
+  RGBA16F scene target. Check the clip mask (`smoothstep(0.94, 0.99, after)`) before tuning thresholds.
+- A "night glitch" colour can be an Enhanced feature's own light: Jak's desert lantern (14 m, orange) and
+  placed torches (13 m) turned moonlit ground salmon. Give such lights tuning keys (reach, strength) and
+  A/B them in one run before suspecting the grade. Palace "glowing blob with no source": shoot vanilla at
+  the same spot first; it was the game's own glow.
