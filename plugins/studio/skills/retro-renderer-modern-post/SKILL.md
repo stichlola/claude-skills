@@ -551,6 +551,12 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   the plain sum no longer clips and spreads as a wide saturated wash. Scale only the big quads with a
   constant factor (`glBlendColor` + `GL_CONSTANT_COLOR`, 0.7 in Jak 3's arena) and let the final
   shoulder roll the core to white; small lamp/thruster glows keep the full sum.
+- **PS2-emulating shaders need a per-fragment clamp in a float frame**: they do `color *= 2` and rely on
+  the RGBA8 target clamping each fragment (GL clamps source colour AND blend factors for fixed-point
+  buffers). In RGBA16F a 2.0 alpha turns `SRC_ALPHA/ONE_MINUS_SRC_ALPHA` into add-and-subtract, HUD textures
+  (minimap) go over-bright, orange flames go white. Fix once at shader load: rename `main`, append a
+  wrapper that clamps the `out vec4` to 0..1; skip shaders that copy the frame (distortion, depth cue).
+  Only additive sums of several fragments then pass 1, which is the point of HDR. Identical in RGBA8.
 - **Auto quality** that works: step down only after ~3 s continuously under ~58 fps but above ~40
   (loading hitches are CPU and inflate GPU clocks); remember what each step saved in post-pass time;
   step back up when other + post + saved fits in ~15.3 ms, or after a minute at 60 fps as a retry.
