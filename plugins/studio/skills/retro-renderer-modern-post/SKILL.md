@@ -920,3 +920,23 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   shadow is gone. Pin the hour for the whole cycle, and test hot reloads only inside the pinned window.
 - Before extending a reflection's range, check it finds anything: Haven harbour 19h far water looked the
   same with water SSR capped at 80, 200 or 300 m (composite 0.76 ms all); the cap was not the cause.
+
+## Pass timers that stop early, violet FX light, flattened night ground (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A per-pass GPU timestamp pair can read 0.7 ms for a pass that costs ~9.5 ms.** On NVIDIA GL the end stamp
+  after a full-screen draw is written before its fragment work finishes; the cost lands in whatever later span
+  waits for that output. Jak 3's composite read 0.77 ms while a "tail-span" timer from its draw to the end of
+  the post read 9.7 ms (total 11.8). A glFinish before the post left the total unchanged (not 3D spill, not
+  CPU: CPU to the composite 0.6 ms). Bracket the big pass with spans up to the next dependent blit before
+  trusting a "this pass is cheap" plan; old "0.00 ms gained" results read off such a timer are void.
+- A heavy uber-shader near the constant limit: 144 extra `uvec4` uniforms failed on NVIDIA with
+  `C6020 Constant register limit exceeded` (the shader silently kept its old version). Per-tile masks go in a
+  small `R32UI` texture (`usampler2D` + `texelFetch`) instead; it costs a sampler, not constants.
+- **Many faint effect glows sum into a saturated light**: a dark eco cloud is ~12 violet glows (0.1, 0, 0.12)
+  each; with per-glow damping they still lit Jak magenta. Cap the summed light per hue class (scale each by
+  `min(1, N/count)`) and pale it toward its luma; also hold the bloom-based light spill's violet chroma and
+  reduce it on characters (they stand in front of the cloud). Fights are random: alternate old/new every
+  0.4 s through the fight's start in fresh boots and compare the peak hue share, not single frames.
+- **A knee compression flattens texture**: a night "pale ground" press with slope 0.35 above a knee also cut
+  the boards' grain to a third (one even sheet). Multiply the game picture's own local grain back on
+  (`luma(px) / mean(4 taps 2 px away)`, clamped 0.6-1.4, weighted by the press): grain std 4.9 -> 6.0, mean unchanged.
