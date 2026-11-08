@@ -642,6 +642,15 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   drifting through the Spargus palace hall are vanilla (seen with `JAK_ENHANCED=0`), not leaked dust. Live
   tuning keys (e.g. `weather.test_spell` 5 = sandstorm, -1 off) can be flipped mid-run by rewriting
   `local\tuning_i<n>.json`: force the storm for the town-dust check, then clear it before the next spot.
+- Rule out before you fix (gfx-polish r7, Spargus palace 18h lime-yellow blob): count the glitch's pixels
+  per frame (a colour mask over a burst of frames, numpy) and A/B suspects with live tuning keys in one run
+  before writing a fix. Capping the smoke sprites' lamp tint changed nothing (reverted), `post.glow_soft` 0/1
+  neither, and composite embers are 3.5 px at most: the blob is something else (next: a
+  `JAK_ENHANCED_FX_DEBUG` boot at waspala). Travel misses: `towera-start` requested from `waspala` lands in
+  `mhcityb`, and `desert-start` from `mhcityb` doesn't travel at all. A Spargus boot in clear weather
+  showed no orange load-in veil (needs the desert dust alive).
+- PowerShell 5.1 `Set-Content -Encoding utf8` writes a BOM: a commit message file made that way puts
+  `U+FEFF` at the start of the subject. Write it with `[IO.File]::WriteAllText` (no BOM).
 - Own capture loop for a worktree build: a script run via `[scriptblock]::Create(ReadAllText)` has an empty `$PSScriptRoot` (pass the dir as a param); frame names written with `'{0:000.0}' -f` get the Italian locale's comma (`039,9.png`), so parse with `replace(',', '.')`. Desert dust can stay alive after travel (`rogue level entity desert-dust-storm still alive` in the log): Spargus at noon then shows an orange veil that vanilla doesn't have, check this line before blaming a haze change.
 - Improvement scouts: grep `enh_composite.frag` (~5000 lines) before proposing "add X". Already there by round 5:
   hot air + embers over fires (`fire` uniform), light flicker, SSR + RT reflections, caustics, shore foam and
