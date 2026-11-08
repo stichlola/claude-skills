@@ -10,6 +10,8 @@ CHECK = '--check' in A; A = [a for a in A if a != '--check']
 OUT, NAMES = A[0], A[1:]
 os.makedirs(OUT, exist_ok=True)
 obs = [bpy.data.objects[n] for n in NAMES] if NAMES else [o for o in bpy.data.objects if o.type == 'MESH' and o.visible_get()]
+for o in obs:   # objects from a previous cleaned.blend have only a fake user: link them so they can be selected for export
+    if o.name not in bpy.context.view_layer.objects: bpy.context.scene.collection.objects.link(o)
 
 def report(bm):
     bm.verts.index_update()
