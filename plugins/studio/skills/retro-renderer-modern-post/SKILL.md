@@ -796,3 +796,35 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   nothing measurable (ssao pass 0.09 ms both).
 - Interiors: fire/glow light strength keyed only to the clock left noon temples flat; a per-level "enclosed" list
   (plus indoor zones) giving night strength by day added the warm floor pools at no GPU cost.
+
+## Floors after the grade, windows indoors, fog under the camera (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A "never darker than x of the game's colour" floor goes last, not mid-composite.** Placed before the golden
+  block and the per-channel contrast S-curve, its blue was taken again (curve on B=0.18 -> 0.09): arena wall
+  69,51,29 (game) -> 33,24,13 orange. Last step: a luma floor whose colour is the game's, taken over by how far
+  the post fell under it (`mix(c, fl * max(lc,lf)/lf, w * smoothstep(0, 0.3, (lf-lc)/lf))`): 49,35,20, hue = vanilla's.
+- Stage views (`tune_stage` snapshot after each top-level step, crop mean per stage) find the step in one run;
+  a per-channel S-curve and gain/lift are the usual saturation/hue culprits at low light, not the tint you suspect.
+- **Interiors with windows onto the sky** (palace honeycomb): the post's sky filled the panes between the lattice
+  lines, then bloom on itself (+40%) and eye adaptation (+20%) blew them white. Under a roof (per-level
+  "enclosed" list) keep the game's own sky pixels (depth 0) at the end, and let adaptation's lift spare bright
+  pixels (`mix(ea, 1, smoothstep(0.5, 0.9, maxc))`). A wider sharpness ring for the sky-keep test did nothing.
+- **Height fog relative to the camera explodes when looking down** from a dock or cliff: `exp(-dy*t/H)` grows
+  past the ground (15 m over the sea: x8) and the whole sea goes one opaque slab with a hard top edge. Stop the
+  density growing a couple of metres under the camera (analytic: integral to the floor + rest at the floor's
+  density). Waves came back (std 6 -> 12). Reproduce with the weather that has the mist, not a clear script.
+- Morning lime/orange ground: cap a pixel's saturation at ~1.1x the game's own (`(max-min)/max`), weighted
+  by the morning; the desert's designed peach morning moved only 2-3 levels.
+- Night ground gone grey-lilac: at the end move the dim land's hue to the game's moonlit one at the same
+  luma, fading out over luma 0.3-0.6 so lamp cores and flames stay warm.
+- A "one-frame blob" in a street with a fight: interleaved bursts with the effects off (`fx.off`) still spiked;
+  the brightest frames were a passing hover car's thrusters and enemy shots. Look at the spike frames before
+  writing a temporal fix.
+- **Caching far shadow maps**: keep each map's own matrix and read it with that one (never the new matrix over
+  the old map); snap its square in steps of N texels (still whole texels); redraw on square move, depth window
+  slide > 5%, light step, a generation counter bumped when a level's casters load/unload, or max age. Log
+  redraws per 300 frames: desert parked 8-21 of 300 vs 150 every-other-frame; shadow bucket 0.35-0.85 -> 0.15-0.27 ms.
+- PowerShell: `& script | Select -First 1` **stops the script** after its first output line (pipeline stop):
+  a sweep died after launching the game, no shots, the game left running. Use `| Out-Null` or `Select -Last`.
+- A "stale binary" claim from commit times: compare the sources' mtimes with the exe's; the C++ was edited and
+  built before it was committed.
