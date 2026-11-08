@@ -940,3 +940,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - **A knee compression flattens texture**: a night "pale ground" press with slope 0.35 above a knee also cut
   the boards' grain to a third (one even sheet). Multiply the game picture's own local grain back on
   (`luma(px) / mean(4 taps 2 px away)`, clamped 0.6-1.4, weighted by the press): grain std 4.9 -> 6.0, mean unchanged.
+## Painted window panes, a volume pass that never ran, finding a sprite by hiding textures (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **"Sky through the windows" may not be sky**: the palace honeycomb panes at 18h were a blended pane with the sky
+  painted on, ~25 m away (debug view z/40 m, tag length): a depth-0 "keep the game's sky" fix never touched them,
+  they were shaded, relit and bloomed as a wall (cream, drifting blotches). Their draw leaves the normal target
+  over-long (the translucent-column test): under a roof keep the game's colour there too. Look at a depth/tag view
+  of the glitch pixels before writing the gate.
+- **A cheap feature riding on a gated pass can be dead twice over**: the volumetric pass ran only with fog > 0
+  (fog is off on purpose) and the auto quality's first level sheds it (a 60 fps machine sits at level 1 because the
+  post's idle tail counts as GPU time). Light-only in-scatter (8 lamps, 24 steps, half res: 0.09 ms) needed its own
+  gate and the second level. Check the pass is in the "[enhanced] passes" line before tuning its look.
+- A game light's reach is not a halo size: slum street lamps reach 27-30 m; as halos they washed a wall pale (frame
+  mean 35 -> 49). Clamp the halo radius (6-8 m) and skip sky-sized lights; log reach/distance/colour once first.
+- **Which sprite is it?** A temporary tune key that skips the sprite buckets whose texture name matches entry N of a
+  list, cycled in one run (11 names x 4 shots, ~1 min), narrows a glitch to a texture without a rebuild per guess.
+  Count a hue that flames don't share (lime: g >= 0.97 r) or flames swamp the metric. If the glitch is already in
+  the raw game frame (debug view of tex_T0), no post gate will fix it.
+- PowerShell 5.1 `Set-Content -Encoding utf8` writes a BOM: a commit message file made that way starts the subject
+  with U+FEFF. Write it with `[IO.File]::WriteAllText` (no BOM).
