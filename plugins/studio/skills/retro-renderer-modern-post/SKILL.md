@@ -1062,3 +1062,20 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   same as a good GTAO in the AO debug view. Short per-pixel rays only find corners SSAO already finds;
   the occlusion that matters indoors (a roof 5+ m up blocking the sky) is far and low-frequency, so it
   belongs in probes (sky visibility per probe), not in a per-pixel pass. Kept opt-in.
+
+## Measure GPU cost at the player's resolution, tile every light loop (lesson, Jak 3 Enhanced, Nov 2026)
+
+- A 640x360 test window hides the GPU budget: post read 2.2 ms there but 15-20 ms at the player's
+  2560x1600 (18x the pixels). Add a test-only override of the internal render size
+  (`JAK_ENHANCED_TEST_RES=2560x1600`) so a small window still draws, and times, the real frame. Pin
+  the auto-quality level while measuring (`JAK_ENHANCED_AUTO_MAX=0`), or it drops the resolution mid-A/B.
+- In an uber composite, per-pixel loops over the light array add up even when each light is culled
+  early: 4 loops x 32 lights cost ~2 ms at 4 MP, while the lamps' shadow march (the suspected cost)
+  was 0.12 ms. Zero uniform groups one at a time (cost probe) before optimizing a guess.
+- A screen-tile light mask pays off only when every loop uses it: grow each light's sphere to the
+  widest reach any loop needs (highlights 1.6 r, air glow 1.5 r, halo angle as a fraction of
+  distance) and walk the tile's bits with findLSB in all of them. Main loop only: -0.2 ms; all: -0.6 ms.
+- An A/B pixel diff is "equal" when it matches the diff between two frames of the same variant
+  (TAA jitter noise), not when it is zero.
+- Another game on the same GPU (the user playing) inflates every absolute GPU time: compare variants
+  cycled in one run, never across runs.
