@@ -770,3 +770,29 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   In Jak Enhanced's composite `clouds.w` is the night, not overcast (`clouds.y` is the cover).
 - World.json's `golden` is not a dusk-only knob: it lowers the sun all day, moves the midday elevation and
   turns off dawn fog. A dusk-only grade for a city needs its own key.
+
+## Dusk colour casts, cloud shade, GTAO pitfalls (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A whole frame turning navy at dusk is many small cool pushes compounding, not one bug.** With the sun low the
+  whole street is in the post's shade, so every "shade is cooler" tint becomes the frame's colour: the shade tint
+  (more red than blue taken off), the cloud shadows' tint, and the warm grade's split-tone
+  `warmth * (1, .25, -.75) * (luma - 0.35)`, which for a dark frame *cools* everything (dusk adds warmth, so dusk
+  went bluer). Stage views showed each step at x1.1-1.15 blue/red; together frame B-R 19 vs the game's 4. Fixes:
+  a warm grade leaves the shadows alone (`luma < 0.35` part x0), shade/cloud tints neutral as the sun goes down.
+- **Gate "low sun" by the clock, not the area's sun height**: area looks clamp the post's sun (max elevations), so at
+  19h it still stood ~20 deg up while the game's light was full dusk; an elevation-based fade did nothing until a
+  `dusk` uniform (the hour ramp) was passed to the shader. Read the value in a debug view before tuning a gate.
+- **A cloud only takes the sun away**: multiply cloud shadows by the sun-lit share (`mix(0.3, 1, sun_lit)`), or they
+  stack on the sun's shadow (arena walls x0.65 x0.69 -> black).
+- **Reproducing a scout's dusk shot**: `JAK_ENHANCED_MENU_SCRIPT` hour requests are integers (`'18.5'` -> 18), and
+  game time runs ~1 h per 100 s: the glitch lived in 18.3-19 h and appeared 20-30 s after "hour reached". A direct
+  boot at 18h looked fine. Pin the nearest integer hour that shows it (repeat every 15 s) and bisect there.
+- A slums/arena spot with a fight is noisy (explosions, camera knocked): interleave A/B several times (n,o,n,o) and
+  read the pattern, not one pair.
+- **GTAO port pitfalls** (XeGTAO naming): the low horizon on the +offset side is `cos(n + pi/2)`, on the -offset side
+  `cos(n - pi/2)`; swapping them made the AO view 71 instead of 155 (everything half-occluded). Take the slice's
+  view-space direction from a real point at the same depth (mirrored view spaces). On a game's coarse depth, open the
+  horizons by ~7 deg as the old Alchemy bias did, or grazing ground turns grey toward the horizon. At half res it cost
+  nothing measurable (ssao pass 0.09 ms both).
+- Interiors: fire/glow light strength keyed only to the clock left noon temples flat; a per-level "enclosed" list
+  (plus indoor zones) giving night strength by day added the warm floor pools at no GPU cost.
