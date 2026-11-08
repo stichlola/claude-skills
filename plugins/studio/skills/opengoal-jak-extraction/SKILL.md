@@ -636,6 +636,11 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   hour change lands later, so the "same" second shows another hour or a black load frame. `wasall-start`
   lands on desert-start; `ctyinda-start` requested from `mhcityb` (Metal Head tower) did not travel.
   `JAK_ENHANCED_PLAYER=ashelin` in the same run covers a character at every spot.
+  Also: `ctyport-start` requested from `ctysluma` did not travel either (log keeps saying `in ctysluma`):
+  check the `in <level>` of each logged step before reading a segment as the new spot. Grey smoke strands
+  drifting through the Spargus palace hall are vanilla (seen with `JAK_ENHANCED=0`), not leaked dust. Live
+  tuning keys (e.g. `weather.test_spell` 5 = sandstorm, -1 off) can be flipped mid-run by rewriting
+  `local\tuning_i<n>.json`: force the storm for the town-dust check, then clear it before the next spot.
 - Own capture loop for a worktree build: a script run via `[scriptblock]::Create(ReadAllText)` has an empty `$PSScriptRoot` (pass the dir as a param); frame names written with `'{0:000.0}' -f` get the Italian locale's comma (`039,9.png`), so parse with `replace(',', '.')`. Desert dust can stay alive after travel (`rogue level entity desert-dust-storm still alive` in the log): Spargus at noon then shows an orange veil that vanilla doesn't have, check this line before blaming a haze change.
 - Improvement scouts: grep `enh_composite.frag` (~5000 lines) before proposing "add X". Already there by round 5:
   hot air + embers over fires (`fire` uniform), light flicker, SSR + RT reflections, caustics, shore foam and
