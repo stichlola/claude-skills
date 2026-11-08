@@ -242,6 +242,14 @@ camera the game hands over each frame.
 - A test switch that opens it at boot and queues one request lets a scripted run check every
   path with a screenshot.
 
+## Reading the per-pass GPU timers
+
+- Wrap the whole post pass in one timestamp scope too and log it next to the passes: **total minus the
+  sum of the passes is the untimed work**. In Jak 3 Enhanced (640x360, 60 fps) the total was ~10-12 ms
+  while the timed passes summed to ~2-3 ms, with frame GPU ~15 ms: the gap, not any named pass, was
+  the budget to hunt first (untimed draws, synchronous uploads/readbacks, or CPU gaps inside the scope,
+  which GPU timestamps also count). Time every draw before tuning any single effect.
+
 ## What screen space can't do
 
 Off-screen occluders, light from behind the camera, anything hidden behind the foreground. The
