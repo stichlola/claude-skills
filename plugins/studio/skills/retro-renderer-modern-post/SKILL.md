@@ -713,4 +713,21 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   around the glow, and a sharpness test kept only a hollow ring of an even core.
 - A sky glow kept out of an effects' gain and re-added as `after - before` loses its core where the sum
   clipped to white (almost nothing left to add): keep at least white where the copy after the sprites is
-  clipped and they brightened it, and drop the faintest light (its quad's edge shows over a new sky).
+  clipped and they brightened it, and drop the faintest light (its quad's edge shows over a new sky).- **Brightness vs a reference build: pin the hour, shoot both builds the same way, twice.** A tour that
+  jumps 12->18->22h and shoots 12 s after each jump gave the same build 53.9 then 59.3 luma at desert 22h
+  (dark pixels 12% vs 2%), and Spargus 18h 33.6 then 22.9: transients, not code. One boot per build with
+  the hour re-set every 15 s and a `base` shot at the start and end of each spot (drift +-5%) made branch
+  vs main comparable to ~2% (Jak 3: arena 20h 62.0/61.9, desert 22h 47.5/46.6). Bisect the branch's
+  tuning switches in that same boot (one tune.json write + 2.5 s per variant, ~4 spots x 10 variants in 8 min).
+- **Multi-bounce AO brightens the whole picture**: Jimenez's fit returns more than the grey AO for any
+  albedo over ~0.3, so a "color of the crevices" change lifted a night scene ~5%. Keep its hue only:
+  `ao_mb *= ao / luma(ao_mb)`.
+- A night that spares "what's bright in the game's own picture" (to save a light shaft that AO/shadows
+  had dimmed) needs its own, higher threshold than the composite's: from 0.4 it also spared every
+  lamp-lit floor (+7%); from 0.6 the shaft alone.
+- A low-sun "never darker than x of the game's color" floor must skip cast shadows: weight it by
+  `1 - shadow * smoothstep(0, 0.1, N.L)` inside the shadow-map block (where N.L and the shadow are in
+  scope) and carry that weight down to the end of `main()`.
+- Uniform budget: an experimental `uniform uvec4 x[144]` on a composite already at ~860 vectors risks the
+  1024 minimum of Intel/Mesa. Put it behind `#ifdef` (off by default); the C++ `glUniform*` on location -1
+  is a silent no-op, so nothing else changes.
