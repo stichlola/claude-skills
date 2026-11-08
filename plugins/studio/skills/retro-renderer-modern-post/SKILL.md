@@ -585,8 +585,20 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   values of its few active uniforms from the big program each frame (`glGetActiveUniform` list built once
   per program pair, `glGetUniform*v` -> `glUniform*`; 30 uniforms, no visible CPU cost). Same picture,
   0.75 -> 0.51 ms at 2560x1600. At that resolution the composite itself is 11-16 ms, and zeroing each
-  feature's uniforms in turn finds only ~2 ms (lights 1.4, rock detail 0.4, water 0.35): the rest is the
-  shader's size and occupancy, so the next win is splitting it, not trimming features.
+  feature's uniforms in turn finds only ~2 ms (lights 1.4, rock detail 0.4, water 0.35).
+- **Find where an uber-shader's time goes by early exits, hot-reloaded in one run**: a script inserts
+  `#if PROF_EXIT == k  color = vec4(c, 1); return;  #endif` before every top-level statement of main
+  ~25 lines apart, then sets `#define PROF_EXIT k` per variant (hot reload, ~10 s each, pass timer read
+  from the log); the curve of cumulative ms shows the hot stretches. Learned on the 13 ms Jak 3 composite:
+  (1) compiling out *dead* code (night sky, a never-taken fallback march) saved ~0.1 ms, and skipping
+  single executed pieces (PCSS taps, contact march, a 14-tap sky test) only 0.1-0.4 ms each: the cost
+  is spread over everything that runs (a thousand cuts at low occupancy), not in a few lines;
+  (2) the win was a **loop of dependent reads over a low-frequency term** (rays toward the sun: 10 x
+  depth + cloud texel per pixel), moved to its own slim program at quarter size (`#define ONLY_RAYS`,
+  R16F, bilinear read back): composite 13.3 -> 12.35 ms for a 0.2 ms pass, same picture. Look for that
+  shape first; (3) NVIDIA `#pragma optionNV(unroll none)` +1.5 ms, `optionNV(inline none)` +10 ms,
+  `unroll all` / `fastmath on` no gain: keep the driver's defaults; (4) NVIDIA's `glGetProgramBinary`
+  no longer carries the assembly or register count, only its size.
 - Before GPU culling / Hi-Z for a PS2-era scene, measure: all the geometry buckets together were ~4 ms
   against 8 ms of post; the work belongs in the post pass.
 - Rock detail over a game's cliffs, as AAA terrain does: each tiling size only within its own distance
