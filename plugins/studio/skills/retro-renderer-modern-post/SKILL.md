@@ -756,3 +756,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   placed torches (13 m) turned moonlit ground salmon. Give such lights tuning keys (reach, strength) and
   A/B them in one run before suspecting the grade. Palace "glowing blob with no source": shoot vanilla at
   the same spot first; it was the game's own glow.
+- **A warm light's hue at night lives in the night branch, not in its reach**: Jak 3's lantern/torches at 9 m and
+  x0.6 still left the moonlit ground salmon. Stage views (before night 51,65,88 -> after night 19,25,34 -> after
+  lamps 98,72,66) showed the lamps' "own colour, warmer" term times orange light dominating the darkened blue.
+  Fix: the faint part of the summed light (luma < ~0.9) loses its hue toward the moon's, as dim light does to
+  the eye (Purkinje); the core by the flame stays warm. Desert box 96,65,56 -> 66,66,82 (vanilla 52,69,92).
+- **Look at the mask view before tuning a gate**: an arena column's "crushed dim outer third" was the wall
+  beside the column (the draw's mask ended where vanilla's column ends); lowering the luma gate did nothing.
+  What softened the cut: the wall within ~13% of the screen of a bright mask pixel never darker than the game's
+  picture x0.8 x a falloff (8 spiral taps turned per pixel/frame, TAA-averaged).
+- Moon glints from `sky_sun` (the moon at night) showed nothing at Haven port 22h: the moon was behind the
+  camera (reflection dot ~0, read from a debug view). Check where the light is before writing a glint.
+  In Jak Enhanced's composite `clouds.w` is the night, not overcast (`clouds.y` is the cover).
+- World.json's `golden` is not a dusk-only knob: it lowers the sun all day, moves the midday elevation and
+  turns off dawn fog. A dusk-only grade for a city needs its own key.
