@@ -540,6 +540,12 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   running >4 ms behind = GPU-bound, <2 ms = it waits for the CPU (gate auto quality on that, not on
   timestamp spans the driver's downclock inflates). Test it with switches that redraw a fullscreen pass n
   times (GPU-bound) or busy-wait the render thread (CPU-bound); keep the test above the "loading" floor.
+- **An RGBA16F frame "costs +5 ms CPU" = a PBO readback in the wrong format** (Jak Enhanced HDR scene):
+  `glReadPixels(..., GL_RGBA, GL_UNSIGNED_BYTE)` into a pixel buffer from a half-float FBO makes the
+  driver convert on the CPU, so each read waits for the GPU (48 one-pixel exposure reads = 4.9 ms). Read in
+  the attachment's own type (`GL_HALF_FLOAT`; query `GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE`) and
+  convert halves yourself. When a format switch looks expensive, profile CPU per pass before blaming
+  bandwidth. A second game instance on the same GPU makes GPU ms swing 6-14 ms: alternate A/B 3x.
 - **Auto quality** that works: step down only after ~3 s continuously under ~58 fps but above ~40
   (loading hitches are CPU and inflate GPU clocks); remember what each step saved in post-pass time;
   step back up when other + post + saved fits in ~15.3 ms, or after a minute at 60 fps as a retry.
