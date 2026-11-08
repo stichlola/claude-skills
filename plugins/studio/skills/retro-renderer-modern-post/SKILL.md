@@ -977,3 +977,20 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Removing a line with an editor's exact-replace (old = "\n<line>", new = "") on a CRLF file joined the next
   declaration into a comment and the composite failed at boot (a failed composite at boot is fatal, not a
   hot-reload warning). After any line deletion, read `git diff` before relaunching.
+## Scoping a look fix by level, area-scaled uniforms, locale in tuning files (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A fix made for one place belongs behind that place's flag**: a night "pale ground" press made for the slums'
+  flagstones (up-facing, away from lamp bloom) also took a third off every night level (desert 22h, port 21h).
+  A 1-line C++ flag from the level name (`level.rfind("ctyslum", 0) == 0`) as a uniform kept it where it was
+  meant: slums 38.9 -> 31.6, desert/port A/B diff equal to the same-setting noise. Cheaper and surer than a
+  "brighter than its surroundings" pixel test.
+- **Uniforms scaled by an area grade are not 0..1 factors**: `golden` = hour curve x the area's grade (desert
+  0.5), so a gate `1 - golden` only halved a cap at 18h. Gate on the onset (`1 - smoothstep(0, 0.2, golden)`).
+- **PowerShell on an Italian (comma) locale writes 1.2 as `1,2`** in string interpolation: a tuning JSON
+  `{"tune_x": 1,2}` is invalid and silently ignored, so the "variant" shot is the old value. Pass values as
+  strings ('1.2') and check the log's `shaders.tune_x = ...` line for every variant.
+- Menu-script hour steps every 15 s land in the middle of a variant set: fit all variants of a point inside one
+  interval (3-4 shots at 2.5-3.5 s) or the last shot shows the next hour/travel and reads as a huge diff.
+- Before "adding" a light flicker or a specular occlusion, grep the CPU side too: glow-detected fires and manual
+  lights already flicker (EnhancedPostScene.cpp), glossy/puddle reflections already had Lagarde occlusion.
+  An extra occlusion on wet lamp glints measured within noise at the port after rain: reverted.
