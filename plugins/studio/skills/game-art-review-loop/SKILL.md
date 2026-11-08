@@ -106,6 +106,17 @@ stopping at a score >= 8 or after N rounds. Ten rounds taught what follows.
   oriented boxes (12 triangles) on the solid pieces only, biggest first, under a triangle budget.
 - **DCC vs game**: a DCC render is a fast inner loop, the game capture is the truth (fog, culling,
   texture handling differ).
+- **Blinking lights fool A/B shots**: a beacon or orb that pulses is on in one variant's frame and
+  off in the next, so "variant X removed it" is often just timing. Take 3+ shots per variant over
+  2 rounds and compare the brightest crop of each (sum of pixels in the crop).
+- **A threshold leaves a hard edge on a soft glow**: a mask like `smoothstep(0.01, 0.04, glow)`
+  that puts a game sprite back over a replaced (darker) sky cuts the sprite's faint halo at its
+  quad's edge, and you see a hard box or diamond. Widen the ramp (hi about 0.2) so the halo fades
+  out and the core stays crisp.
+- **Contact darkening for every character, day or night**: draw the skinned casters a second time
+  into a small orthographic depth map around the player, looking up (each texel keeps the lowest
+  point of the body above it). In the composite, take a few taps around the receiver and darken by
+  the height gap. It costs about 0.02 ms and works with no sun at all, unlike the sun shadow map.
 
 ## When the scores plateau
 
