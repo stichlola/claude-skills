@@ -566,6 +566,10 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - A per-zone grade with gain > 1 and high contrast is the usual culprit for burned-out noon; hue-based
   recolors (olive -> sand) must cap saturation at a sand's (~0.3), or the yellower patches turn
   orange in blotches and bands; pale near-white slopes need their own branch (no hue to key on).
+- Characters in a cast shadow: the game lights them fully with its own lights (no shadows), and a
+  composite that only looks the shadow map up on faces toward the sun leaves the rest lit, so at golden
+  hour Jak glowed inside a wall's shadow. Look the map up ~70 cm toward the sun from every character
+  pixel (past the body's thickness) and take ~0.85 of that shadow off. One lookup, no measurable cost.
 - Game glows and torch spawners turned into dynamic lights must fade out in full daylight, or they lay
   bright colored pools with hard shadows on sunlit ground.
 - Far cloud "cards" (sky geometry kilometers out) need the same sky treatment at night/dusk as by day,
