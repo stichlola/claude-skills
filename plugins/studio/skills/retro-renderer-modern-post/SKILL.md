@@ -122,6 +122,12 @@ camera the game hands over each frame.
   life cycle, rise + sway, depth-tested against the scene, a screen-rect early-out per fire).
 - To find a test spot, log the glows with their position, then drop a debug dot at the projected
   fire position to check the projection before tuning anything.
+- Many placed fires are story-state gated (spawner perm "subtask-complete", kill-mask): a spawner
+  list from the level's actors is not proof a fire burns in your save. Look for a burning one from
+  a wide shot first (far beacon/glow), then teleport toward it along the view ray.
+- "Pale flame" is often the game's own sum of additive sprites (clipped to cream), not your grade:
+  keeping the raw game pixels made it paler. Restore hue past the grade instead (saturate toward
+  orange, luma held), masked by warm color inside a tall column above each reported fire.
 
 ## Testing light-dependent effects
 
