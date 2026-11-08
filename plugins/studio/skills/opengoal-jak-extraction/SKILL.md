@@ -615,6 +615,9 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   `ctysluma-alley`, `game-start` (arena); Hellcat in flight = `JAK_ENHANCED_HELLCAT_TEST=1`, shoot on the
   `[hellcat-test] "firing"` log line; characters = `JAK_ENHANCED_PLAYER=jak|ashelin|sig` at desert-start, then
   crop around the character (no camera-distance switch exists).
+- Jak Enhanced Hellcat test (gfx-polish, Nov 2026): the log has no `"firing"` line any more, only `[hellcat-test] diving|low|out|parked ... shots N`: wait for `shots [1-9]` instead, or a capture loop never fires.
+- A ground fix keyed only on the hour (a `golden`-weighted floor under sand/rock for one dark desert slope) also lifts every *cast* shadow on sand: Spargus' streets at 18h went 2x brighter and the paving stones stood out flat navy. Check such fixes at a second spot with walls (Spargus 18h) before calling them done; in `enh_composite.frag` the surface normal `nn` is not in scope at the end of `main()`, gate by a value computed earlier.
+- `cmake --build out\build\Release` from a plain shell fails (`'algorithm' file not found`: no vcvars); build with `scripts\enhanced\dev_build.ps1 -Repo <wt> -Targets gk`.
 - **Several spots and hours in ONE boot** (scouting): `JAK_ENHANCED_MENU_SCRIPT=<s>:<kind>:<value>,...` (kind 1 =
   hour, kind 2 = continue point, e.g. `1:1:12,45:1:18.5,75:2:wascitya-start,78:1:12,...`; it doesn't open the
   menu). Each step logs `[enhanced] menu script`: capture N s after the Nth logged step (hour ~12 s, travel
