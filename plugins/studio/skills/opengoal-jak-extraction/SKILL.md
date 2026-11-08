@@ -789,6 +789,9 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   `finally`; a bad continue point = `JAK_ENHANCED_MENU=2:<cp>` windowed (`continue request "x": "no such
   continue point"`). A bad `JAK_ENHANCED_START` logs nothing even in stock (Jak falls from 0,0), and a
   headless gk ignores the menu request.
+- Jak Enhanced `JAK_ENHANCED_TP=x,y,z,yaw` (meters, degrees) to frame a spot no continue point shows:
+  yaw 180 faces +z, 0 faces -z; read the `[camera] x y z fwd ...` log line of a plain run first for
+  coordinates, and put y at the floor's height (too far off it and Jak lands in the water below).
 - Without debug in the file, keep the context of a stop: a small ring of the last debug lines the file
   skipped (16), written after `[die]` (asserts go through `lg::die`) and from a Windows
   `SetUnhandledExceptionFilter` that also flushes the file (info lines are buffered: flush level warn).
