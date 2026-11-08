@@ -1057,3 +1057,8 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   averages are swamped when another game shares the GPU.
 - A resource cache keyed on "which levels are in use" must be cleared when the feature is switched
   off, or switching it back on finds the same key, skips the rebuild and runs with count 0.
+- Judge it INDOORS before shipping, not in an open courtyard: in a hall (Hip Hog) the same 1-ray pass
+  cost 8x more (+0.5 ms at 640x360: every ray hits something within its 3 m) and still looked the
+  same as a good GTAO in the AO debug view. Short per-pixel rays only find corners SSAO already finds;
+  the occlusion that matters indoors (a roof 5+ m up blocking the sky) is far and low-frequency, so it
+  belongs in probes (sky visibility per probe), not in a per-pixel pass. Kept opt-in.
