@@ -244,6 +244,9 @@ at the saved spot:
   warm (t=6 s) and fails cold (t=50 s). Accept both, or match the prefix, or check right after boot.
 - Back-to-back windowed test runs on the same instance: the next launch can find the gk port still
   taken for a few seconds after the last game closed; wait for the port, don't fail at once.
+- Test runs must be **silent** (user rule). Jak Enhanced's gk writes zeros to the audio output when
+  `JAK_ENHANCED_MUTE=1` or `JAK_ENHANCED_INSTANCE>=1` (`game/sound/989snd/player.cpp`). The synth still
+  ticks, so game timing is unchanged. The user's own game (no instance set) keeps its sound.
 - gk run from a copy of `bin` (gk.exe + DLLs, 63 MB, 0.05 s to copy) with `--proj-path` works, and the
   build can relink `out/build/Release/bin` meanwhile.
 - C++: a one-line change in EnhancedPost.cpp = 8-15 s compile (2.4 s parse, the rest -O3 codegen) + 0.2 s
