@@ -1042,3 +1042,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   Short rays (0.5 m contact shadows) gain nothing either. Pyramids pay off for long rays only.
 - PowerShell `.Replace()` on a .cpp with CRLF silently misses multi-line needles written with `` `n ``: use the
   Edit tool, or match one line at a time.
+
+## Cheap ray-traced AO: 1 ray + reprojected history (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Traced AO depends only on the world point and its normal, so reprojecting last frame's result is
+  exact for static geometry: rebuild the world point from depth, project it with LAST frame's camera,
+  fetch an RG16F history (r = AO, g = view distance), reject when the stored distance differs > ~3 %,
+  mix with keep ~0.9. 1 ray a pixel turned each frame (R2 sequence per frame on top of the per-pixel
+  noise) matched 6 rays every frame, at a quarter of the cost (+0.06 vs +0.26 ms at 320x180 half res).
+- Write the history as a second colour attachment of the AO pass itself (MRT): no extra pass.
+- A pixel checkerboard (or 8x8-tile one) to halve traced pixels gave NO gain: the traversal is
+  divergent, and once a ray is 1/pixel the reprojection + history fetch is most of what's left.
+  Time it with a GPU timer query on that one draw, cycled inside one run: fps and the 5 s pass
+  averages are swamped when another game shares the GPU.
+- A resource cache keyed on "which levels are in use" must be cleared when the feature is switched
+  off, or switching it back on finds the same key, skips the rebuild and runs with count 0.
