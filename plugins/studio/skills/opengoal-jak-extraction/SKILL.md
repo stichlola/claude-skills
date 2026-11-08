@@ -802,3 +802,11 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   (Ninja, VS clang) in `out\build\Release` (~6 min first gk build), run gk from a copied bin with
   `--proj-path <worktree>`. Never run (mi) there: the junctions would write into the main tree.
 - Fix weather for A/B shots (`JAK_ENHANCED_WEATHER_SCRIPT=0:0`): snow/clouds moved luma by ~5%.
+- **One long scripted run covers several items**: a `JAK_ENHANCED_MENU_SCRIPT` of blocks (pin an hour every 15 s
+  for ~2 min, then `2:<continue point>`, then the next block) let one boot test Spargus 18h/12h, the arena
+  12h/19h, the forest 18h and the slums 21h with tuning-file toggles in each block; wait on the log's
+  `menu script <t> s` line from a small poll script (a bare leading `Start-Sleep` is blocked by the harness).
+  The script's clock starts late (first frame): read the step times from the log, not wall time.
+- Splitting one file's hunks over several commits without `git add -p`: a script that applies the chosen
+  hunks of `git diff -U0` to `git show HEAD:<file>` (LF, as the index holds it), `git hash-object -w` +
+  `update-index --cacheinfo`. `dev_build.ps1` runs clang-format, so edited lines may come back reflowed.

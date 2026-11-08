@@ -872,3 +872,27 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   low sun and off by night, last in the character block; merc props share the tag and get it too.
 - .NET file calls (`[IO.File]::ReadAllText('rel\path')`) resolve against the process's start directory, not
   PowerShell's `cd`: always pass absolute paths.
+
+## Random weather veils, cached near shadows, HDR cost (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A glitch that "doesn't reproduce" may be a random weather spell**: Spargus' noon orange veil came from a
+  sandstorm spell (32% odds per spell in the desert zone, a random offset per visit), not from the haze code
+  the scout blamed (`tune_haze_layer` 0/1 changed nothing). Give spells a live test key (`weather.test_spell`)
+  and log the post's dust and the game storm's intensity on change (per tenth): the cause is then one log line.
+  Fix: a walled town scales the dust (`weather.town_dust` 0 in `was*` levels): 135,112,92 -> 95,82,70.
+- **Characters float at a low sun when the sun map replaces the game's own shadow**: the map's character
+  shadow is a long band off the feet. Keep the game's short projected shadow (Shadow2) too below ~25 deg.
+- **Near shadow map cache**: keep the static part (all but wind-blown trees) in its own depth map, redrawn on
+  snap move / depth slide / level change / age (the far map's rules), then each frame `glBlitFramebuffer` it
+  into the live map and draw only the trees and characters. The 4096^2 DEPTH32F blit costs ~0.3 ms by itself,
+  so it pays only where the static draw is heavy: forest 1.66 -> 1.05 ms, a town 0.51 -> 0.45. Frames on/off
+  differed less than two consecutive frames (diff the pair *and* a same-setting pair to know the noise).
+- **An RGBA16F game frame is not free**: +1.4 ms renderer time at 640x360 (3.8-4.2 -> 5.2-5.7 ms/frame,
+  repeated A/B), for a partly better clipped pool. Additive glow quads also sum alpha past 1 there: give the
+  glow draw `glBlendFuncSeparate(ONE, ONE, ZERO, ONE)` so DST_ALPHA readers see what the 8-bit frame had.
+  Before a "stopgap in the LDR path", check the blob isn't in the game's own frame: `fx.off` changed nothing.
+- **Thresholds on values mid-composite**: a "compress above luma 0.35 x night" knee never fired: after the
+  night darkening the pale slum ground was luma ~0.04 (exposure and grade lift it later). A debug view
+  (weights in R/G/B, written at the end of main) showed it in one shot; knee 0.025 then worked (-10%).
+- Fights make A/B noisy: use the same-frame split (`tune_x 2` = right half) and pick measuring boxes away
+  from coloured effects (magenta goo made a "no change" box).
