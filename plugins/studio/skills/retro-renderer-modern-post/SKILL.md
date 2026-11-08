@@ -959,3 +959,21 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   the raw game frame (debug view of tex_T0), no post gate will fix it.
 - PowerShell 5.1 `Set-Content -Encoding utf8` writes a BOM: a commit message file made that way starts the subject
   with U+FEFF. Write it with `[IO.File]::WriteAllText` (no BOM).
+## An albedo target, stacked haze, test weather (lesson, Jak 3 Enhanced, Nov 2026)
+
+- A post that only has the lit frame can't relight properly: lamps multiply the night-darkened colour. A third MRT
+  (RGBA8, texture colour before the vertex light, a = baked light luma / 2) beside the normal target fixes the
+  input. Every shader that runs while the extra draw buffer is on must declare and write location 2 (0 = none
+  for characters/water), or the target holds undefined values; renderers whose shaders don't (generic, grass,
+  a blended water) mask it with `glColorMaski(2, false...)` where they already mask attachment 1, and the
+  per-draw mask that keeps blended draws out of the normals covers it too. Cost measured: ~+0.4 ms GPU at
+  640x360. Prove it with a split debug view first (right half = albedo / baked light): Jak and water black,
+  textures unlit.
+- Far ground lifted by four stacked haze layers (sun haze, golden glow, low dust, sand haze) went flat beige;
+  no single term was the cause (each ~-10 luma when skipped). One debug uniform skipping each term in turn,
+  then a cap on the block's total lift over the pre-haze luma (1.2x, hue kept) restored the relief.
+- `weather.test_spell` acts only in weather mode 1 (changing): with `JAK_ENHANCED_WEATHER_SCRIPT=0:0` it does
+  nothing. Boot with `0:1` to force a shower/overcast spell from the tuning file.
+- Removing a line with an editor's exact-replace (old = "\n<line>", new = "") on a CRLF file joined the next
+  declaration into a comment and the composite failed at boot (a failed composite at boot is fatal, not a
+  hot-reload warning). After any line deletion, read `git diff` before relaunching.
