@@ -957,6 +957,10 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - A heavy uber-shader near the constant limit: 144 extra `uvec4` uniforms failed on NVIDIA with
   `C6020 Constant register limit exceeded` (the shader silently kept its old version). Per-tile masks go in a
   small `R32UI` texture (`usampler2D` + `texelFetch`) instead; it costs a sampler, not constants.
+  Every other per-pixel loop over screen-space points (far beacons with a pixel-radius cutoff) can share
+  it as more channels (`RGBA32UI`, flags in one existing uniform): binning 64 beacons by the shader's own
+  cutoff saved 0.5 ms at 2560x1600. Prove a culling mask by painting its bit count into the frame for one
+  hot reload (and wait past the reload's compile time, ~11 s for a 4000-line shader, before capturing).
 - **Many faint effect glows sum into a saturated light**: a dark eco cloud is ~12 violet glows (0.1, 0, 0.12)
   each; with per-glow damping they still lit Jak magenta. Cap the summed light per hue class (scale each by
   `min(1, N/count)`) and pale it toward its luma; also hold the bloom-based light spill's violet chroma and
