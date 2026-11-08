@@ -1205,3 +1205,11 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   one-bounce GI 0.53 -> 0.36 ms at 2560x1600; occlusion equal within 0.9/255.
 - An A/B of shots taken a few seconds apart at dusk differs by the clock (the later shot darker): take
   the pair in both orders before blaming the variant.
+- A block that costs 1.25 ms when skipped does not give 1.25 ms back when moved out: the world's sun
+  shadows (map, rough look, contact march) as a half-size pass (the composite's own file, only that block
+  compiled in) cost 0.33-0.45 ms and took only 0.6 ms off the composite, net -0.15..-0.27 ms. Read the
+  half picture back with the occlusion's upsample: same size `(w + 1) / 2`, so keep its four texels and
+  depth weights in globals and reuse them (no second set of depth reads). Even rendered at 640x360 the
+  picture stayed equal; characters keep full-size shadows.
+- The user playing another instance on the same GPU doubles pass timers mid-run (SSAO 0.5 -> 0.8):
+  interleave A/B/A/B and compare within pairs, never across runs.
