@@ -787,3 +787,17 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - The gk log is open for writing: read it with `[IO.File]::Open(path,'Open','Read','ReadWrite')`,
   `ReadAllText` throws "in use". One boot per (spot, hour, JAK_ENHANCED=0/1) at ~25-45 s each is a
   cheap sweep without goalc; tile the shots into 2x2 sheets (960 px) to keep image tokens low.
+
+## Timed test runs: buffered logs and two script clocks (lesson, Jak Enhanced, Nov 2026)
+
+- gk's info lines are **buffered**: a driver that screenshots "N s after it reads line X" fires late,
+  sometimes after the next step already happened (two "different" presets gave the same picture). Time
+  each shot from the line's own `[mm:ss]` stamp (+5 s), and space steps >= 8 s.
+- `JAK_ENHANCED_MENU_SCRIPT` counts from the first frame; a renderer-side script started at the first
+  composite starts ~20 s later (desert-start boot). Offset the renderer script, check in the log.
+- A worktree whose change is C++/shader only needs no goalc: junction the main tree's `out\jak3\{iso,
+  fr3,fr3-vanilla,obj}`, `out\enhanced`, `iso_data\jak3_pal` + `iso_data\jak3\<CGO..VAG>`,
+  `decompiler_out\jak3_pal`, `custom_assets\jak3\<texture_*,merc_replacements>`, configure CMake
+  (Ninja, VS clang) in `out\build\Release` (~6 min first gk build), run gk from a copied bin with
+  `--proj-path <worktree>`. Never run (mi) there: the junctions would write into the main tree.
+- Fix weather for A/B shots (`JAK_ENHANCED_WEATHER_SCRIPT=0:0`): snow/clouds moved luma by ~5%.

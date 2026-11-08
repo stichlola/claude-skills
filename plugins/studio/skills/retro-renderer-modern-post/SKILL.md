@@ -836,3 +836,15 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   a sweep died after launching the game, no shots, the game left running. Use `| Out-Null` or `Select -Last`.
 - A "stale binary" claim from commit times: compare the sources' mtimes with the exe's; the C++ was edited and
   built before it was committed.
+
+## Player brightness sliders without a new look (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Exposure per time of day = one `vec4` uniform: gain weighted by day/twilight/night factors, shadow
+  lift, night fill. Send the gain **as an offset from 1** (`day*(b_day-1) + tw*(b_dusk-1) + ...`): neutral
+  sliders give an exact 0 and the shader's `if (u != vec4(0.0))` skips the block, so the default is
+  pixel-identical (a `day*1 + tw*1 + night*1` sum is 0.99999994, and an unset uniform is 0 = black).
+- Keep it moody: gain tapered on bright pixels (`mix(g, 1+(g-1)*0.35, smoothstep(0.5,1,maxc))`), a toe
+  `c *= 1 + L*(t/(y+t))^2` (t ~0.09: black stays black, mids barely move), a tiny cool additive only by
+  night. Place it right after the eye adaptation, before the shoulder.
+- Measured (desert 22h, mean luma /255): neutral 58, gain 1.3 + lift .2 -> 76, gain 1.7 + lift .4 -> 99;
+  noon barely moves (bright sand sits on the shoulder): a day slider needs bigger values to show.
