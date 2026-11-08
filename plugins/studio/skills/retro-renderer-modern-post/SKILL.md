@@ -634,6 +634,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Hot-reload pitfall: editing GLSL with PowerShell string replacements, a `\n` inside a single-quoted
   string stays a literal backslash-n: the new code ended up inside a `//` comment and silently did
   nothing. Grep the result after a scripted edit.
+- Effects recovered as "scene after sprites minus scene before" (to boost them by day) also catch
+  **blended dust and smoke**: a tan puff over darker ground gives a warm, saturated difference, so a
+  chroma or brightness test can't tell it from a flame (tried: it still glowed as an orange orb). What
+  works: clear the frame's alpha to 1 right before the sprite buckets (color mask alpha-only +
+  `glClearBufferfv`, scissor off), and draw the normally blended non-flame sprites with
+  `glBlendFuncSeparate(SRC_ALPHA, ONE_MINUS_SRC_ALPHA, ZERO, ONE_MINUS_SRC_ALPHA)`: alpha becomes
+  1 - their coverage. Added light (`ONE, ONE` / `SRC_ALPHA, ONE`) only adds to an alpha that is
+  already 1, so it never marks. The post-sprite copy then carries the mask for free; leave marked
+  pixels in the scene's grade (composite and bloom key alike).
+- Characters spared from a grade step (the land's evening deepening) and see-through cloth restored
+  from the game's own color both skip the shadow's darkening: in a wall's shade Jak's hair and Daxter
+  stayed sunlit. Darken character pixels by their shadow once more after the grade, last.
 
 ## Small traps (lesson)
 
