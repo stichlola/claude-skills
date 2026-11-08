@@ -624,6 +624,10 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   ~40 s). 6 shots / 3 spots / 4.5 min. A worktree has no `out\jak3`, so dev_launch always runs `--proj-path`
   of the main tree; a no-edit scout at the main tree's commit can reuse its bin. To scout a worktree's own build, skip dev_launch: copy `<wt>\out\build\Release\bin` to a scratch bin and start gk with `--proj-path <wt>` (the worktree has `out\jak3` once built), the testcfg copied as dev_launch does, and the menu script; logs then land in `<wt>\log`. A Enhanced boot and a `JAK_ENHANCED=0` boot with the same script give same-spot vanilla pairs (~4 min each). 640x360 shots downscaled
   in the viewer show fake vertical stripes at night: zoom a crop before calling it a glitch.
+- A tour that re-copies the bin before each boot fails on the next row ("file in use" on gk.exe) when the
+  killed gk has not exited yet: wait on `$p.WaitForExit(10000)` after `Stop-Process`, or copy once. The build
+  hash printed bottom-left of every frame tells which commit the gk was built at: check it against
+  `git log` before trusting a "fixed in C++" claim (shaders hot-reload from source, the C++ does not).
 - Glitch-hunt scouting that worked (gfx-polish, Nov 2026): capture the window every 2.5 s for the whole menu-script
   run (~170 frames / 8 min), then pick frames per segment into contact sheets (4 x 360 px) and run a numpy
   32x32-block diff of consecutive frames to spot flicker/pops without viewing them all. Pair Enhanced vs
