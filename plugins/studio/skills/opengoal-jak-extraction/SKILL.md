@@ -779,3 +779,11 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   `goalc.exe --user-auto --game jak3 --proj-path <wt> --cmd "(mi)"` with `JAK_ENHANCED_INSTANCE` set
   (~45 s); without `--user-auto` the text step fails (`$DECOMP` must be `jak3_pal`, from the user's
   `user.gp`: "Cannot read ...\jak3\assets\game_text.txt").
+
+## Glitch hunts from boot shots (lesson, Jak 3 Enhanced)
+- A shot 3-7 s after the first `[camera]` line can still be loading: Spargus (wascityb-start) shows a
+  black frame, then an orange veil with floating black palm fronds, and is normal from ~10 s. Shoot at
+  10 s+ (or twice, 5 and 15 s) before calling something a glitch; report the load-in itself separately.
+- The gk log is open for writing: read it with `[IO.File]::Open(path,'Open','Read','ReadWrite')`,
+  `ReadAllText` throws "in use". One boot per (spot, hour, JAK_ENHANCED=0/1) at ~25-45 s each is a
+  cheap sweep without goalc; tile the shots into 2x2 sheets (960 px) to keep image tokens low.
