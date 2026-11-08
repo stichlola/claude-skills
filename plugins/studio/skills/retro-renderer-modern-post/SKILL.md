@@ -532,6 +532,14 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - **GPU timestamps across a whole frame lie under vsync**: with spare time the GPU waits for the screen
   inside the frame, so frame start->end reads ~16.5 ms at 60 fps whatever the load. Only trust it while
   the frame rate is actually below target; measure the post pass alone (no waits inside) for headroom.
+- **"The post costs 10 ms" can be the frame limiter's sleep** (Jak Enhanced): the frame's last commands
+  sat unflushed in the driver while the CPU slept to 60 fps, so the GPU idled, then drew the tail after
+  the sleep, and every timestamp up to there counted it (post 9.6 ms, real 2.3). `glFlush()` right before
+  the limiter sleeps fixes timers and latency at no fps cost. To tell GPU-bound from CPU-bound, compare a
+  `glQueryCounter(GL_TIMESTAMP)` with `glGetInteger64v(GL_TIMESTAMP)` read as the CPU queues it: the GPU
+  running >4 ms behind = GPU-bound, <2 ms = it waits for the CPU (gate auto quality on that, not on
+  timestamp spans the driver's downclock inflates). Test it with switches that redraw a fullscreen pass n
+  times (GPU-bound) or busy-wait the render thread (CPU-bound); keep the test above the "loading" floor.
 - **Auto quality** that works: step down only after ~3 s continuously under ~58 fps but above ~40
   (loading hitches are CPU and inflate GPU clocks); remember what each step saved in post-pass time;
   step back up when other + post + saved fits in ~15.3 ms, or after a minute at 60 fps as a retry.
