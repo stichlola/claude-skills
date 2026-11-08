@@ -82,6 +82,10 @@ Fix       (only if verify.ok is false: one round with the verifier's problems)
   (`git stash push -m "chars-wip: ..." -- <files>`), so the priority work starts from a clean tree.
 - Tell the new agents never to pop or drop that stash. When the paused workflow resumes, tell it to
   pop the stash first.
+- **Workflow agents of one session share its scratchpad directory**: a generic `scout.ps1`, `bin\`
+  or `cfg\` written by one agent is overwritten by a parallel one mid-run (seen: an instance-17 agent
+  rewrote an instance-18 agent's launcher between two calls). Name every scratch file and folder
+  after the agent's instance or role (`scout18.ps1`, `bin18\`, `cfg18\`, `shots_<tag>\`).
 
 ## Stopping agents
 
