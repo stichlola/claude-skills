@@ -50,6 +50,15 @@ Fix       (only if verify.ok is false: one round with the verifier's problems)
 - Give the verifier the implementer's report but tell it not to trust it.
 - Tell every agent which files another running agent/workflow owns ("don't touch X").
 
+Rounds of polish over a backlog (find, fix, re-check):
+- Keep a `pending` list and drop an item only when an implementer's report says `<id>: done` (or
+  `wontfix`). A carry list that is reset after round 1 silently loses every item round 1 skipped.
+- Big staged items (tech upgrades) never fit a polish implementer's time box, so they are skipped every
+  round. Give them their own lane: a second implementer in its **own worktree/branch** with a longer
+  box (~2.5 h, one milestone each), then a small merge agent at the end of the round.
+- While the backlog is long, skip scouting for new items. The re-check hunt stays (short box, ~15 min),
+  and its regressions join the backlog. Stop once the backlog is empty or two rounds make no progress.
+
 ## Resuming and changing a running workflow
 
 - To change prompts mid-run: stop it, edit the script file, resume with `resumeFromRunId`.
@@ -57,6 +66,12 @@ Fix       (only if verify.ok is false: one round with the verifier's problems)
   new rules (e.g. TERSE) only to the prompts of agents that haven't finished, and leave finished ones
   untouched. Changing `effort` also breaks the cache.
 - Check `journal.jsonl` in the run's transcript dir to see which agents finished.
+- Resume with the **same `args`** as the first launch: the args feed the prompts, so different args
+  re-run everything from round 1. Keep the launch args in a file so you can pass them back unchanged.
+- To change only the later rounds, gate the new logic on the round number (`if (r >= 4)`). Then the
+  prompts of the rounds already finished stay byte-identical and replay from the cache.
+- Stopping a workflow can leave its agents' test games running: find them by exe path (the agent's
+  scratchpad bin) and close them.
 
 ## Several workflows on one machine
 
