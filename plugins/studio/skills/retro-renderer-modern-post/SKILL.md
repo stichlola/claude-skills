@@ -848,3 +848,27 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   night. Place it right after the eye adaptation, before the shoulder.
 - Measured (desert 22h, mean luma /255): neutral 58, gain 1.3 + lift .2 -> 76, gain 1.7 + lift .4 -> 99;
   noon barely moves (bright sand sits on the shoulder): a day slider needs bigger values to show.
+
+## Weather veils, flight, dither, a float frame (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A "haze only in flight" can be the weather's cycle, not altitude**: the scout's ground shot (clear) and flight
+  shot (beige veil, rocks chalk white) were different phases of a 4-minute changing-weather cycle (a sandstorm
+  spell). Pin the weather for every A/B (a weather script: clear, or the storm itself) before bisecting.
+- A volumetric dust/fog that takes "the ground" as a few metres under the camera fills the whole way down with
+  its densest air once the camera flies: take the ground as the ray's end when it is lower, thin the density
+  above the layer, and count only the layer's thickness of a long downward ray (`dist * H / max(drop, H)`).
+- **Material relights applied after a veil brighten the veil itself** (x1.2-1.6 "sunlit rock" on dust-covered
+  pixels = chalk white): keep the colour before the relight block and mix it back by the veil's coverage.
+- Stage views found it in one flight: 12 `tune_stage` snapshots swept from the tuning file every 1.6 s, one
+  sheet of 6; the jump sat between two snapshots 560 lines apart (the weather block).
+- **Output dither**: a triangular +-1 step from two interleaved-gradient-noise samples, turned every frame, at the
+  composite's 8-bit write; a TAA whose RGBA16F history is blitted into the 8-bit frame needs its own (else the
+  smooth average bands again). Zero mean, so the history averages it out. Equal neighbouring sky pixels 57 -> 44%.
+- **An RGBA16F game frame behind a live switch**: give the Fbo a format flag and re-make it when the tuning value
+  changes (also the post's scene copy and the before/after-effects copies, or they clip again); A/B in one run.
+  The clipped additive pool on a bright floor became a smooth falloff with its texture. In the float target the
+  glow sprites' quads write alpha > 1 (debug view `alpha > 1.01`): clamp before trusting DST_ALPHA blends.
+- Characters crushed at a low sun: a luma floor at x0.5 of the game's own colour (its hue), weighted by the
+  low sun and off by night, last in the character block; merc props share the tag and get it too.
+- .NET file calls (`[IO.File]::ReadAllText('rel\path')`) resolve against the process's start directory, not
+  PowerShell's `cd`: always pass absolute paths.
