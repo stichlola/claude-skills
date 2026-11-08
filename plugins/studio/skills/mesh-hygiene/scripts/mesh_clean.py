@@ -43,16 +43,18 @@ def clean(bm):
         bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 3])
         bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
     # tiny loose islands (booleans leave 4-10 vertex specks)
-    seen = set()
-    for v0 in list(bm.verts):
-        if v0.index in seen or not v0.is_valid: continue
+    # (indices refreshed first and islands deleted only after the walk: stale indices or deleting while walking crash on big meshes)
+    bm.verts.index_update(); seen = set(); specks = []
+    for v0 in bm.verts:
+        if v0.index in seen: continue
         st, isl = [v0], []; seen.add(v0.index)
         while st:
             v = st.pop(); isl.append(v)
             for e in v.link_edges:
                 w = e.other_vert(v)
                 if w.index not in seen: seen.add(w.index); st.append(w)
-        if len(isl) < 50: bmesh.ops.delete(bm, geom=isl, context='VERTS')
+        if len(isl) < 50: specks += isl
+    if specks: bmesh.ops.delete(bm, geom=specks, context='VERTS')
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
 done = []
