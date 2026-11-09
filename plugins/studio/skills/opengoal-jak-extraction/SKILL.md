@@ -364,6 +364,12 @@ at the saved spot:
   (`(q.z - view_z(d)) / 1 m + 0.5`) is the next step. Show the probe's raw value before you tune thresholds.
   Pin the hour for the whole run: forest 18h became night within 3 min, and the lawn mask (green over red)
   drops out at night.
+  Follow-up (Jak Enhanced `tune_lawn_foot`, off): a world-space probe (shrub-tagged pixel beside, < 0.7 m,
+  and above the ground point) instead of a depth gap lands on the small tufts' outlines (lit grass-field
+  blades that carry the floor's tag), not on the ground round the big tussock; foot/other luma unchanged.
+  Measure such a mask as a within-frame ratio (masked vs unmasked pixels of the same half, split on
+  `uv.x > 0.5`): the whole forest's luma swung +-8 between frames 4 s apart. A menu-script hour pin of
+  40 steps x 15 s ends after 10 min: a long A/B session silently slid into night; reboot or add steps.
 - PowerShell: `R` is an alias of Invoke-History. A helper function named `R` breaks with
   "positional parameter" errors.
 - PowerShell: a negative number passed to a function arrives as a string, and `$z * 4096` then repeats the string. Cast with `[int]`.
@@ -410,6 +416,13 @@ at the saved spot:
   clock**: a loading hitch of 0.4 s between two frames restarted a clock-based fade. Every displayed
   level sends its trees each frame whatever the camera sees, so turning round never restarts it (log a
   line per fade start and watch it while idle).
+  Props and characters (merc) spawned with the level popped in whole over the dithering ground: Merc2
+  reads the same per-level fade read-only by `lev->level->level_name` (the level's background buckets
+  come before its merc in the frame, so a restart is already counted; no background drawn = whole, so
+  Jak's common models never fade) and merc2/emerc discard on the same Bayer dither. Bayer 4x4 without
+  an array: `q = x ^ y; m = ((q&1)<<3) | ((y&1)<<2) | (q&2) | ((y&2)>>1)`. Test it with a long fade
+  (bg.fade_in 10) and the switch flipped mid-fade in one boot: the cactus solid over dithered ground
+  with it off, dithered with the ground with it on.
 - Haven port 22h: ctywide lists `citywide-window-litwindow` and `ctyslumc-window-panes-LOW` as windows
   (`JAK_ENHANCED_MATERIAL_NAMES=1` logs each texture's tag), yet painting tags 11/12 in tfrag3 and
   etie_base gave 0 pixels across the harbour: the far city has no window textures to light.
