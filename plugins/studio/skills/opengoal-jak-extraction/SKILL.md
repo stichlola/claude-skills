@@ -396,6 +396,24 @@ at the saved spot:
   drift still made it look like +6%. A fresh boot had `fx_day` 1 and the same fix gave +17%. Reboot after `=all`.
 - Debug switches on one shared tune value (`tune_dbgx` 1..5 = views) collide with a test switch reusing the same value: a ">4.5 = albedo view" silently ate a "6 = variant" test. One uniform per test.
 - Lights at night: don't apply eye adaptation and night boosts on top of dynamic lights, adaptation measures only the dark scene. And every glow sprite as a light includes the sky's: the sun, moon and stars sit 1 m from the camera, kilometers wide.
+- Two saves of a big shader a second apart: the first reload compiled (with half the edit: "undefined
+  variable") and the second save was never picked up. After a failed reload, touch the file again; the
+  composite took up to 20 s to reload once it was big.
+- A post cost that jumps 2 -> 7 ms at one spot can be another test instance on the same GPU: alternate
+  variants in 16 s windows and trust only windows where "off" is back at its old value.
+- Jak 3 desert ponds are not all above the sea: desert-ashelin's oasis (x 620, z 2520 m) is the game's
+  sea plane at 9 m showing through a hollow, so a "not at 9 m = pond" rule gave it the sea's look.
+  A disc around it (no sea within kilometers) fixed it; check a rule with a debug view that paints it.
+- Fading a level in instead of popping (Jak Enhanced `bg.fade_in`): hook the per-level setup every
+  background draw goes through (`first_tfrag_draw_setup`, the level's name already set), restart when
+  that level wasn't drawn for > 2 frames, dither-discard in tfrag/tie/shrub. **Count frames, not the
+  clock**: a loading hitch of 0.4 s between two frames restarted a clock-based fade. Every displayed
+  level sends its trees each frame whatever the camera sees, so turning round never restarts it (log a
+  line per fade start and watch it while idle).
+- Haven port 22h: ctywide lists `citywide-window-litwindow` and `ctyslumc-window-panes-LOW` as windows
+  (`JAK_ENHANCED_MATERIAL_NAMES=1` logs each texture's tag), yet painting tags 11/12 in tfrag3 and
+  etie_base gave 0 pixels across the harbour: the far city has no window textures to light.
+  Night windows there have to be made up (a procedural grid on its wall surfaces), not tagged.
 - Before building a material tag from texture names, check that the textures are really drawn by the renderer you tag, at the spot you test. Paint that material magenta in the renderer's own shader (tfrag3/etie_base: `if (enh_material == N) color.rgb = vec3(1,0,1);`), boot once, and count the pixels. Jak 3 Haven port at 22h: the level listed 10 lamp textures (`city-*light`, `hiphog-exterior-*-on`), but there were 0 pixels at `ctyport-start` and at `ctyport-hiphog`. The glowing lamps seen there come from another path. A level's texture list says nothing about what is on screen. A post tag view that stays empty can't tell "tag broken" from "never drawn", but this test can.
 - Remade tiling textures: detail that looks good in the flat picture can vanish in game, because one tile covers a small part of a mountain. Ask the generator for a few huge features across the whole picture, pull its pure blacks and pale edges toward the rock's median after, and match the median (not the mean) to the original. Compare with a live key that re-uploads from disk, so a new picture needs no restart. Reset the hour before each shot: game time moves on and a dusk shot looks like a broken texture.
 
