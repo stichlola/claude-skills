@@ -1232,3 +1232,16 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   a "how much was clipped" overlay turned the whole screen red by feedback. Keep debug views to masks.
 - Proof that works at 640x360: render the test at the window's size and crop a vehicle the camera
   chases right after take-off, A/B toggled by hot tuning ~1 s apart (off: smeared edges; on: crisp).
+- **CPU cost of that replay** (measured, Spargus 18h): ~60 models, 360 draws, 0.5 ms of render-thread
+  CPU, which was most of a 1 ms "renderer CPU regress". Find such a regress with in-run toggles and a
+  per-step CPU profile (no glFinish), each feature off ~12 s in turn with the baseline repeated, and
+  read the post's own CPU line, not the total (the total swings +-0.5 ms with other games on the
+  machine). Fixes that helped: skip models whose own motion on screen is under ~0.03 px (every bone
+  compared with last frame's after the camera's move is taken out, a rotation column's change counted
+  at 2 m from the bone), send a model's draws on the same buffers as one glMultiDrawElements, upload
+  only the moving models' bones (packed, orphaned), and set `glUniformBlockBinding` and locations once
+  per program id. Setting them every frame cost more than the draws themselves. Time each stage
+  (match / upload / draws) in the feature's own log line. Traps: animated NPCs and flags really do move
+  (only ~7 of 60 models are still), and props whose skeleton count is a placeholder (OpenGOAL's
+  merc_replacement gives a joint-less glb `max_bones` 100) carry garbage spare slots that look like
+  motion. Bones past the end of the list count as "spare, stop" rather than "moved".
