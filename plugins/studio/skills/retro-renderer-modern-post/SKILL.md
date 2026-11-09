@@ -1346,6 +1346,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   drawn. Measure tone with region means of A/B shots (floor 79,51,15 vs blades 60,33,11), not by eye.
 - GPU timings from a shared machine (other test instances) swing 6-15 ms between identical variants: interleave
   off/on several times and report ranges, or use per-pass timers.
+- **Why the floor's tone differed from its texture: a blended layer drawn later.** Jak 3 draws each level's
+  NORMAL tfrag, then tie, then shrub, then the TRANS ("alpha") tfrag. The forest's olive floor is the orange
+  `fora-grass` under a translucent TRANS layer. Grass drawn with the shrubs hid that layer, so the blades came out
+  orange. Found in one run with the composite's raw view (`tune_raw_view` 1): before the post, the blades
+  already differed from the floor. With `tune_ao_view` 1, SSAO over dense grass showed 146 -> 108.
+  Fix: queue the ground-class fields and draw them from the TRANS tfrag renderer, using an RAII guard at the top
+  of `TFragment::render` so every early return still flushes. Rebind the shrub tree's time-of-day 1D texture,
+  which you save with `glGetIntegerv(GL_TEXTURE_BINDING_1D)` on unit 10 when you queue the field.
+  Then blit the frame so far (color mipmapped RGBA16F, DEPTH24_STENCIL8, normals) and have each blade read the
+  floor under its foot in the vertex shader. Accept the sample only where the scene depth lies between the depths
+  of foot ± 1 m along the view ray. For feet just off the screen edge, clamp to the edge. Undo the frag's foliage
+  desaturation. Blades vs floor went from 0.64/0.56/0.45 to 0.98/0.97 (G/R equal) at both spots. The cost could
+  not be measured: 60 fps either way.
+- When the light drifts during a run (hour moving, clouds), put an off shot before and after every variant and
+  compare each variant with the mean of its two neighbours. Name the off shots o1..oN, or each capture
+  overwrites the last one.
 
 ## Flat band under the horizon on far water (lesson, Jak 3 Enhanced, Nov 2026)
 
