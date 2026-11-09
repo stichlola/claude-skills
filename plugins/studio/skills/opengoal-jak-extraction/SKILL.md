@@ -885,3 +885,9 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   only partly the ripple footprint (fwidth on the wavy mesh; an analytic footprint gave +5-15%).
 - The composite's hot reload now takes 17-20 s (log `enh_composite reloaded (17351 ms)`): a fixed 14 s wait shot
   the old shader. Poll the log for one more `enh_composite reloaded` line before the A/B.
+- Debug views in a graded composite: read one value per view in grey (`vec3(x)`), never as one channel of a
+  colored view. Spargus 18h "fresnel step 0.70 -> 0.47" was the grade bending dbg 9's blue under a red flag
+  (deep vs near cells); in grey the fresnel ran smooth. Haven port 18h pale sky patches in the near water: the
+  Hi-Z reflection trace missed where the old 32-step march (calm mirror ray) hit (`tune_hiz_dbg 1` = old march
+  on the left half); running the march only on Hi-Z misses cut pale pixels 1.3-1.9% -> 0.2-0.3% for +0.2 ms.
+  A menu-script hour step logged `in none` (before the level loads) is ignored: boot with `JAK_ENHANCED_HOUR`.
