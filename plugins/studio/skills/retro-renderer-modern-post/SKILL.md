@@ -1263,6 +1263,21 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   the menu's auto quality off in both test configs: an old build without the pre-limiter flush sees
   ~16 ms GPU timers and drops passes, which changes its CPU too. Across separate runs the renderer
   CPU still swings +-0.5 ms with other games' load: only in-run toggles give sub-0.1 ms answers.
+- **Placeholder skeleton sizes cost twice**: OpenGOAL's merc_replacement gives a joint-less glb
+  `max_bones` 100, so every prop copy uploaded 101 matrices, and its spare slots held the previous
+  model's matrices, which the motion-vector pass read as "moving". Count at load the highest bone
+  index the model's vertices really use (every draw's indices + the mod vertices, all three `mats`,
+  weight or not) and upload min(max_bones + 1, that). Spargus: still models 7 -> 39, motion draws
+  ~55 -> ~20, bones 490 -> 100 KB a frame, motion CPU 0.17 -> 0.08 ms; picture diff = noise.
+- **A big draw's CPU cost is deferred validation, not the draw**: issue it twice under a probe
+  switch. The second identical draw cost < 0.005 ms, the first ~0.2 ms; a glFlush before it, skipping
+  the blits that feed it, unbinding its SSBOs or a fixed FBO did not move it. Only fewer state
+  changes between draws (fewer programs / bindings per frame) can reclaim it.
+- **Old-vs-new build parity**: alternate the two builds run by run (A B, B A, ...), same spot, each
+  ~70 s, and compare within pairs; drop pairs where another game on the GPU halves one side. Jak
+  Enhanced: `(vsync #f)` alone stays at 60 (the game's `(fps 60)` limiter): `JAK_ENHANCED_UNCAPPED=1`
+  uncaps. Result there: renderer CPU new 4.25 vs old 4.20 ms capped, 3.82 vs 3.87 uncapped, fps
+  new >= old in every clean pair: the "regress" was mostly run-to-run noise plus 0.5 ms really fixed.
 
 ## Trees in the wind on a TIE renderer (lesson, Jak 3 Enhanced, Nov 2026)
 
