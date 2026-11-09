@@ -1588,3 +1588,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   Repeat the effect faster than it fades (blast test every 0.3 s): a steady state that every variant sees.
 - **Wet ground reads flat when it only darkens**: soaked sand/stone is deeper in color. Mix toward c*c scaled
   back to c's luma: saturation up (desert rain 29 -> 39), brightness unchanged (keeps a deliberate dark look).
+
+## "Blurry lamps" = a post effect redrawing the glow, not the glow (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Night lamps read as big soft yellow discs with no core (Haven port, 22h). The game's glow sprites were
+  fine: the composite's raw view (`tune_raw_view 1`) showed small crisp points. The culprit was the
+  "beacons" (far glows past 40 m redrawn as points so they don't vanish): a gaussian as wide as the game's
+  glow, in its hue normalized to peak (never white), plus a 5-11 px halo. Fix: core 0.45x, halo reach 0.5x and
+  gain 0.12, the middle mixed toward white (`tune_beacon_hot 0.7`). Night only, so day is untouched.
+- Method that found it in ~4 one-run A/Bs: raw view vs composite first (is it the game or us?), then a
+  kill switch per suspect as a tuning key. Bloom, VRS, shoulder and fx switches looked identical.
+- Moving lights (flitters) are fine test subjects if each variant is a strip crop of a wide band,
+  stacked into one montage image: one screenshot to look at for 5 variants.
+- A test gk window that pops up while the user plays can get closed (shutdown reason 2, twice in ~3 min):
+  do launch + all captures in one command; `-Minimized` captures come back 640x480 only.
