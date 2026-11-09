@@ -1371,3 +1371,25 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   row: constant = this. Make the floor follow the calm mirror ray: `min(0.03, 0.5 * rise_of_calm_ray + 0.002)`.
 - Read such bands numerically, not by eye: row means and std over a column strip of each debug view.
   A debug value that comes out "graded mush" equal to the normal picture means the shader had not reloaded yet.
+
+## Variable rate shading for an uber composite (lesson, Jak 3 Enhanced, Nov 2026)
+
+- When an uber composite's cost is "base cost spread over every pixel" (no block worth splitting),
+  shade fewer pixels: `GL_NV_shading_rate_image` (NVIDIA Turing+, functions via
+  `SDL_GL_GetProcAddress`, `SDL_GL_ExtensionSupported`) works on a fullscreen pass too. Enable it
+  only around that one draw (`glShadingRateImagePaletteNV` once, `glShadingRateImageBarrierNV`,
+  `glBindShadingRateImageNV`, `glEnable(GL_SHADING_RATE_IMAGE_NV)`); the rate image is an immutable
+  `GL_R8UI` texture (glTexStorage2D), one texel per 16x16 pixels. Force all 2x2 first for the upper
+  bound: Jak Enhanced's composite 13.07 -> 3.70 ms at 2560x1600 (linear in shaded pixels).
+- Pick the rate per tile with a compute pass (one 8x8 workgroup per tile, each thread a 2x2 quad,
+  shared atomics; 0.15 ms at 2560x1600, 0.02 at 640x360): luma steps in sqrt space of this frame's
+  input picture (max step > 0.1 = edge, mean step > 0.01 = texture) and of LAST frame's finished
+  picture (the TAA history: the composite's own shadows/AO detail), the latter's edges dilated over
+  the 3x3 tiles around (motion). Per axis -> 1x1 / 2x1 / 1x2 / 2x2. A max-step-only test (0.02)
+  left 87 % of tiles at full rate (every textured tile has one step); mean + max kept 60 % coarse.
+- Result: composite 12.97 -> 7.46 ms, 42 -> 55 fps; full-size frames equal within TAA noise. A
+  looser texture threshold (0.02) saved 0.2 ms more but softened ground speckle at 2x zoom.
+- Judge it at the real size: a 640x360 window shrinks 2x2 blocks to nothing. Dump the frame at
+  internal size after the TAA (`glReadPixels` GL_FLOAT once, a tuning counter triggers it) and
+  compare 2x NEAREST crops; a debug switch that draws coarse tiles as 4x4 shows where it applies.
+- Any GPU readback of statistics (tile counts) waits for the frame before: test switch only.
