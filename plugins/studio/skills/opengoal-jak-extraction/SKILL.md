@@ -348,6 +348,12 @@ at the saved spot:
 - Finding which post effect draws an artifact: `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders while the game runs. A script that swaps one line of the shader per variant and takes a shot of each compares them all in one run, with the same camera. Restore the files in a `finally`.
 - Pointing a test at water (Jak Enhanced): a late teleport (`JAK_ENHANCED_MENU_SCRIPT` `22:3:x/y/z/yaw`) moves Jak and turns him, but the camera keeps its heading, so pick the spot along the start camera's own view. Haven port: `ctyport-start` + `22:3:193/17.5/1725/180` puts Jak swimming in the harbour, facing the far quay. Check the water debug mask in the first shot: a "water in view" is not proof the composite treats it as water.
 - Spargus sea (Jak 3): `wascitya-seem` and `wascitya-start` see no sea, even with `JAK_ENHANCED_PLAYER_TEST=orbit` turning the camera. The ocean-mid mask (`wascity-ocean.gc`, corner -256/-2762 m, 96 m tiles) has sea west of x ~2134 m and north of z ~ -400 m around Spargus, but a menu-script teleport there (`3:2110/9.5/-60/180`) ends back at the continue point (deep sea = death). Reach it from the air (Hellcat test) instead. Before tagging textures for a night effect, boot with `JAK_ENHANCED_MATERIAL_NAMES=1` (each texture's name and class per level) and look at the tag debug view (`tune_night_win 10`: magenta = any glossy pixel, metal included; cyan = window panes): at the Haven port 22h the far quay's bright strips were metal, not glass, so retagging `fac-lo-glass` changed nothing there.
+- Water bands: before calling a pale strip under a far quay a seam, look at the hit view (Jak Enhanced
+  `tune_water_dbg 6`). No hits from ~25-50 m in both tracers (Hi-Z and the old march, `tune_hiz_dbg 1`
+  splits them) means the rays go over the quay into the sky: a correct sky reflection, not a bug. A
+  real seam lines up with a change of depth source (`tune_water_dbg 7`, e.g. where the game's near
+  ocean mesh starts). Find it with a per-row RGB profile of a column strip across all the debug views
+  (mean of 80 px per row, every 2 rows), not by eye. Spargus sea 18h: a dark 4-row line sits there.
 - `JAK_ENHANCED_HELLCAT_TEST=2` (desert to Spargus in the Hellcat) is over before a windowed boot's first
   "average fps" line (~35 s): every capture timed from there shows Jak already standing at wascitya-start.
   It is no way to see the Spargus sea.
