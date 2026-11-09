@@ -367,6 +367,16 @@ at the saved spot:
   Follow-up (Jak Enhanced `tune_lawn_foot`, off): a world-space probe (shrub-tagged pixel beside, < 0.7 m,
   and above the ground point) instead of a depth gap lands on the small tufts' outlines (lit grass-field
   blades that carry the floor's tag), not on the ground round the big tussock; foot/other luma unchanged.
+  What worked (M3, on): the loader already knows where every plant stands, so keep each level's feet
+  (centre, floor height, radius, height; the game's shrubs up to 3 m / 5 m round too: the forest
+  "tussock" is ~110 `fora-shrub-grass-*` shrubs 1.9 m tall that fail the 1.6 m "grounded" test), splat
+  them on a worker into a world-space RG32F map round the camera (shade, shade x floor height, 0.5 m
+  cells, redone every 8 m), and shade lawn pixels near a foot at its floor height. Within-frame split:
+  tuft-foot pixels -17%, no post cost. Debug it with views that paint the map over *every* pixel and
+  the map itself in a screen corner with the camera marked: they showed the map right and the lawn
+  beside the tussock simply too far from any foot (seen from above, the ground past a 2 m tussock's
+  far rim is ~4 m behind its blades, where real AO wouldn't reach either). Also: `world_dir(p)` in the
+  composite *is* the world frame (up_view etc. are world axes in view space), no need to "fix" it.
   Measure such a mask as a within-frame ratio (masked vs unmasked pixels of the same half, split on
   `uv.x > 0.5`): the whole forest's luma swung +-8 between frames 4 s apart. A menu-script hour pin of
   40 steps x 15 s ends after 10 min: a long A/B session silently slid into night; reboot or add steps.
