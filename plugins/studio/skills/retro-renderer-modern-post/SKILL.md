@@ -202,6 +202,13 @@ camera the game hands over each frame.
   the screen wide: break it into glitter with two noise octaves at 2.5 and 6 cycles/m (9/m averages out to
   grey at 26 m up) and roll it off `g/(1+g)`. Toggle each water term inside one run with `tune_water_dbg`
   (1 lamps, 2 beacons, 3 no reflection but the glints still added after it, 11 reflection only).
+  Do the same to every tight lobe: the moon's (pow 700 x 2) made the same solid oval there at 22h
+  (`tune_water_moon_soft`). The "dark blue oval" around the glint was the game's own sea pattern
+  (drifting dark patches): corner-vs-middle luma ratio 0.67 ours vs 0.60 vanilla. Measure a patch's
+  ratio against vanilla in the same run before hunting its cause in your shader.
+- A feature that "does nothing" in an A/B (lit night windows, luma equal on/off at Haven port 22h) may
+  just have no tagged surface in view: show its tag view first (`tune_night_win 10`: no cyan panes in the
+  port, many in `ctyslumc-start`, where on/off differs 59.4 vs 56.0).
 - Night lamp columns on water: gate each lamp's specular by its own cube shadow map at the water point
   (`lamp_map_lit`). The SSR "ray met a wall" test misses lamps behind a canal wall when the reflected ray
   leaves the top of the screen. Before blaming a column, check `tune_raw_view 1`: the soft blue column on
