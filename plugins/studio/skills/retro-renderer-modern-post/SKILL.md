@@ -69,6 +69,7 @@ camera the game hands over each frame.
   `dot(right, center - A) + dot(right, A)` with A re-set near the camera every ~32 m: the direction
   can follow the sun every frame, drift is angle x distance from the camera (slow, even), cost zero.
   Log the sun's turn per 5 s (0.2 deg/s in Jak 3) before choosing a step or crossfade.
+- A "giant" character shadow at night was the game's own shadow volume (kept under a low sun/moon) stacked on the moon map's: find the pass by toggling each in one run and measuring mean luma of the dark patch vs the lit side (only the game-shadow toggle moved it, 36.7 -> 47.4 vs 45), then hide the game's at night.
 - Point-light cube maps: leave out characters within ~1.5 m of the light (a shoulder-mounted
   sidekick passing a wall lamp cast a shadow 5-10x his size); a real lamp is no point.
 - Test configs may run a preset with the shadow map off: force it (`JAK_ENHANCED_PRESET=2`,
