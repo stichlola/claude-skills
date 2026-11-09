@@ -1346,3 +1346,12 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   drawn. Measure tone with region means of A/B shots (floor 79,51,15 vs blades 60,33,11), not by eye.
 - GPU timings from a shared machine (other test instances) swing 6-15 ms between identical variants: interleave
   off/on several times and report ranges, or use per-pass timers.
+
+## Flat band under the horizon on far water (lesson, Jak 3 Enhanced, Nov 2026)
+
+- A screen-space env reflection that lifts every reflected ray to a fixed minimum rise (0.03, to keep
+  ripples tilted toward the eye from seeing the sea) makes the last rows under the horizon all sample ONE
+  sky pixel: a flat band with no ripples (luma std 1.4 vs the game's ~6). Debug the env sample's screen y per
+  row: constant = this. Make the floor follow the calm mirror ray: `min(0.03, 0.5 * rise_of_calm_ray + 0.002)`.
+- Read such bands numerically, not by eye: row means and std over a column strip of each debug view.
+  A debug value that comes out "graded mush" equal to the normal picture means the shader had not reloaded yet.
