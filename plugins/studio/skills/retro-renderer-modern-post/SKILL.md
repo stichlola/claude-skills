@@ -181,6 +181,18 @@ camera the game hands over each frame.
 - A "no darker than X x the game's water" floor read from the scene texture can't be sized against `tune_raw_view`
   luma: the grade runs after it, so 0.7x of the raw value moved the final only ~+15% (Spargus sea 18h, within the
   swimming camera's frame noise). Compare floor variants against each other, in one run, not against raw view.
+- Re-checking a user's old water report (Jak Enhanced, Nov 2026): a hard-edged band between two water
+  classes shows as an edge in the depth-source view (`tune_water_dbg 7`: white = deep, far-sea copy under the
+  near surface; blue = shallow over a bed; yellow = far sea only). Measure the colour of a 6-12 px band on each
+  side of that edge in the final and in `tune_raw_view 1`: if the step ratio matches vanilla's (canal 12h:
+  1.26 vs 1.29; slums pool edge 57/58/57 vs 54/58/57) the old artifact is gone, don't "fix" it. `ctygenb-start`
+  is not deterministic: some boots drop Jak into the canal (camera 2.6 m over it, facing the wall), others leave
+  him on the ledge. To see a pond or canal bed, add `JAK_ENHANCED_PLAYER_TEST=orbit` and capture a burst of ~8
+  frames 1 s apart (desert-ashelin: the oasis shows in ~1 of 8).
+- Moon glitter is invisible at real hours from `ctyport-start` (2h, 4h, 20h, 22h: on/off within 0.3 luma over
+  3 interleaved pairs): the moon stands too high there. The Spargus-sea teleport `3:1722.4/40/-420.1` from
+  `wascitya-start` (at 22 s or 40 s of the script) left Jak at the continue point twice: check the log's
+  `Jak at` before reading a sea shot.
 - Hour schedules in `JAK_ENHANCED_MENU_SCRIPT` run on the game clock from its first frame, not from when the launcher returns (boot 15-40 s). Give each hour a window of at least 50 s and shoot in the middle of it, or the "18h" shot shows noon.
 
 ## Real normals for levels that have none
