@@ -1539,3 +1539,12 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   after the composite reads it, so only the new effect (backlight) sees it.
 - **Sun ahead without an orbit camera**: keep Jak idle (fixed camera) and switch the hour in one run with a
   menu script (7h then 18h, each repeated every 15 s): one of them puts the sun in front; A/B on/off at each.
+- **A gain that changes nothing is often flattened downstream**: a day blast flash x1/x2/x3 left the noon frame
+  within 1%. A debug view of the term alone (magenta) proved it reached the shader; the highlight squeeze
+  further down (luma knee 0.7, then 0.85) flattened it on bright sand. The same light added again just before
+  the final shoulder read at once (frame mean +8..+20). Bisect with "show the term alone" and "add it again at
+  the end" before tuning its gain.
+- **Short effects A/B**: a 0.6 s flash sampled by timed shots lands in half of them, so variants compare noise.
+  Repeat the effect faster than it fades (blast test every 0.3 s): a steady state that every variant sees.
+- **Wet ground reads flat when it only darkens**: soaked sand/stone is deeper in color. Mix toward c*c scaled
+  back to c's luma: saturation up (desert rain 29 -> 39), brightness unchanged (keeps a deliberate dark look).
