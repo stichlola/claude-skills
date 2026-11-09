@@ -1245,6 +1245,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   (only ~7 of 60 models are still), and props whose skeleton count is a placeholder (OpenGOAL's
   merc_replacement gives a joint-less glb `max_bones` 100) carry garbage spare slots that look like
   motion. Bones past the end of the list count as "spare, stop" rather than "moved".
+- **Split the post's CPU into named steps before guessing** (a static accumulator, `mark("name")` at
+  the top level of each block, sequential index, report every 5 s, only under a profile switch). The
+  hot spots were single GL calls, not loops: 48 one-pixel `glReadPixels` into a PBO (exposure) cost
+  0.23 ms; one nearest `glBlitFramebuffer` to an 8x6 target at the same pixel centers
+  ((2x+1)w/16) plus one read cost 0.06 ms. A `glClear` of the w x h motion target cost 0.13-0.23 ms of
+  CPU whatever the clear color, `glClearBufferfv`, or a second target in turn; making the target
+  RGBA16F with a frame stamp in b (TAA trusts only this frame's stamp; one clear when the stamp wraps
+  at 1024) dropped it with the same coverage. One `glDrawArrays` of a big program (SSAO with SSBOs and
+  many samplers) costs ~0.19 ms of driver validation by itself: the next thing to attack.
+- **Comparing against an old commit's build**: `git archive <old> | tar -x` into the scratchpad,
+  configure Ninja + clang with the cached vcvars env, build `gk` at idle priority (~5 min on this
+  laptop), junction the data folders (`out\jak3`, `decompiler_out\jak3_pal`, merc/texture
+  replacements, `iso_data\jak3\*`) from the worktree, run with `--proj-path` = the archive. Turn
+  the menu's auto quality off in both test configs: an old build without the pre-limiter flush sees
+  ~16 ms GPU timers and drops passes, which changes its CPU too. Across separate runs the renderer
+  CPU still swings +-0.5 ms with other games' load: only in-run toggles give sub-0.1 ms answers.
 
 ## Trees in the wind on a TIE renderer (lesson, Jak 3 Enhanced, Nov 2026)
 
