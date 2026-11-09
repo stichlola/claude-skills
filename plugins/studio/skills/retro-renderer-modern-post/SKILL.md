@@ -117,6 +117,12 @@ camera the game hands over each frame.
   caves, palace halls) at noon they then stay at day strength (Jak 3 temple: ~1/4 of the night's), so
   the torches light nothing on the floor. Give the light rig an "enclosed" factor too (area flag, or
   little sky visible on screen / no sun shadow coverage).
+- Gate a night-only fix on the real night factor, not an option's share: in Jak Enhanced
+  `night_dark.x` is the dark-nights option (~0 in Haven), `clouds.w` the night itself. A fix keyed on
+  the wrong one "does nothing" in A/B; prove the path runs first with an absurd value (x30).
+- Night water: a constant body color that is night-dimmed, between walls whose reflection is also
+  dark, turns into a black hole beside lit pavement (Haven canal 23h: 0.26x vanilla, open harbour
+  0.77x). Floor the body at a share of the game's own water color by night (0.5).
 - With the fire positions: flicker their light, wobble the scene's uv in a column above each flame
   (only for pixels behind it), and draw procedural embers in the composite (hash per ember and per
   life cycle, rise + sway, depth-tested against the scene, a screen-rect early-out per fire).
