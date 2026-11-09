@@ -877,5 +877,11 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Spargus sea from the water (gfx-polish water review): `JAK_ENHANCED_START=wascityb-start` + menu script
   `4:1:18,12:4:0,20:3:1722.4/40/-420.1` (hour, clock stopped, teleport): Jak swims, camera ~3 m over the sea,
   rocks, an island and the horizon in view. The Hellcat test lands too early to see this sea.
+- A seam at the game's near-ocean edge: profile each water term separately (final, reflection only, body
+  only, fresnel channel, depth-source mask) as full-width row means over 2-3 frames, not one 90 px
+  strip of one frame. Jak's swim drift and the sky reflection's streaks made a "4-row dark line" that
+  a strip showed and a full-width mean did not; the real step was the fresnel (0.70 -> 0.47 over the
+  10 rows where the near mesh starts) with the reflection flat. Not the pond rule, not water_deep, and
+  only partly the ripple footprint (fwidth on the wavy mesh; an analytic footprint gave +5-15%).
 - The composite's hot reload now takes 17-20 s (log `enh_composite reloaded (17351 ms)`): a fixed 14 s wait shot
   the old shader. Poll the log for one more `enh_composite reloaded` line before the A/B.
