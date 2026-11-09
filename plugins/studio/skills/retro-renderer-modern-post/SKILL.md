@@ -1388,6 +1388,16 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Keep hot test switches in the draw loop (no scenery / skip a version by mask / log): they turn "what does
   this cost" into one interleaved run. Read cost as GPU ms minus the post-pass total per 5 s window; at
   1600x900 the post dominates, so vertex savings show best at a small resolution uncapped.
+- After sizing the swaps, look again at the copies an exception keeps detailed: tilted stones (whose
+  impostor would show what the ground hides) held their far version to 250 m, 1190 copies = 1.28M of
+  2.5M triangles at one cliff. Make a coarse version at load (meshopt_simplify of the far version to
+  15%, sloppy as fallback, keep only used vertices, share the texture by key) and dither far -> coarse
+  -> impostor: same look at noise level, no new asset files. Skip cutouts (blades/leaves die).
+- When the GPU is shared with other test instances, use medians of (GPU - post) over 7-10 alternations;
+  single 5 s windows swung 2-7 ms. Whole Jak 3 desert scenery after this: 0.63 ms at 640x360, its
+  8000 impostors 0.16 ms, so cluster impostors were not worth building.
+- A test log keyed on "every N draws" with several trees drawn per frame always lands on the same tree
+  (N even): log every tree drawn in the frame a timer fires instead.
 
 ## Flat band under the horizon on far water (lesson, Jak 3 Enhanced, Nov 2026)
 
