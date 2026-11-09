@@ -44,6 +44,10 @@ the live objects, remove the orphans) and re-export from there.
 
 Heavy meshes: run it in a background Blender, not through an MCP call (60 s timeout).
 
+Big boolean results (a 2.6 M-triangle base with several Tripo parts unioned in) can need many repair rounds: each round
+fills holes that open new bad edges nearby. The script loops up to 30 rounds; always read the DOPO line and run it
+again on `cleaned.blend` if non_manifold is still above 0.
+
 ## Print vs game meshes
 
 - **Print (STL/3MF):** everything above, and the result must be watertight (0 non-manifold, positive volume).

@@ -31,7 +31,7 @@ def clean(bm):
         bad = [f for f in bm.faces if 2*f.calc_area()/max(max(e.calc_length() for e in f.edges), 1e-12) < 1e-3]
         if not bad: break
         bmesh.ops.collapse(bm, edges=list({min(f.edges, key=lambda e: e.calc_length()) for f in bad}))
-    for _ in range(8):   # non-manifold: remove two rings of faces around each bad edge, split bowties, fill, repeat
+    for _ in range(30):  # non-manifold: remove two rings of faces around each bad edge, split bowties, fill, repeat
         bmesh.ops.delete(bm, geom=[e for e in bm.edges if not e.link_faces], context='EDGES')
         bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
         nm = [e for e in bm.edges if not e.is_manifold]
