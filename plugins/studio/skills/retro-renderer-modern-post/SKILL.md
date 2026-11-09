@@ -159,6 +159,7 @@ camera the game hands over each frame.
   `max(ours, game)` there so the foam still shows. Only trust a sea depth that is really behind the
   scene (a plane under the whole level, or a depth copy where something hid the sea, matches the
   scene itself: docks turned into water and lost their shadows). Check with an A/B of a dry scene.
+- Pale band under a far quay (Jak Enhanced, Haven port 17h, 4-8 px at 640x360): first prove whether it is a  reflection *miss* with a hit/no-hit debug view (hits red, planar-mirror share green) before tuning. It missed in  both the Hi-Z trace and the old march, and none of near-reject 0.5 -> 25 m, +25 m hit thickness, the planar  mirror ray on Hi-Z, 400 iterations changed the hit count (count debug-colored pixels, 4 shots, A/B/A/B): drop  variants that move nothing instead of shipping them. Next suspect: the water point p itself (which depth  feeds it right at the waterline).
 
 ## Real normals for levels that have none
 

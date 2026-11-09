@@ -624,6 +624,7 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   map's roofed-floor finder can be a false floor: Jak falls and respawns at the start, so check the last
   `[camera]` line before trusting a shot. Quick roofed spot that boots directly: `waspala-start` (palace hall).
 - Hour: `JAK_ENHANCED_HOUR=<h>`, **not** `JAK_ENHANCED_MENU=1:<h>`: any `JAK_ENHANCED_MENU` value also opens
+- The game clock runs on (~1 game hour per real minute): a boot at 17h is night 5 min later, so A/B pairs taken  minutes apart differ by the hour. Hold it with repeated menu-script hour steps, e.g. `20:1:17.5,35:1:17.5,...`  (no step limit), then switch blocks (`310:1:22,...`, `490:1:12,...`) for a noon/dusk/night tour in one boot.
   the menu over half the frame. Clear sky: `JAK_ENHANCED_WEATHER_SCRIPT=0:0`. Quality: `JAK_ENHANCED_PRESET=2`.
 - Spots that boot directly: `desert-start`, `wascitya-start` (Spargus), `waspala-start` (palace), `ctyport-start`,
   `ctysluma-alley`, `game-start` (arena); Hellcat in flight = `JAK_ENHANCED_HELLCAT_TEST=1`, shoot on the
