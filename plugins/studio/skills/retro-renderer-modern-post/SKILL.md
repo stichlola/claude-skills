@@ -1442,3 +1442,13 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   characters near the camera into any lamp whose reach they're in (Jak under a far brazier), not only
   those near the lamp. Skip the whole pass where the composite won't read it (lights' shadows off in
   lower presets). Default on after 4 spots (port, Spargus, temple, slums): 0.05-0.2 ms GPU+CPU each.
+- **Give every shadow-casting lamp a map, not the "strongest" 4**: the light list's order isn't what
+  the player looks at. In the temple courtyard the braziers in view ranked 5th-8th, behind lamps up
+  the stairs, so they kept the 3 m depth march and washed the wall flat; with 8 slots the wall's arches
+  shade their light. The cost hardly moved (static faces are cached; only faces with characters are
+  redrawn). Size the cube array to the setting (6 MB per 512² depth cube, x2 for static + live), pass
+  the composite a slot per light (not a light per slot), and merge two lights at one place into one map
+  (Spargus lamps come as pairs). Redraw the kept faces when the near plane changes.
+- Telling a new shadow from flame flicker in A/B shots: take A/B/A/B in one run and diff the averages
+  (signed, x6); a per-slot debug view (`dbg_slot`: only that map's shadow in red) names the lamp, and
+  logging the camera position puts the slots' places in context.
