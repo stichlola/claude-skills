@@ -1434,3 +1434,11 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   space for this frame's pass, and match slots back to this frame's light indices by place.
 - Measured at Haven's port 21h: 4 lamps, 0.10 ms GPU, 0.09 ms CPU; Jak and Daxter's real shape on the pier
   instead of the depth march's blur. Windows `#define far`: never name a member `far`.
+- "Still" means near where the light was **first** seen (~0.5 m), not 2 cm from last frame: fire lights
+  jitter ~20 cm with the flame every second or so, lost their maps and re-took slots (6-9 cube refills per
+  5 s with the camera still). Keep the map at that first place and match lights to slots with the same
+  tolerance. Log refills and new slots per 300 frames: a per-frame sample ("0 static faces") hid the churn.
+- Rank a lamp that has its map a couple of places higher instead of a hard top-N+2 rule, and draw the
+  characters near the camera into any lamp whose reach they're in (Jak under a far brazier), not only
+  those near the lamp. Skip the whole pass where the composite won't read it (lights' shadows off in
+  lower presets). Default on after 4 spots (port, Spargus, temple, slums): 0.05-0.2 ms GPU+CPU each.
