@@ -1393,3 +1393,24 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   internal size after the TAA (`glReadPixels` GL_FLOAT once, a tuning counter triggers it) and
   compare 2x NEAREST crops; a debug switch that draws coarse tiles as 4x4 shows where it applies.
 - Any GPU readback of statistics (tile counts) waits for the frame before: test switch only.
+
+## Shadow maps for local lamps in a post composite (lesson, Jak 3 Enhanced, Nov 2026)
+
+- One `GL_TEXTURE_CUBE_MAP_ARRAY` (DEPTH32F, 512², 6 layers per slot, 4 slots) read as
+  `samplerCubeArrayShadow`; render each face with `glFramebufferTextureLayer(slot*6+face)` and GL's
+  cube convention (+X/-X/+Z/-Z up (0,-1,0), +Y up (0,0,1), -Y up (0,0,-1), lookAt + 90° perspective).
+  The lookup reference from the direction alone: `zf = max(|d.x|,|d.y|,|d.z|)`,
+  `ref = 0.5*((f+n)/(f-n) - 2fn/((f-n)*zf)) + 0.5`; normal offset ~1.5 texels (`2*zf/res` each).
+- Reuse the sun map's static caster list (level geometry in world space) and its character replay
+  (merc bones): only the matrix changes. Draw a lamp's static part once, two faces a frame, and keep it;
+  per frame copy back (`glCopyImageSubData`) and redraw characters only in the faces that hold a
+  character now or held one last frame. Copying every cube every frame cost more than the draws.
+- Near plane ~0.5 m: the game's light sits inside its own lamp housing, which otherwise blacks out the cube.
+- Only lamps that stay put get a map (same place ±2 cm for ~30 frames): some "lamps" follow Jak or the
+  camera and would redraw their static faces every frame. Give lamps that already own a map priority
+  among the strongest N+2, or the slots thrash as the score order shifts while the camera turns.
+- Limit characters to ~12 m from the lamp: big town lamps reach 45 m and took every NPC (700 draws).
+- The light list is built in the composite's setup, after the passes: keep last frame's list in world
+  space for this frame's pass, and match slots back to this frame's light indices by place.
+- Measured at Haven's port 21h: 4 lamps, 0.10 ms GPU, 0.09 ms CPU; Jak and Daxter's real shape on the pier
+  instead of the depth march's blur. Windows `#define far`: never name a member `far`.
