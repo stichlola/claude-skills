@@ -173,6 +173,14 @@ camera the game hands over each frame.
   scene itself: docks turned into water and lost their shadows). Check with an A/B of a dry scene.
 - Pale band under a far quay (Jak Enhanced, Haven port 17h, 4-8 px at 640x360): first prove whether it is a  reflection *miss* with a hit/no-hit debug view (hits red, planar-mirror share green) before tuning. It missed in  both the Hi-Z trace and the old march, and none of near-reject 0.5 -> 25 m, +25 m hit thickness, the planar  mirror ray on Hi-Z, 400 iterations changed the hit count (count debug-colored pixels, 4 shots, A/B/A/B): drop  variants that move nothing instead of shipping them. Next suspect: the water point p itself (which depth  feeds it right at the waterline).
 - Before calling dark vertical shapes on near water an artifact, check the hits view and the geometry: from a camera 2-3 m over a harbour (Jak swimming), the mirror of 20-30 m tall dark buildings 60-150 m off lands near the camera, close to a mirror about the horizon. The direction-only fallback (the screen where the reflected ray ends at infinity) is close to right there. Jak Enhanced water spots: `ctyslumc-start` (a pool, its edge in view), `ctygenb-start` (the camera faces the canal wall, no view of the bed), `desert-ashelin` (the oasis pond is out of view: needs a turn).
+- Moon on the water (Jak Enhanced, Nov 2026): a reflected lobe toward the night sky's moon showed no change even at
+  200x from ctyport-start 22h. Paint the gate's inputs as the water colour first (`clouds.w`, `sky_sun.w`): both were
+  on, the moon just stood at ~53 deg, so its image fell below the frame. Put it low ahead with
+  `JAK_ENHANCED_SKY_TEST=<sine of height>` (0.12) to see the path. Guards walking through the port swamp mean-luma A/B:
+  count over several interleaved frames.
+- A "no darker than X x the game's water" floor read from the scene texture can't be sized against `tune_raw_view`
+  luma: the grade runs after it, so 0.7x of the raw value moved the final only ~+15% (Spargus sea 18h, within the
+  swimming camera's frame noise). Compare floor variants against each other, in one run, not against raw view.
 - Hour schedules in `JAK_ENHANCED_MENU_SCRIPT` run on the game clock from its first frame, not from when the launcher returns (boot 15-40 s). Give each hour a window of at least 50 s and shoot in the middle of it, or the "18h" shot shows noon.
 
 ## Real normals for levels that have none
