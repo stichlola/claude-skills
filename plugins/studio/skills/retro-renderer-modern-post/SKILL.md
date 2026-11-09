@@ -1245,3 +1245,20 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   (only ~7 of 60 models are still), and props whose skeleton count is a placeholder (OpenGOAL's
   merc_replacement gives a joint-less glb `max_bones` 100) carry garbage spare slots that look like
   motion. Bones past the end of the list count as "spare, stop" rather than "moved".
+
+## Trees in the wind on a TIE renderer (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **Check the game's own wind moves anything before tuning it**: Jak 3's forest has 697 wind ties (whole small
+  trees, bark + foliage) and none moved, even with the bend drawn x20. Prove it with a frame-pair diff (two shots
+  0.7 s apart, share of pixels changed > 12) at gain 0 vs 20: identical. Then replace, don't amplify: add your own
+  gust as a shear from the instance's foot (`mat[i].x += s * mat[i].y` for the 3 basis rows = x moves by s x height).
+- Static TIE (trees baked into world-space vertices) has no instance origin. A per-vertex weight fits in the vertex's
+  **padding** (tfrag3 PreloadedVertex had 2 spare bytes after `color_index`, already read by the u16x2 attribute):
+  height above the plant's foot + a leaf bit. Foot = a **smooth field** (lowest swaying vertex within ~6 m, bilinear
+  between 2 m cell centres): trunk and its leaves then get the same lean and never tear apart.
+- Find what is drawn by which renderer before classifying: a weight debug view that also darkens everything with
+  weight 0 showed the orange canopies kept their brightness: not static TIE at all, but wind ties. Log each level's
+  cutout and wind-draw texture names once (Jak 3: only `fora-foliage`/`fora-bark`; Haven and Spargus have no TIE
+  foliage, `wstd-canopy` is a stadium awning: keep "canopy" out of the leaf words).
+- Motion has no still-frame proof: report the frame-pair change share (forest top: off 0.3-0.8 %, on 1-2 %) and the
+  debug view; the vertex cost was below the GPU-time noise.
