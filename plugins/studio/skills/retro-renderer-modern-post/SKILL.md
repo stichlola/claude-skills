@@ -160,6 +160,8 @@ camera the game hands over each frame.
   scene (a plane under the whole level, or a depth copy where something hid the sea, matches the
   scene itself: docks turned into water and lost their shadows). Check with an A/B of a dry scene.
 - Pale band under a far quay (Jak Enhanced, Haven port 17h, 4-8 px at 640x360): first prove whether it is a  reflection *miss* with a hit/no-hit debug view (hits red, planar-mirror share green) before tuning. It missed in  both the Hi-Z trace and the old march, and none of near-reject 0.5 -> 25 m, +25 m hit thickness, the planar  mirror ray on Hi-Z, 400 iterations changed the hit count (count debug-colored pixels, 4 shots, A/B/A/B): drop  variants that move nothing instead of shipping them. Next suspect: the water point p itself (which depth  feeds it right at the waterline).
+- Before calling dark vertical shapes on near water an artifact, check the hits view and the geometry: from a camera 2-3 m over a harbour (Jak swimming), the mirror of 20-30 m tall dark buildings 60-150 m off lands near the camera, close to a mirror about the horizon. The direction-only fallback (the screen where the reflected ray ends at infinity) is close to right there. Jak Enhanced water spots: `ctyslumc-start` (a pool, its edge in view), `ctygenb-start` (the camera faces the canal wall, no view of the bed), `desert-ashelin` (the oasis pond is out of view: needs a turn).
+- Hour schedules in `JAK_ENHANCED_MENU_SCRIPT` run on the game clock from its first frame, not from when the launcher returns (boot 15-40 s). Give each hour a window of at least 50 s and shoot in the middle of it, or the "18h" shot shows noon.
 
 ## Real normals for levels that have none
 
