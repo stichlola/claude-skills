@@ -123,6 +123,12 @@ camera the game hands over each frame.
 - Night water: a constant body color that is night-dimmed, between walls whose reflection is also
   dark, turns into a black hole beside lit pavement (Haven canal 23h: 0.26x vanilla, open harbour
   0.77x). Floor the body at a share of the game's own water color by night (0.5).
+- Before you call a dark band on the far sea at night a bug, measure the same rows in vanilla.
+  At Spargus 22h the far rows were 0.4x the near water, and vanilla's were 0.6x. The rippled
+  reflected ray at grazing angles climbs ~50 px into the darker upper sky, not into the horizon glow.
+  Feeding the reflection the composite's own sky (clouds, city glow, stars) in place of the scene's
+  raw sky changed nothing measurable there or at the Haven port, so it was dropped. Whole-scene
+  darkness against vanilla (about 0.25x here) is the deliberate look, not a water defect.
 - With the fire positions: flicker their light, wobble the scene's uv in a column above each flame
   (only for pixels behind it), and draw procedural embers in the composite (hash per ember and per
   life cycle, rise + sway, depth-tested against the scene, a screen-rect early-out per fire).
