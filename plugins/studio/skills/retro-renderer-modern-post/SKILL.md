@@ -1262,3 +1262,36 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   foliage, `wstd-canopy` is a stadium awning: keep "canopy" out of the leaf words).
 - Motion has no still-frame proof: report the frame-pair change share (forest top: off 0.3-0.8 %, on 1-2 %) and the
   debug view; the vertex cost was below the GPU-time noise.
+## Vanilla A/B in one run, measuring detail, finding what a surface is (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Put a "show the game's own picture" switch in the composite (Jak Enhanced: `tune_raw_view` 1 full, 2 right
+  half). Then you can compare against vanilla at the same spot and hour without a second boot. Arena 19h:
+  the wall "too dark beside the light column" measured 43-50 vs the game's 61-71, but the far wall was
+  46 vs 63 too. The whole room sat at the dusk floor's 0.7x, so it was the deliberate dark look and not
+  a local hole.
+- Mean luma can't measure a detail term that adds and subtracts. Use the mean |dx| between neighbouring
+  pixels (high frequency) or the std over the region. A cavity term on rocky ground: mean 106.2 -> 106.6
+  (looked like "no effect"), hf 1.73 -> 2.01 (+17%).
+- To find what a surface is, paint the material classes by tag length in the composite (sand 0.9 red, rock
+  0.75 green, plain/wall 1.0 blue, the rest grey). Do this before guessing texture names. The desert-start
+  "flat slab" turned out to be rocky ground (0.6, wascity-ground-01), not hfrag and not a cave floor. The
+  guessed retag changed the material counts but not one pixel there. `JAK_ENHANCED_MATERIAL_NAMES=1` logs
+  every texture's class per level. It also turned up wascity-stain-window-01, a streak decal that had been
+  tagged as a window pane.
+- Haven port 22h from ctyport-start: 0 lamp-tag pixels, ~3 window-pane pixels. The glossy pixels on the
+  far quay are marble facades (city-port-green/dark-marble). Lit-window or lamp tags can't light the far
+  city from there: that needs another source.
+- A shader hot reload that catches a file between two edits fails ("enh_sun_half failed, keeping the old
+  one") and recovers at the next save. Wait for the "reloaded" log line after your last edit before you
+  shoot. A composite reload at 640x360 took 19-28 s, not 12.
+- Far-quay pale band, follow-up: from ctyport-start at 17h it doesn't show (hits reach the quay's foot,
+  only a 1-2 px miss line). A wider first-pixel thickness on Hi-Z (one pixel's ray span) moved misses
+  within noise (381-411 vs 399-407), so it was dropped. The band depends on the camera spot: record the
+  exact spot (teleport) with every water glitch.
+
+## PowerShell pixel scripts: parameters are case-insensitive (trap)
+
+- `param([int]$X)` and a loop `for ($x = $X; ...)` are the same variable: the loop overwrites the
+  parameter and never ends (GetPixel out of range, 58 MB of errors in a background task). Name loop
+  variables differently, or do pixel statistics in Python + numpy (`python -I`), which also takes
+  milliseconds instead of minutes.
