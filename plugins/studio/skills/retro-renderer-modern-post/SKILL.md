@@ -992,6 +992,10 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   with glFinish to profile: keep the timestamp-query timers on.
 - Hour drift kills low-sun A/B: a menu script that pins the hour ends, and 30 s later the 18h long
   shadow is gone. Pin the hour for the whole cycle, and test hot reloads only inside the pinned window.
+- A main-vs-branch tour (one boot per build) can't judge night luma: Jak 3 slums/desert 22h read 11%
+  darker on the branch, yet 3 repeated shots per build, each boot started straight at the hour, put the
+  branch 5-20% brighter, and in-run toggles of every new default moved it only within that noise. Before
+  calling a night darker, re-run both builds with repeated shots at the same pinned hour.
 - Before extending a reflection's range, check it finds anything: Haven harbour 19h far water looked the
   same with water SSR capped at 80, 200 or 300 m (composite 0.76 ms all); the cap was not the cause.
 
