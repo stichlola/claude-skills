@@ -1508,3 +1508,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   it; an orbiting camera (Jak Enhanced `JAK_ENHANCED_PLAYER_TEST=orbit`) plus 8-frame bursts counted by colour finds
   sun-facing views without screenshots to look at. A shaded forest gave almost no lit-through pixels: prove it on
   an open lawn at a low sun.
+
+## Soft ceilings that ignore the gain, held flashes, lightning as a light (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A roll-off `x*k / (1 + a*x*k)` tends to 1/a for a big x whatever k is**: halving an explosion flash's gain
+  at night changed a blast's peak by ~10% (mean 95 -> 86 only after the fix). Scale the ceiling with the gain
+  (`/ (1 + a*x*k/g)`), then night 0.5 halved the near-white area (5.2% -> 2.3% of pixels > 200).
+- **Hold a short effect lit for A/B**: a 0.5 s flash is caught by chance in timed captures (5 shots, 0-2 hits).
+  A test that spawns one more often than it lives (blast every 0.25 s) gives a steady state to compare.
+- A gain that changes nothing (day flash x1..x3 within 1%) means the limit is elsewhere (grade, exposure,
+  roll-offs downstream): stop tuning it and look at the term in a debug view.
+- **Lightning that lights the scene**: the sky flash after the grade only lifted the ground faintly. A short
+  cold light from the bolt's azimuth (high) plus a sky-dome share, by the surface's own colour, times the
+  sky map's "open" (no flash under roofs): port 22h lower half 35-38 -> 48 at the bolt's peak. Hold the bolt
+  at its peak for shots (a test env that pins its age).
+- **Tag TIE tree leaves without new data**: their per-vertex flutter flag (wind weights) already marks
+  leaves; pass it vertex -> fragment and write a spare normal length (0.675), mapped back to plain right
+  after the composite reads it, so only the new effect (backlight) sees it.
+- **Sun ahead without an orbit camera**: keep Jak idle (fixed camera) and switch the hour in one run with a
+  menu script (7h then 18h, each repeated every 15 s): one of them puts the sun in front; A/B on/off at each.
