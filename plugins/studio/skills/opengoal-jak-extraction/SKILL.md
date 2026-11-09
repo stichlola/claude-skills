@@ -599,6 +599,17 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   1.76, gun run 0.85 vs 4.10 (same run). Measure with a `*display-pool*` watcher that drives phases
   (lefty 0 run / 90 walk / 128 stop: -1 leaves the stick where it was) and counts only the lowest ankle
   within bind height + 6 cm; run-to-run noise is ~±1 m/s (terrain), so compare inside one run.
+- **Blend two joint turns by slerp, never by lerping matrix rows** when they are far apart: Sig's unarmed
+  walk lerped rows 55% from the swung arm to the hanging one and renormalized; rows came out up to 0.93 cos
+  apart (sheared "weird" arms). Quaternions (normalized rows -> `matrix->quaternion`, `quaternion-slerp!`,
+  back with the row lengths) gave 0.00. Watch metric: max |row_i . row_j| of the arm bones while moving.
+- **Cloth joints parented to the thighs (Sig's skirt panels, belt bag, bottle) on a retargeted run** take
+  Jak's whole leg swing plus the skin's own clip's cloth motion out of step: ~100 deg off their bind hang
+  (own walk ~35). After leg IK, slerp each chain top toward its bind turn against the hips (carried by the
+  hips now, keep its trans) by pose-blend x 0.8, its children toward their bind locals: ~20-37 deg.
+- A REPL watcher's `format 0` lines can lag tens of seconds behind in the gk log under GL warning spam;
+  and a teleport to `*enhanced-hellcat-spot*` outside the run test lands in the sea (swim states keep
+  pose-blend 1): check `(-> *target* state name)` first, or measure through the gate row instead.
 - Hot-load pitfalls: dev_reload says NEEDS "type definition changed" for any file with a deftype (use
   `-Force` when the type is unchanged); a `define-extern` must match the defun's inferred return type
   (`or` -> `object`, not `symbol`); after a temporary (ml) of an edited copy, restore the source and
