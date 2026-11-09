@@ -1213,3 +1213,21 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   picture stayed equal; characters keep full-size shadows.
 - The user playing another instance on the same GPU doubles pass timers mid-run (SSAO 0.5 -> 0.8):
   interleave A/B/A/B and compare within pairs, never across runs.
+
+## TAA motion vectors for skinned characters without touching the game (lesson, Jak 3 Enhanced, Nov 2026)
+
+- No G-buffer attachment and no per-renderer change: replay the skinned draws you already keep for
+  the character shadow map (vertex buffers, index ranges, camera-space bones per model) a second time
+  after the frame, into an RG16F target cleared to a sentinel (64, 0 = none). Vertex shader skins each
+  vertex with this frame's bones AND last frame's bones of the same model; gl_Position from the post's
+  own projection with z = 0 (never depth-clipped); the fragment keeps only pixels where its view z is
+  within ~3 % of the scene depth (the front surface). TAA: take the offset of the nearest-depth pixel in
+  the 3x3 it already scans; elsewhere the camera reprojection as before. 0.09 ms at 2560x1600.
+- Finding "the same model last frame" with no stable id from the game: name hash + bone count, nearest
+  mean of its bone translations once the camera's move is taken out (view -> previous view), within a
+  few meters, one-to-one. Skip non-finite / kilometer-away bone translations (spare bone slots hold
+  garbage: the mean went NaN and the Hellcat never matched) and copies of a model with no draws.
+- A debug view written by the TAA itself feeds its own history (the TAA output is next frame's input):
+  a "how much was clipped" overlay turned the whole screen red by feedback. Keep debug views to masks.
+- Proof that works at 640x360: render the test at the window's size and crop a vehicle the camera
+  chases right after take-off, A/B toggled by hot tuning ~1 s apart (off: smeared edges; on: crisp).

@@ -128,3 +128,6 @@ Rounds of polish over a backlog (find, fix, re-check):
 - Measure disk use with a small Python `os.scandir` walker (skip junctions) rather than Explorer.
 - Moving files to the Recycle Bin (Microsoft.VisualBasic.FileIO, SendToRecycleBin) keeps deletions
   reversible; emptying the bin and changing system settings (page file, hibernation) are the user's.
+- **Never pipe a script that cleans up into `Select-Object -First N`** (PowerShell): once N lines are out it stops the
+  upstream script, so its `Stop-Process` at the end never runs; three test games stayed open and halved the
+  next A/B's fps. Collect the output into a variable, then filter it.
