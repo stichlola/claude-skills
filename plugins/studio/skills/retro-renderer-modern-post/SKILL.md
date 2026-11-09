@@ -62,6 +62,17 @@ camera the game hands over each frame.
   (no crawling edges), 4096 over ~160 m; depth 32F with hardware compare (`sampler2DShadow`),
   polygon offset, normal offset at lookup, fade at the edge. Save and restore the game's depth
   clear value and depth func.
+- **Snap from an anchor near the camera, not the world origin** (lesson, Jak Enhanced): snapping
+  `dot(right, center)` in absolute world coordinates makes the sun's slow turn slide the grid by
+  angle x km (9 cm a frame) in random sub-texel fractions: crawl. Stepping the light direction
+  (0.15 deg) hid it but made every shadow jump ~once a second with a fast game day. Snap
+  `dot(right, center - A) + dot(right, A)` with A re-set near the camera every ~32 m: the direction
+  can follow the sun every frame, drift is angle x distance from the camera (slow, even), cost zero.
+  Log the sun's turn per 5 s (0.2 deg/s in Jak 3) before choosing a step or crossfade.
+- Point-light cube maps: leave out characters within ~1.5 m of the light (a shoulder-mounted
+  sidekick passing a wall lamp cast a shadow 5-10x his size); a real lamp is no point.
+- Test configs may run a preset with the shadow map off: force it (`JAK_ENHANCED_PRESET=2`,
+  `JAK_ENHANCED_SHADOWS=1`) and check the pass shows in the log before measuring anything.
 - Any geometry the game's shaders discard (cut volumes) must be discarded in the shadow pass too.
 - Apply it only on surfaces facing the sun (normals from depth), at ~35 %: the baked vertex light
   already darkens what faces away, and a full-strength shadow over a mostly-shaded area crushes it.
