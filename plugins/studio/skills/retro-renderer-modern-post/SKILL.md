@@ -1311,3 +1311,21 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   parameter and never ends (GetPixel out of range, 58 MB of errors in a background task). Name loop
   variables differently, or do pixel statistics in Python + numpy (`python -I`), which also takes
   milliseconds instead of minutes.
+
+## Dense grass by ground class (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Find grassy floor from the level itself: floor textures named grass/moss/lawn/meadow/turf (or green on average and
+  not named rock/dirt/path/...), sampled on the **highest tfrag floor** every 2 m. Skip tie triangles there: in a
+  forest the tree canopies and rock tops are the highest floor and hide two thirds of the grass (20.7k -> 50.7k m2).
+  Then drop spots with anything 0.15-3 m above (rock, roots, ledge), so blades never poke through.
+- Cut the grassy area into aligned 64 m squares (one blade field each, the existing zone renderer unchanged), lush
+  mask box-blurred ~2 m so edges thin out; hang them on the nearest shrub tree for its time-of-day light. Several
+  fields per tree need a list on the tree's field (a holder with n = 0 when the tree has none of its own).
+- Colour: never the painted meadow green on a game floor (it read as a green carpet over an autumn forest). A texture's
+  mean alone is not the floor's tone either: the same `fora-grass` reads olive in one spot and bright orange in
+  another, its tfrag vertex colours are grey (22-38), so the hue difference comes from the post lighting. Per-spot
+  colour (texture mean x vertex colour / host light, packed 8+8+8 bits in a float channel, read with texelFetch) plus
+  a gain/saturation tune matched the orange spots; keep it behind a switch until the colour comes from the floor as
+  drawn. Measure tone with region means of A/B shots (floor 79,51,15 vs blades 60,33,11), not by eye.
+- GPU timings from a shared machine (other test instances) swing 6-15 ms between identical variants: interleave
+  off/on several times and report ranges, or use per-pass timers.
