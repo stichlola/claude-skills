@@ -603,9 +603,12 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   and walking, long before anyone noticed: a 55% row lerp toward his idle hid it). Measure hands against
   the skin's own shoulder axis, next to Jak's own hands (`(-> *target* node-list)` 19/28 vs 17/26), with
   `*enhanced-player-retarget* 'all` to force Jak's pose. Fix: keep the skin's own clip arms under Jak's
-  pose (Jak's only in attacks). Calm a swinging arm by turning the upper arm subtree toward hanging
-  (shortest turn of its direction, `turn-tree`), not by mixing local turns: row lerp shears, slerp
-  between far-apart poses crossed the arms.
+  pose (Jak's only in attacks). Even then a stylised NPC clip's arms may be wrong (Sig's museum walk holds
+  the right arm bent forward, hands still): drive the arms procedurally by direction (shortest turns of
+  the upper arm and forearm subtrees, `turn-tree`): hang at the side, swing opposite to the legs phased by
+  the *difference* of the two ankles' forward offsets from their hips (one leg alone: lean and bent knees
+  pushed both arms forward), elbow bend more when running. Never mix local turns between far-apart poses:
+  row lerp shears, slerp crossed the arms.
 - **Cloth joints parented to the thighs (skirt panels)**: holding the panel tops toward the hips on a
   retargeted run lets the knees through; keep each chain top on its thigh, damp only the lower joints
   toward their bind turns (the clip's out-of-step cloth swing).
