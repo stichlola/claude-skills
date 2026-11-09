@@ -1362,6 +1362,26 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - When the light drifts during a run (hour moving, clouds), put an off shot before and after every variant and
   compare each variant with the mean of its two neighbours. Name the off shots o1..oN, or each capture
   overwrites the last one.
+- **The blended layer is also the path map**: the forest's veil over `fora-grass` is `fora-dirt` (TRANS tfrag),
+  and its vertex alpha (0..128, spread evenly over the floor) says how much dirt shows. Read the TRANS layer
+  a few cm over each grassy spot (with its tfrag time-of-day colours, channel 3 = alpha) and thin the grass
+  from alpha 40 to 90: paths and their leaf litter stay bare instead of a meadow over them (blades vs floor
+  0.84 -> 0.96 on a leafy path). Also skip spots under the level's WATER tfrag (a grassy pond bed).
+- Far blades read brighter than the floor (+14% at 50-80 m): from the side the tips cover the darker feet.
+  Fade the tip gain to 0.8x over 15-60 m; a smaller colour mip at range changed nothing.
+- In Jak 3 only the forest has a grassy floor texture (Haven ctygenb, desert, Spargus: 0 m2), so "dense grass
+  in meadows/desert edges" means the forest there. Check the per-level m2 log before planning other areas.
+
+## Scenery LOD by size, not one distance (lesson, Jak 3 Enhanced, Nov 2026)
+
+- A far-version + impostor chain that swaps every copy at the same distance wastes most triangles on small
+  things: desert-start drew 4.6M scenery triangles, mostly 0.4-0.7 m pebble heaps of 1600-4000 triangles,
+  a few pixels tall at 60 m. Scale each copy's swap distance by its bounding radius below ~2 m (min 0.3x):
+  4.6M -> 1.65M triangles, +5-10% fps at 640x360 uncapped, same look in a 2x crop. Count first: a test log
+  of copies and triangles per version and per batch (with radius) finds this in one run.
+- Keep hot test switches in the draw loop (no scenery / skip a version by mask / log): they turn "what does
+  this cost" into one interleaved run. Read cost as GPU ms minus the post-pass total per 5 s window; at
+  1600x900 the post dominates, so vertex savings show best at a small resolution uncapped.
 
 ## Flat band under the horizon on far water (lesson, Jak 3 Enhanced, Nov 2026)
 
