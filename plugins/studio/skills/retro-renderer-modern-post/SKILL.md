@@ -193,6 +193,19 @@ camera the game hands over each frame.
   3 interleaved pairs): the moon stands too high there. The Spargus-sea teleport `3:1722.4/40/-420.1` from
   `wascitya-start` (at 22 s or 40 s of the script) left Jak at the continue point twice: check the log's
   `Jak at` before reading a sea shot.
+- Spargus sea that works: `4:1:12;45:2:wascityb-flut;70:3:1594.3/27/-357.8/0` (continue first, then the
+  teleport, '/' for ','): Jak swims at y 7 m and the camera hangs overhead looking straight down at the sea.
+  `1594.3/27/-437.8` is a rock ledge with water beside it. Chaining a third continue (`wascitya-seem` after
+  `wascityb-defend`) crashes gk: "could not find free small-center bank in the level-group heap" (the game's,
+  not ours); one or two continues per boot. A teleport's yaw does not set the camera's heading.
+- Overhead at noon the sun's tight glint (pow 900 x 7) on smooth swell is one solid white oval a sixth of
+  the screen wide: break it into glitter with two noise octaves at 2.5 and 6 cycles/m (9/m averages out to
+  grey at 26 m up) and roll it off `g/(1+g)`. Toggle each water term inside one run with `tune_water_dbg`
+  (1 lamps, 2 beacons, 3 no reflection but the glints still added after it, 11 reflection only).
+- Night lamp columns on water: gate each lamp's specular by its own cube shadow map at the water point
+  (`lamp_map_lit`). The SSR "ray met a wall" test misses lamps behind a canal wall when the reflected ray
+  leaves the top of the screen. Before blaming a column, check `tune_raw_view 1`: the soft blue column on
+  the left of the ctygenb canal at 22h is in vanilla too.
 - Hour schedules in `JAK_ENHANCED_MENU_SCRIPT` run on the game clock from its first frame, not from when the launcher returns (boot 15-40 s). Give each hour a window of at least 50 s and shoot in the middle of it, or the "18h" shot shows noon.
 
 ## Real normals for levels that have none
