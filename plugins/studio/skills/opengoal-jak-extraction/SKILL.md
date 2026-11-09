@@ -348,6 +348,18 @@ at the saved spot:
 - Finding which post effect draws an artifact: `JAK_ENHANCED_SHADER_RELOAD=1` reloads `enh_*` shaders while the game runs. A script that swaps one line of the shader per variant and takes a shot of each compares them all in one run, with the same camera. Restore the files in a `finally`.
 - Pointing a test at water (Jak Enhanced): a late teleport (`JAK_ENHANCED_MENU_SCRIPT` `22:3:x/y/z/yaw`) moves Jak and turns him, but the camera keeps its heading, so pick the spot along the start camera's own view. Haven port: `ctyport-start` + `22:3:193/17.5/1725/180` puts Jak swimming in the harbour, facing the far quay. Check the water debug mask in the first shot: a "water in view" is not proof the composite treats it as water.
 - Spargus sea (Jak 3): `wascitya-seem` and `wascitya-start` see no sea, even with `JAK_ENHANCED_PLAYER_TEST=orbit` turning the camera. The ocean-mid mask (`wascity-ocean.gc`, corner -256/-2762 m, 96 m tiles) has sea west of x ~2134 m and north of z ~ -400 m around Spargus, but a menu-script teleport there (`3:2110/9.5/-60/180`) ends back at the continue point (deep sea = death). Reach it from the air (Hellcat test) instead. Before tagging textures for a night effect, boot with `JAK_ENHANCED_MATERIAL_NAMES=1` (each texture's name and class per level) and look at the tag debug view (`tune_night_win 10`: magenta = any glossy pixel, metal included; cyan = window panes): at the Haven port 22h the far quay's bright strips were metal, not glass, so retagging `fac-lo-glass` changed nothing there.
+- `JAK_ENHANCED_HELLCAT_TEST=2` (desert to Spargus in the Hellcat) is over before a windowed boot's first
+  "average fps" line (~35 s): every capture timed from there shows Jak already standing at wascitya-start.
+  It is no way to see the Spargus sea.
+- Darkening the ground at the foot of grass (Jak 3 forest, `forest-pillar-start` 18h): the "tufts" there are
+  one big shrub tussock (shrub.frag tag 0.97 over all of it, a tag view confirms). Its blades stand 0.5-1 m+
+  in front of the ground they hide. A depth probe from the lawn (one tap 25 cm up and a ring of 5 at 40 cm,
+  gap < 0.5-1.1 m, shrub tag) found no hit in its debug view. A probe printing the gap itself
+  (`(q.z - view_z(d)) / 1 m + 0.5`) is the next step. Show the probe's raw value before you tune thresholds.
+  Pin the hour for the whole run: forest 18h became night within 3 min, and the lawn mask (green over red)
+  drops out at night.
+- PowerShell: `R` is an alias of Invoke-History. A helper function named `R` breaks with
+  "positional parameter" errors.
 - PowerShell: a negative number passed to a function arrives as a string, and `$z * 4096` then repeats the string. Cast with `[int]`.
 - Prompts for a remake: "same shapes, exactly the same colors and scale" gets a faithful copy that barely shows in game. Ask for more detail and allow new forms; match the colors afterwards.
 
