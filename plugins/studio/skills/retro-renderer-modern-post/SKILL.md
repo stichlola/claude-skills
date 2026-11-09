@@ -1486,3 +1486,25 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Telling a new shadow from flame flicker in A/B shots: take A/B/A/B in one run and diff the averages
   (signed, x6); a per-slot debug view (`dbg_slot`: only that map's shadow in red) names the lamp, and
   logging the camera position puts the slots' places in context.
+
+## Made-up night windows, backlight gates (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A far city with no window textures**: Haven's quay across the harbour is the port's own metal walls, and the
+  skyline level's low-res walls have windows only as a few painted texels. Tag lists found 0 pixels there (a tag
+  debug view in one boot proves it before any tuning). What worked: a window grid on the wall's own plane in world
+  space (u = position along the horizontal tangent of the G-buffer normal, v = height; storeys 3.5 m), a hash per
+  cell (plus the plane's offset, so walls differ) picks ~22% lit, vertical faces only, past ~70 m in the city
+  (near walls keep their texture). Box-filter the pulse train over the pixel's `fwidth` footprint (integral of the
+  pulse: `floor(x)*(hi-lo) + clamp(fract(x)-lo, 0, hi-lo)`), and past half a cell use the rooms' mean: no sparkle.
+  Compute `fwidth` at the top of main (uniform control flow). Far-band luma +8%, frame mean +3%, cost in noise.
+- **Gate it per city**: on Spargus' round adobe towers the same grid became horizontal stripes over everything
+  (curved walls, cliffs): a C++ flag from the level name (Haven only) as a uniform.
+- **A new material tag that must not change the day**: write it as a spare normal length (0.1, under the lamps'
+  0.2), and right after the composite reads the length, remap it back to the plain-scenery value, so every other
+  test sees what it saw before; keep metal classes out (the tag forces the plain alpha).
+- **Backlit foliage: don't gate by the composite's `sun_lit`** if it is N.L-based: it is 0 on exactly the faces
+  that are lit through. Sample the shadow map ~0.6 m toward the sun instead (past the blades), so a tree's shade
+  still stops it. A debug view with two colours (weight vs "toward the sun but held back") tells which gate kills
+  it; an orbiting camera (Jak Enhanced `JAK_ENHANCED_PLAYER_TEST=orbit`) plus 8-frame bursts counted by colour finds
+  sun-facing views without screenshots to look at. A shaded forest gave almost no lit-through pixels: prove it on
+  an open lawn at a low sun.
