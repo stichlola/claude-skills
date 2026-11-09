@@ -1054,6 +1054,14 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   it as more channels (`RGBA32UI`, flags in one existing uniform): binning 64 beacons by the shader's own
   cutoff saved 0.5 ms at 2560x1600. Prove a culling mask by painting its bit count into the frame for one
   hot reload (and wait past the reload's compile time, ~11 s for a 4000-line shader, before capturing).
+- **Parallel lanes each under the constant limit can be over it together.** Three lanes added 4-16
+  `tune_*` floats each to one uber-shader; each booted fine, the merge failed to link (`C6020`) and gk died
+  at boot (`shader.okay()`); hot reload would only have kept the old shader silently. After every merge
+  of lanes, boot the merged build once before trusting the lanes' reports. Each scalar or `vec2` uniform
+  and each element of a `float[n]` takes a whole vec4 register: count them per revision (a regex over
+  `^uniform`, arrays x n, mat4 = 4) to bound the limit between a revision that links and one that fails.
+  Cheapest cut with no feature lost: pack parallel `float[4]` arrays into one `vec4[4]` (`.x/.y/.z`) and a
+  `float[4]` into one `vec4` (12 -> 4 and 4 -> 1 registers).
 - **Many faint effect glows sum into a saturated light**: a dark eco cloud is ~12 violet glows (0.1, 0, 0.12)
   each; with per-glow damping they still lit Jak magenta. Cap the summed light per hue class (scale each by
   `min(1, N/count)`) and pale it toward its luma; also hold the bloom-based light spill's violet chroma and
