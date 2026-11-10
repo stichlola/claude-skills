@@ -1602,3 +1602,26 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   stacked into one montage image: one screenshot to look at for 5 variants.
 - A test gk window that pops up while the user plays can get closed (shutdown reason 2, twice in ~3 min):
   do launch + all captures in one command; `-Minimized` captures come back 640x480 only.
+
+## Flat, washed-out noon (lesson, Jak 3 Enhanced desert, Nov 2026)
+
+- Look at the luma percentiles per hour before touching the grade: the flat noon had p5..p95 = 80..170
+  of 255 (no darks at all), the hours that looked good 30..150. Missing darks are a light problem
+  (direction), not a curve problem.
+- A key light at 65 degrees coming from behind the view gives no cast shadows and no shaded faces. Lower it
+  (48) and hold it to one bearing through the midday, from the side of the views that matter: the short
+  way round from the sun's own bearing, by the same eased midday factor as the height. The bearing that
+  kept the spawn area out of a wall's shadow was found by sweeping a yaw tune in one run (4 shots).
+- When hour looks were stretched ("the morning's look lasts through noon"), check which hour-keyed steps
+  died with it: the high sun's stop-down was keyed to a `noon` factor that had become 0 all day, so the
+  sand sat on the highlight shoulder: one pale tone. A tint added before a shoulder that pulls
+  near-whites to a fixed color changes nothing: get the surface under the shoulder first (exposure).
+- A change that "does nothing" on one surface: paint the gate (tag and factor) in debug colors once,
+  then walk the later steps (shoulder, saturation caps against the game's own color, leveling).
+- No spare uniform slots: carry a new 0..1 factor in an unused component of an existing vec4, and test
+  the used components (`.xyz != vec3(0)`) where the whole vector was a skip test.
+- Hot-reload traps while shooting: a big shader takes ~20 s to recompile (the frame stalls: wait before
+  the shot), a "set hour" switch that fires on change must be re-armed (the clock runs on: alternate a
+  tiny epsilon), and two writes of a polled file within a second can be missed.
+- The evening sky and the night can be random per run (red sunset, night kind): pin them or say so,
+  before reading a 19h/22h difference as a regression.
