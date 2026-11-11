@@ -1632,3 +1632,32 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   tiny epsilon), and two writes of a polled file within a second can be missed.
 - The evening sky and the night can be random per run (red sunset, night kind): pin them or say so,
   before reading a 19h/22h difference as a regression.
+
+## One black frame at every resolution change, and a probe that finds it (lesson, Jak 3 Enhanced, Nov 2026)
+
+- "A black frame now and then" (the world black under the sky, HUD fine): read the **player's own log**
+  first (the installed game's `data\log`, not the dev tree's). Every flash matched an `FBO Setup` line:
+  the auto quality changing the render scale, twice within seconds right after a save load.
+- Cause: passes that make their textures again on a size change **in the middle of another pass's
+  setup** (`glBindTexture(GL_TEXTURE_2D, tex)` ... `glBindTexture(GL_TEXTURE_2D, 0)` on the active unit).
+  The unit was 0, where the composite had just bound the scene: that frame's composite sampled nothing,
+  only what it computes itself showed (sky, glows, fog). The same pattern took the depth away from the
+  AO and GI passes for a frame (two through their histories). Fix: an RAII guard that saves and restores
+  `GL_TEXTURE_BINDING_2D` around every allocation block, and the main input bound again right before
+  the big draw. Rule: a block that allocates leaves the bindings as it found them; never "unbind to be
+  tidy" inside a pass.
+- Finding it without screenshots: a frame probe behind a tuning flag. Each stage (scene copy, post
+  result, finished frame, window back buffer before the swap) blitted to 8x8, read through pixel buffers
+  two swaps later, mean luma and share of black samples per stage; rows logged around one-frame dips
+  (darker than both neighbours; a drop that stays is a cut) and around noted events (render target made
+  again, auto quality step, no display list). The first stage that goes dark names the pass (here:
+  scene fine, post dark). A PNG dump of the noted frames tells what is missing: black geometry under an
+  intact sky = the scene texture is gone, not exposure or NaN.
+- Deterministic repro: a tuning switch that holds the auto quality level, stepped 4/5/4/3 every 2 s:
+  10 of 10 changes dark before, 0 of 35 after.
+- A display loop that swaps the window without drawing (the game is late with its frame) shows the
+  frame from **two swaps ago** on Windows (the two buffers exchange): proven by matching the window's
+  8x8 samples against the frames before. Draw the last finished frame again instead of swapping as is.
+- A worktree's fix must be tested with its own gk and shaders: copy `out\build\Release\bin` of the
+  worktree and pass `--proj-path <worktree>` (the dev launcher's `-Repo` still ran the main tree's).
+  `bad allocation in loader_thread` at boot = other agents' games ate the RAM: wait for memory, relaunch.
