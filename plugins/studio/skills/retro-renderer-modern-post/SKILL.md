@@ -1722,3 +1722,24 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Verify on a canal from the side (Haven `ctygenb-start`, teleport 6 m over Jak's swim spot) with a 12-frame
   burst per variant, the old path one tuning value away (`tune_water_dbg 35`): the splash lasts ~1 s and a
   single shot rarely lands on it. Jak grabbing a pool's ledge ignores the teleport: use open water.
+
+## Pale polygons ringing flat rock patches on sand (lesson, Jak 3 Enhanced desert, Nov 2026)
+
+- Symptom: at golden hour, flat rock patches lying on the dunes get a pale, hard-edged hexagon-like rim,
+  lighter than both rock and sand. In vanilla it is invisible: the patches' rims are vertex-painted
+  to match the sand.
+- Cause: the per-material post grade. The rim pixels carry the rock class tag, so they get the rock
+  grade (grey-slab lift, rock exposure, sun relight, saturation cap) while the sand next to them gets
+  the sand grade. Pixels with the same raw colour come out ~1.7x apart.
+- Fix: decide "rock that is really sand" in the level shader, and send a sub-range of the class tag
+  (rock 0.75 + 0.07 * weight). The composite reads it back as a weight and mixes each rock step with
+  the input, with no new uniforms. The weight is the product of three factors:
+  - height over the ground: sample the terrain renderer's height grid, handed to the other shader by
+    the C++ each frame, together with the frame index so it is never stale;
+  - facing up;
+  - baked light compared with the terrain's mean time-of-day light. The rims are lit like the sand
+    (ratio ~0.7-1.1). The patches' dark middles are ~0.5, so they keep the rock grade.
+- Trap: a geometry-only weight also flattens the dark middles into dull ellipses, because the rock
+  lift was what made them read. Check the ratio's scale too: the vertex colour is often stored 2x.
+  Measure it with a debug view (R = ratio, G = texture luma) and sample pixels before picking
+  thresholds.
