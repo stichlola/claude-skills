@@ -88,6 +88,17 @@ Rounds of polish over a backlog (find, fix, re-check):
   finished ones.
 - Keep the approved queue of workflows (order, scope, rejected ideas) in memory, so it survives
   a compacted context.
+- **RAM is not the only limit: watch the commit charge.** An idle goalc holds ~4 GB of private memory with a
+  230 MB working set; two games, two goalc and Blender left 0.3 GB of commit (`Win32_OperatingSystem
+  FreeVirtualMemory`) with 3.7 GB of RAM "free": git died with "Out of memory, malloc failed" in the middle
+  of a commit and Git Bash could not fork. An agent that is only editing stops its goalc daemon (4.2 GB back
+  at once) and restarts it for the next test.
+- **When the user launches from an agent's worktree, its built data is theirs.** After handing over a launch
+  command, don't rebuild untested code there: the next launch would run it. Compile-check single files
+  (OpenGOAL: `(m "file")` writes only the .o; check the CGO's time did not change), commit the source as
+  "not yet run in game", and rebuild only when you can test right after. The launcher's "pid I started"
+  file is overwritten by the user's run: never kill by that file (keep your own pid, compare start times),
+  and never attach a REPL to a game you did not start.
 
 ## Pausing everything for a priority
 
