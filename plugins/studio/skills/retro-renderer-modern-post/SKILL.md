@@ -1676,3 +1676,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   so 4K never magnifies.
 - Test overlay with no goalc running alongside (RAM): append the test draw code to a late GOAL file +
   a `define-extern` call in a per-frame hook, `(mi)`, stop goalc, boot gk; revert and `(mi)` again after.
+## A character's dusk shadow as a pale strip down a slope (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Symptom: low sun, Jak on a slope turned from the sun, his shadow a long flat lavender strip lighter
+  than the ground, hard parallel edges. Two causes stacked: (1) faces turned from the sun used a
+  "look 2 m toward the sun" probe (meant for a mountain's shade) with four fixed taps, so a thin caster
+  (a leg) printed a hard strip far down the slope; (2) the low-sun "shade never under X of the game's
+  color" floor replaced that shade with the game's own hue, which was lighter than the post's lit ground.
+- Fix: for faces turned from the sun only wide shade counts (4 taps on a ~0.9 m ring, rotated per
+  pixel, all must be blocked); and every shade floor is capped by the same ground's lit luma
+  (ratio kept from the shadow step, at least 30% darker). A floor that lifts shade must never cross
+  the lit value: carry the shade/lit ratio through later grading steps.
+- Debug-switch trap: `tune_shadow_dbg > 1.5` was already a full-screen view, so the stopped agent's
+  "8 = old behavior" switch showed a debug picture. Check how a debug uniform is range-tested before
+  giving it a new value (and fence the view range: `> 1.5 && < 7.5`).
+- Worktree testing: the dev wrappers run the main tree's bin and `--proj-path` (a lane's build was never
+  tested). Patch a copy: dev_bin `-From <wt>\out\build\Release\bin`, `--proj-path`/working dir/log dir
+  = worktree, a private `JAK_ENHANCED_TUNE_FILE`; take instance locks atomically
+  (`[IO.File]::Open(lock,'CreateNew')`): other lanes grabbed the same slot between check and write.
+- Cost: none measurable (composite 3.54-3.56 ms both ways, alternated in one run).
