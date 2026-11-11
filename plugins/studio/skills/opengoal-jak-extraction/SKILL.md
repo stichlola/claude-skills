@@ -1082,3 +1082,22 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   Hi-Z reflection trace missed where the old 32-step march (calm mirror ray) hit (`tune_hiz_dbg 1` = old march
   on the left half); running the march only on Hi-Z misses cut pale pixels 1.3-1.9% -> 0.2-0.3% for +0.2 ms.
   A menu-script hour step logged `in none` (before the level loads) is ignored: boot with `JAK_ENHANCED_HOUR`.
+
+## A new character on Jak's own skeleton (lesson, Jak 3 Enhanced "Wanderer", Nov 2026)
+
+- Cheapest playable character: no skin process, no art group. Skin the new mesh to Jak's joints, build it
+  as a custom model in its own custom level fr3, and in `Merc2::handle_pc_model` swap the model looked up
+  for `jakb-c-lod*` with it. Every move, gun and vehicle works unchanged; hide Daxter (`(-> *target*
+  sidekick)` in the draw function) and Jak's cloth (`hide!` on `(-> *target* draw cloth-instances)`).
+- Force all effects on for the swapped model: Jak's GOAL enable mask can have effect 0 off, and a custom
+  model is a single effect -> invisible character with a visible shadow.
+- Bind pose = the rip glb's inverse bind matrices (Blender's imported rest pose is not it). Write
+  JOINTS_0 in the rip's skin order (merc mat = joint index + 1) and keep `inverseBindMatrices` (tinygltf
+  rejects a skin without them).
+- Game joint scale is NOT inherited (the punch keys 2.5 on the hand and on each finger): an offline pose
+  checker must apply each joint's scale to itself only, or the punch explodes.
+- `build-level3` for a model-only level still needs a non-flat collision mesh (a box; a flat tiny triangle
+  gives "bad allocation"), at least one actor and one region tree, and an existing `out/<game>/fr3` dir.
+- Testing from a worktree: `dev_bin.ps1 -Repo <wt>` still copies the MAIN tree's bin unless `-From
+  <wt>\out\build\Release\bin` is given (C++ changes silently missing); `dev_goalc.ps1` compiles the main
+  tree. Run gk/goalc with `--proj-path <worktree>` yourself.
