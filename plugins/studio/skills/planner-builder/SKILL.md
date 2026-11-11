@@ -58,6 +58,8 @@ return done
 
 ## How the user calls it
 
+- Shortest: `/squadra <obiettivo>` (a user-level alias skill in `~/.claude/skills/squadra/SKILL.md`
+  that points here; create it on a new machine).
 - In any session with this plugin: `/studio:planner-builder <goal>` (or just say
   "usa planner-builder per ..."). Optional: "planner high", "builder low" to override.
 - The workflow tool needs the user's explicit opt-in: invoking this skill counts as asking for a
