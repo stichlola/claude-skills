@@ -225,6 +225,13 @@ camera the game hands over each frame.
   (`lamp_map_lit`). The SSR "ray met a wall" test misses lamps behind a canal wall when the reflected ray
   leaves the top of the screen. Before blaming a column, check `tune_raw_view 1`: the soft blue column on
   the left of the ctygenb canal at 22h is in vanilla too.
+- Water brighter than the yard around it, a pale stepped band along a pool's far edge (Jak Enhanced, Haven slums 18h): the reflection reads the game's raw picture, the composite then shades every non-water pixel (sun shadow x0.67, occlusion x0.82), so the mirror image of a shaded wall was 1.7x the wall. Shade the reflected sample by the place it was read from (shadow map at the hit's position, the AO texture at its uv) and the water point's own body, glint and caustics by its shadow. Find which stage darkens the scene by saving `c` after each stage and showing it ungraded at the end (a debug value per stage, no new uniform), measured against the raw view on a wall strip.
+- An additive grey puff (a vent's steam) over water stood out from the game's dark water, counted as a "light effect" and took the day gain: a burnt yellow-white patch on the shore. Over water, effects go back at gain 1.
+- The "game's picture shows through where it is brighter than our water" rule is what gives a sunlit beach its pale shallows (Spargus): don't remove it to fix a canal, check a beach first (`tune_water_dbg 34`).
+- Water A/B needs: clear weather (`JAK_ENHANCED_WEATHER=0`, rain came at random), a frozen clock (menu script `12:4:0`: an hour passes in ~30 s, the light drifted between shots), the user's preset (`JAK_ENHANCED_PRESET=2`: the test config's Performance preset has no water pass at all), and 4-6 averaged frames per variant (ripples move the reflection: single-frame diffs are noise). An hour change needs ~10 s to settle.
+- A worktree's shaders are only used if gk gets `--proj-path <worktree>` (junction `out\jak3` and `out\enhanced` to the main tree's); `dev_launch.ps1 -Repo <wt>` still passes the main tree. A dev goalc started with `-NoMi` drives the camera and teleports through `define-extern` forms (`*enhanced-pad-rightx*`, `enhanced-teleport`) without a rebuild.
+- Python edits of a CRLF shader: open with `newline=''`, or the file is rewritten with LF and later anchors with `
+` stop matching.
 - Hour schedules in `JAK_ENHANCED_MENU_SCRIPT` run on the game clock from its first frame, not from when the launcher returns (boot 15-40 s). Give each hour a window of at least 50 s and shoot in the middle of it, or the "18h" shot shows noon.
 
 ## Real normals for levels that have none
