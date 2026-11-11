@@ -1101,3 +1101,21 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
 - Testing from a worktree: `dev_bin.ps1 -Repo <wt>` still copies the MAIN tree's bin unless `-From
   <wt>\out\build\Release\bin` is given (C++ changes silently missing); `dev_goalc.ps1` compiles the main
   tree. Run gk/goalc with `--proj-path <worktree>` yourself.
+
+## Animation smoothness, foot IK and 989snd mixing (lesson, Jak 3 Enhanced, Nov 2026)
+
+- OpenGOAL runs game logic and skeletons every rendered frame at any frame rate: there is no "PS2-rate"
+  stepping to interpolate away. What looks stepped is the key blend: `process-request!` (joint.gc, the GOAL
+  decompressor) goes key to key in straight lines. Measure before fixing: a REPL process that logs a joint's
+  per-frame distance relative to the root (`(-> *target* node-list data 21 bone transform trans)`) showed
+  speed plateaus of 8 frames (16 at 120 fps). Catmull-Rom there (4 `decomp-frame` calls, middle keys first so
+  the quaternion flip test aligns the outer ones) gives continuous speed.
+- Jak already has leg IK (`target-update-ik`, `leg-ik`, ground probe per foot, foot tilt). What it lacks is a
+  pelvis drop; drop the drawn body through `control cspace-offset` and take it back before
+  `integrate-and-collide!` (it seeks cspace-offset), or it builds up / gets eaten.
+- 989snd: per-voice effects go in `Voice::Run`, the pan in degrees is in `VoiceManager::MakeVolume`
+  (0 ahead, 90 right, 180 behind); a reverb send can be summed in `Synth::Tick` and mixed in `Player::Tick`.
+  Group 1 is the music. The game's own `sound-set-reverb` RPC is unimplemented in the overlord.
+- Test runs on a worktree need: `out\jak3\{fr3,fr3-vanilla,iso}` and `out\enhanced` junctions, `iso_data\jak3\*`
+  and `decompiler_out` junctions (the custom level reads iso_data/jak3), `goal_src\user` copied; gk
+  `--proj-path <worktree>`. A boot that dies with "bad allocation in loader_thread" is out of commit memory.
