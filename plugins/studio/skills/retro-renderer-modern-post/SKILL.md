@@ -1695,3 +1695,30 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   = worktree, a private `JAK_ENHANCED_TUNE_FILE`; take instance locks atomically
   (`[IO.File]::Open(lock,'CreateNew')`): other lanes grabbed the same slot between check and write.
 - Cost: none measurable (composite 3.54-3.56 ms both ways, alternated in one run).
+
+## Splashes over a post-shaded sea: sprites by coverage, the warp mesh as water (lesson, Jak 3 Enhanced, Nov 2026)
+
+- A "flat pale-blue hexagon" where Jak jumps in was not a sprite: it was the splash's ripple *mesh*
+  (`skel-generic-ripples`, a manipy spawned by `spawn-ripples`, drawn in the warp bucket after the sprites).
+  It redraws a bent copy of the game's own picture and writes depth a few cm over the sea, so a
+  "decal on water: `max(ours, game)`" rule painted the game's lighter water as a flat polygon. Find it with a
+  debug view of `|final scene - copy after the sprite buckets|` (red = drawn after the sprites), water and
+  decal masks in g/b: one shot told mesh from sprites.
+- Put the game's sprites over your own water instead of letting "brighter" pixels through: with copies
+  before (T23) and after (T24) the sprite buckets and T24's alpha = 1 - blended coverage (frame alpha
+  cleared to 1 first), `final = under * keep + (T24 - T23 * keep)`. Cap the coverage by the colour change
+  (`keep >= 1 - 4 * max|T24 - T23|`): some sprites write an alpha that isn't their coverage and a quad that
+  barely changed the picture let the game's water through as a hard rectangle.
+- Keep that sprite layer out of the grade (subtract before, add back after at gain 1): in the grade a dark
+  canal's lift turned the foam's streaks into one solid pink-white blob. Dim it like your own foam at dusk.
+- The warp mesh also covers what stands in the water: under the surface it hid the sea's depth (the near
+  sea's depth had been restored), so "something drawn after the sea covers it" fired and the mesh showed as a
+  tan slab over Jak. Where the picture changed since the sprite copy and the depth is within ~3 m of the
+  surface: keep it water, use the depth before the near sea as the bed, and read the picture from the
+  pre-warp copy (refraction samples too).
+- A jump-in ring without new uniforms: mark the player's path point where he stopped after falling > 5 m/s
+  (w + 20 on the existing wake array); the shader only rings points at the water's height, so dry landings
+  show nothing.
+- Verify on a canal from the side (Haven `ctygenb-start`, teleport 6 m over Jak's swim spot) with a 12-frame
+  burst per variant, the old path one tuning value away (`tune_water_dbg 35`): the splash lasts ~1 s and a
+  single shot rarely lands on it. Jak grabbing a pool's ledge ignores the teleport: use open water.
