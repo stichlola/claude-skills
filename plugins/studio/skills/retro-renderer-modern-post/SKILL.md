@@ -1661,3 +1661,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - A worktree's fix must be tested with its own gk and shaders: copy `out\build\Release\bin` of the
   worktree and pass `--proj-path <worktree>` (the dev launcher's `-Repo` still ran the main tree's).
   `bad allocation in loader_thread` at boot = other agents' games ate the RAM: wait for memory, relaunch.
+
+## HD font icons: one colored glyph, no stacked shadows, sharper mip (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Font icons built from several glyphs (body, shine, letter, rim) each get the font's drop shadow: the
+  inner glyphs' shadows draw dark rings inside the icon and a flat-grey rim glyph reads as a halo. Put
+  the whole body in ONE spare (empty) font cell in its own RGB, draw it with the white color code
+  (`~1L`, texture colors pass through), then only the letter on top: two glyphs, two shadows.
+- Colored cells: average color by coverage (premultiplied) when downsampling the supersampled drawing,
+  and give the transparent texels around the shape its edge color (dilate): bilinear and mipmaps mix
+  RGB regardless of alpha, so white/black there becomes a fringe.
+- HUD text is usually shown SMALLER than its HD texels: trilinear then blends the half-size mip and
+  softens everything. A LOD bias (-0.6) for textures with an HD texel scale > 1 fixes it; draw at 8x
+  so 4K never magnifies.
+- Test overlay with no goalc running alongside (RAM): append the test draw code to a late GOAL file +
+  a `define-extern` call in a per-frame hook, `(mi)`, stop goalc, boot gk; revert and `(mi)` again after.
