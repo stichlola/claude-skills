@@ -810,6 +810,21 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   often a junction to the real tree: follow it or each log is listed twice. Open live logs with
   `FileShare ReadWrite`. In a script run via `[scriptblock]::Create`, `$PSScriptRoot` is empty and
   `exit` closes the caller's console: use `return`; `$Pid` is PowerShell's read-only `$PID`.
+- **A worktree with its own changes runs on its own data, not the main tree's** (Nov 2026): worktrees that
+  junction `out\jak3\iso` to main share one set of CGO/DGO, and any agent's `(mi)` rewrites it; a gk from
+  another commit then dies ~60 s into boot right after `[enhanced] population 0` (0xC0000005, module
+  `unknown`), even main's own gk. Give the worktree a real `out\jak3\iso` (robocopy main's, 4.4 GB: it also
+  holds STR/SBK/text the build doesn't make), `iso_data\jak3_pal` and `iso_data\jak3\*` junctions (the
+  custom-level step reads `iso_data/jak3/CGO`), `goal_src\user` copied, then
+  `goalc --user-auto --game jak3 --proj-path <wt> --cmd "(mi)"` with `JAK_ENHANCED_INSTANCE` set (else it
+  opens instance 0's nREPL port). Run gk with `--proj-path <wt>` and junction what's read at run time:
+  `out\jak3\fr3`, `out\enhanced`, `decompiler_out`, `local\editor-kit`, `custom_assets\jak3\texture_*`,
+  hard links for the ignored `custom_assets\jak3\scenery\game_*` files. Logs land in `<wt>\log`.
+- **Naming a crash inside gk.exe without a PDB**: a Release gk has no symbols, but a mips2c function is
+  registered by name. Find the function start before the fault (`llvm-objdump -d` back to the last
+  `int3`/`ret`), grep the whole disassembly for `# 0x<start>` (a `lea` into the registration call) and
+  read the string the `vmovups`/`movabsq` just before it build (`sp-launch-particles-var`). Code like
+  `movslq 0x8(%rax,%rcx)` with `rax` loaded from a global is GOAL memory: a bad GOAL pointer.
 - Capacity (RTX 5070 Laptop, Ryzen AI 9 365, 32 GB, jak3 desert-start, Performance, 640x360): each gk
   ~2.8 GB peak working set; 2-4 instances all held ~50-58 fps, 4 left 0.5 GB available RAM, so 3 is
   the default max. RAM, not GPU, is the limit. Script: `scripts/enhanced/multi_run.ps1`.
