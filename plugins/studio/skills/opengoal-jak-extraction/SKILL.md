@@ -648,6 +648,70 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   A two-button move in the air (jump, then square 14 frames later) needs an in-game sequencer: two REPL
   calls are ~0.5 s apart and he has landed.
 
+### New attack moves for a playable NPC from generated motion clips (Jak 3 Ashelin, Sig; Nov 2026)
+
+- **Measure a generated clip before building on it.** Higgsfield Kimodo `.npz` (27-joint `cskel27`, 20 fps,
+  Y up, +x left, +z forward; `posed_joints`, `global_rot_mats`, `smooth_root_pos`, `foot_contacts`; numpy
+  reads it, `allow_pickle=False`): per frame, the striking joint against the hips (reach, height), elbow/knee
+  angles, pelvis yaw, feet speed while `foot_contacts` says down; plus stick-figure contact sheets drawn with
+  PIL (side, front, top; right side red, left blue), ~1 k tokens a sheet. Of 17 takes of 1.6 s, 16 stood in
+  guard for 1-1.4 s and most ended before the strike (two pistol-whip takes and two spin takes held no
+  strike at all; "elbow" never brought the elbow in front). Ask for one action per take, 2.5-3 s, the strike
+  in the middle; say in the report which moves are clip motion and which are posed.
+- **Store a move as rig-independent vectors, not joint rotations.** 30 samples a second, model space: pelvis,
+  chest and head as up + forward, each limb bone's direction, each hand's line plus its thumb side, the
+  pelvis's sway from the root and the lowest ankle's height (both in hip heights), a gun's barrel. The same
+  table then drives rigs with different bind poses and proportions (Ashelin T-pose, Sig arms hanging, his
+  ankle joint 0.37 m up), and it is derived from original motion only, so it can be committed.
+- **Author on a timeline, clips as pose sources.** Key poses = clip frames edited by a few operators on joint
+  positions (aim a bone, twist/lean the chest, plant the feet and move the pelvis with two-bone IK, put a
+  hand somewhere), eased per segment: anticipation at 0.09 s (ease out), strike at 0.19 s (`u^3.5`, arrives
+  fast), a hold with a spring past the pose along the way it arrived (`exp(-4.5u) sin(2 pi 1.15 u)`, 8-10 %),
+  recovery to 0.64 s. A 360 degree spin: a key every ~70 degrees (shortest-arc blends between keys), about a
+  point a third of the way to the pivot foot (on the foot itself the body swung 0.4 m out and back).
+- **Keep the hidden player's own attack state**; only the drawn pose changes (physics, momentum, hit spheres,
+  sounds and combos stay vanilla). Start a move when Jak's state name is the attack and his `state-time`
+  differs from the one the last move started for; play it past the state's end (the punch state is 21
+  frames) as the recovery; drop it when Jak's state is not stance/walk/attack.
+- **Turn a joint whole from up + forward:** tilt by the shortest turn of the model's up (second row of
+  bind-pose x bone, the skinning matrix), then twist about up by `atan` of the two flattened forwards; build
+  that turn with `quaternion-vector-angle!` and check its sense by turning the vector and comparing (no
+  guessing the engine's handedness; exact at 180 degrees, where a shortest turn picks any axis). Same twist
+  for a hand about its own line, from its thumb joint.
+- **Ground a table pose by the lowest ankle**, not by the pelvis height: after aiming, move the whole body up
+  or down until the lowest ankle is as high over its bind height as the table says (0 = a foot down).
+- **Bring a move in, and cut it short, by crossfading from the pose last drawn**: keep every frame's final
+  bones (place taken from the root), freeze a copy when the crossfade starts, slerp each joint from it over
+  0.08 s (0.17 s into a walk). The move itself always runs at full weight on the idle. Blending a move in by
+  weight over whatever was under it (Jak's run pose with leg IK and a run lift) gave pops of 65/69/218/349 cm
+  (main/head/hands/feet, second differences), a foot 44 cm under ground and skew 0.51; with the crossfade
+  13/17/57/30, 0 cm, 0.00.
+- **A blend helper that lerps matrix rows shears whenever its weight is partial and the poses are far
+  apart** (her clip's raised gun arm against Jak's punch: skew 0.95). Fix it once inside the helper (rows
+  normalized, `matrix->quaternion`, `quaternion-slerp!`, row lengths put back, place lerped; plain rows when
+  the weight is 0 or 1 or a row is empty), not call site by call site.
+- **A correction weighted by "Jak's state is his walk" snaps**: Sig's run lift (35 cm) vanished in the frame
+  a run ended (stop, jump, attack): body, hands and feet popped with it. Ease such a weight once a frame.
+- A surface flag meant for Jak's gun can hit the character's own: the punch surface's `gun-inactive` put
+  Ashelin's pistol away as she struck with it. Allow it while the surface also has `attack`; block firing.
+- **A long gun in both hands during a move:** gun at the right hand's grip, the hand (fingers, gun, muzzle)
+  turned until the barrel lies along the table's barrel (grip hand to fore hand in the clip), then the left
+  arm by two-bone IK to a point fixed in the gun's own space. Measure that point in the game from the
+  existing two-handed hold: left hand through the inverse gun matrix (Sig: 425 455 2300 units).
+- **A review watcher** (repo `scripts/enhanced/chars_review`): one log line per state of Jak with the skin
+  against Jak: lowest ankle against its bind height on the ground (min/mean), planted-foot slide, second
+  differences of main/head/hands/feet (a joint that jumps), shortest and longest matrix row and skew
+  (sheared bones), limb directions against Jak's, a hand's distance to the spine, and in a vehicle hands,
+  feet, head and hips against Jak's; `POP` lines for single frames; a pad sequencer `(ca-q frame op arg)` so
+  a two-button move is frame exact. Jak's own feet are no baseline: his leg IK keeps them off his prejoint
+  (their pops against it read 3-7 m).
+- Traps: `sed -i` in Git Bash rewrites a CRLF `.gc` as LF (patch scripts then stop matching: normalize, write
+  CRLF); a heredoc with an odd number of apostrophes breaks the Bash tool (write the script with the file
+  tool); `powershell.exe` started from a Bash script failed with fork errors when RAM was short (launch from
+  the PowerShell tool); a launcher that writes "the gk I started" to a pid file is overwritten when the user
+  runs the same launcher, so a restart script would kill the USER's game: keep your own pid elsewhere and
+  compare the start time; and never `(lt)` while a gk you did not start holds the instance's port.
+
 ## A crash with no GOAL error: reading the minidump (lesson, Jak Enhanced)
 
 - **0xC0000094 (integer divide by zero) in module `unknown` is usually `(break!)` = `(/ 0 0)`**, not a real
