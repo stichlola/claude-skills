@@ -959,6 +959,7 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   `goalc.exe --user-auto --game jak3 --proj-path <wt> --cmd "(mi)"` with `JAK_ENHANCED_INSTANCE` set
   (~45 s); without `--user-auto` the text step fails (`$DECOMP` must be `jak3_pal`, from the user's
   `user.gp`: "Cannot read ...\jak3\assets\game_text.txt").
+- **Worktree runs that test a goalc/C++ text change** (e.g. font_utils.cpp): `dev_bin.ps1` copies the *main* tree's bin unless  given `-From <wt>outbuildReleasebin`, so dev_launch/dev_goalc copies with `--proj <wt>` still run main's gk/goalc  and the texts come out with the old code. Pass `-From`, delete the worktree's `outjak3iso*.TXT` (copies) so (mi)  recompiles them, and check the bytes in `0COMMON.TXT`. Copy `outjak3iso` and `obj` (don't junction them: (mi) writes  there). A test overlay loads with `(asm-file "<abs path>" :color :load)` (without `:color` it is not loaded); capture a  minimized test window with `scripts/enhanced/capture_window.ps1 -ProcessId` (PrintWindow), never CopyFromScreen (it grabs  whatever covers the window). Parallel clang builds beside other agents crash ("frontend failed due to signal"): `-Jobs 4`.
 
 ## Glitch hunts from boot shots (lesson, Jak 3 Enhanced)
 - A shot 3-7 s after the first `[camera]` line can still be loading: Spargus (wascityb-start) shows a
