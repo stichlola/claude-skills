@@ -621,6 +621,68 @@ Before tuning, show every ingredient by itself in one run (hot-reloaded shader, 
   **touch it** before `(mi)`, or the newer .o keeps the test code in the CGO. A restarted gk needs
   `(lt "127.0.0.1" <port>)` before evals ("generated code, but wasn't supposed to").
 
+- **Retargeting arms: compare the two rigs' bind poses first.** "His turn from his bind pose, put on its
+  bind pose" only works when both are bound the same way. Jak is bound in a T (upper arm along x), Sig with
+  his arms hanging (0.03 -0.92 -0.37): every arm bone ended a quarter turn off Jak's (dot of the two bone
+  directions 0.03 in a punch, fists crossed at the chest). Fix: per bone, the shortest turn from the skin's
+  bind direction (child joint - joint, model space) to Jak's, put between the skin's bind matrix and Jak's
+  skinning matrix (`bind-world * C * (jak-bind-inverse * jak-bone)`); the hand takes its forearm's. Dot
+  0.99-1.00 in every attack. Measure with a `*display-pool*` watcher: dot of (elbow - shoulder) and
+  (hand - elbow) between Jak's node-list and the skin's, per frame, min over the frames at full weight.
+- Blend a limb between two far-apart poses by turning (slerp of the joint's matrix, own row lengths and
+  translation kept), parents first, never by blended rows. Seek the blend weight **before** the retarget
+  reads it, and scale every later overlay (rest pose, walk arms, gun hold) by `1 - attack weight`: left to
+  their own 0.2 s seeks they held one arm back for most of a 0.3 s punch.
+- Fists for a skin whose clips leave the hands open: capture the finger joints' locals (joint to parent)
+  from a clip where the hand grips something (Sig's gun hand in his armed idle), mirror them for the other
+  hand, slerp the fingers' locals toward them by the attack weight inside the retarget.
+- Jak's attack list for a skin: `target-attack`, `-running-attack`, `-attack-air`, `-attack-uppercut(-jump)`,
+  `target-flop` and `target-flop-hit-ground` (the dive was forgotten: arms hung through it). With a gun out
+  `target-running-attack` is a gun swing (frames 0-4.7 at half rate, peak 3.7; bare punch: windup 2.8,
+  strike 5.7 of 9.5). Jak's punch scales his fist (hand 1.3-2 m from his chest): don't copy the scale.
+- Before/after shots of a fast move in ONE boot: a watcher freezes (`set-master-mode 'freeze`) when the
+  state name and `skel root-channel 0 frame-num` reach set values; toggle the fix from the REPL (identity
+  matrices = old path); Jak himself as the reference by redefining `enhanced-player-name` to "jak". Turn
+  the camera to a front three-quarter view by holding the right stick until
+  dot(Jak forward, camera forward) is about -0.6, again before each shot (it swings back behind him).
+  A two-button move in the air (jump, then square 14 frames later) needs an in-game sequencer: two REPL
+  calls are ~0.5 s apart and he has landed.
+
+## A crash with no GOAL error: reading the minidump (lesson, Jak Enhanced)
+
+- **0xC0000094 (integer divide by zero) in module `unknown` is usually `(break!)` = `(/ 0 0)`**, not a real
+  division. The commonest one: `enter-state` with a zero `next-state`, i.e. `(go <state>)` on a state that
+  is not defined (code of a level that is out, or a leftover from an earlier game). Don't hunt for integer
+  divisions in the feature code.
+- Read it from the WER minidump (`%LOCALAPPDATA%\CrashDumps\gk.exe.<pid>.dmp`) with ~60 lines of Python:
+  exception stream 6 -> x64 context (registers from +0x78: rax rcx rdx rbx rsp rbp rsi rdi r8-r15 rip).
+  **r15 = GOAL memory base, r14 = symbol table (#f), r13 = the running process**; `rip - r15` is the GOAL
+  address. The dump holds 256 bytes around rip and nothing else of GOAL memory (no stack, no process): a
+  `04 fe 15 00` type tag marks the function's start; `xor rax,rax / xor r9,r9 / cdq / idiv r9d` after a
+  test of `[r15+r13+0x44]` (process next-state) is enter-state's check.
+- Engine code and the kernel's pools load at the same GOAL address every boot of a build: the event's
+  offset low bits (`...ff3f`) are the same crash across runs and days, and r13 names the process: print
+  `*target*` in any boot (`#x1d1e84` = the target). Then list the undefined states from the REPL: for each
+  `(go target-...)` in the source, `(zero? (the-as int (-> 'name value)))`. Jak 3 at ctyport: flut, indax,
+  mech, tube, turret, ladder (level code), plus leftovers nothing defines: `target-carry-pickup`,
+  `target-ice-stance`, `target-yellow-jump-blast`, `target-racing-start`.
+- The bug found this way: a test unlock set every `game-feature` bit from 5 up; bit 19 is Jak 2's carry,
+  and with it R1 in `target-stance`/`target-walk` does `(go target-carry-pickup)`. Jak took his gun out
+  first; a playable NPC keeps Jak's gun away, so its first shot killed the game. Unlock named features
+  only, and guard a vanilla `go` to a state the game doesn't have with `(nonzero? <state>)` (saves made
+  while unlocked keep the bit). Unnamed bits that are real: 21/22 gun upgrades, 31-35 city passes, 36
+  board training.
+- Headless repro (`--no-display`, 240 MB, boots in 2 s at desert-start; at ctyport-start the target stays in
+  `target-continue`): scripted pad press, then `tasklist` for the pid and event 1000 for the same offset.
+- Tooling traps hit on the way: a goalc killed while connected leaves that gk's listener stuck ("Failed to
+  get version number" on the next `(lt)`): restart the gk. A restarted goalc no longer knows globals you
+  defined from the REPL (re-send the watcher after a fresh boot), and a running goalc refuses a deftype
+  whose layout changed ("is redefined as"): restart it. PowerShell turns `3.0` into `3` inside a string
+  (GOAL: int given for a float, the whole form fails silently if you drop the output) and strips inner
+  double quotes passed to a native exe (`"jak"` became a symbol): keep frames as strings, send quoted
+  forms from bash. Another agent's cleanup can stop your daemon: when evals refuse to connect, check the
+  control port before blaming the game.
+
 ## Invisible particles and borrowed-level crashes (lesson, Jak 3)
 
 - OpenGOAL sprite shader (`sprite3_3d.vert`): the camera w is **negative in front** for 2D and 3D sprites
