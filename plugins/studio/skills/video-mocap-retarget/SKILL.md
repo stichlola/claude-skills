@@ -1,6 +1,6 @@
 ---
 name: video-mocap-retarget
-description: Video to 3D motion capture on a local Windows GPU (NVIDIA GEM-X / SOMA body model) and retargeting the result onto a game character rig in Blender headless - Windows install pitfalls, trimming screen recordings, camera/world frames, why a seated or partly hidden subject needs yaw alignment to the camera instead of pelvis normalisation, duplicated frames in screen recordings, zero-phase filtering with acceptance numbers, analytic contacts (sill, wheel, lap, mouth) baked to FK, hand-keyed fingers, a render camera rebuilt from the mocap camera. Use when turning a reference clip into an animation for a rig.
+description: Video to 3D motion capture on a local Windows GPU (NVIDIA GEM-X / SOMA body model) and retargeting the result onto a game character rig in Blender headless - Windows install pitfalls, trimming screen recordings, camera/world frames, why a seated or partly hidden subject needs yaw alignment to the camera instead of pelvis normalisation, duplicated frames in screen recordings, zero-phase filtering with acceptance numbers, analytic contacts (sill, wheel, lap, mouth) baked to FK, hand-keyed fingers, a render camera rebuilt from the mocap camera; facial rig + 52 ARKit shape keys on a stylized/AI mesh and MediaPipe face capture from a video. Use when turning a reference clip into an animation for a rig.
 ---
 
 # Video mocap -> retarget (GEM-X + Blender)
@@ -81,3 +81,36 @@ recorded from a screen, retargeted onto a Jak-like 64-bone rig (Jak Enhanced, 20
   = chest + s * (camera - chest) rotated the same way, `s = lens / (35 mm equivalent of the GEM-X focal)`
   (focal 1998 px on a 1774 px width ~ 40.5 mm), 1 Hz zero-phase low-pass, in world (not parented to a
   bobbing vehicle). Leave the user's cameras untouched; make the new one active only in the copy.
+
+## Face: rig + ARKit shapes + MediaPipe capture (stylized / AI-generated mesh)
+
+Reference implementation: `jak-enhanced/local/meme/face/scripts` (geo -> rig -> 52 ARKit shapes -> capture -> apply,
+each with a CONFIG block, README in Italian).
+
+- **Landmarks on the mesh**: flat front orthographic render (Workbench, texture colour, temp scene) -> MediaPipe Face
+  Landmarker -> raycast each point back onto the evaluated rest mesh. Stylized heads are missed at native size: retry
+  padded / upscaled. Express every length in U = pupil distance so the tool works at any scale.
+- **Painted eyes are bigger than MediaPipe's eye contour**: take the outline from an HSV mask (low saturation or
+  dark) connected to the iris pixel, closed morphologically.
+- **Opening the mouth on a Tripo mesh**: a plane bisect along the painted lip line fails on creased lips (the
+  surface folds around the line -> fragmented chains). Cut along a Dijkstra edge path corner->corner whose cost
+  grows with distance from the line, pull the path half-way onto the line, `split_edges`. Faces hidden behind the
+  lips (an inner pocket sheet is common) become cavity material, or the opening shows skin webbing. Lip zones =
+  side of the nearest mouth-loop vertex (multi-source Dijkstra), not flood fill (leaks around the corners).
+- **Eyelids that never show at rest**: hide them ~0.012 U behind the skin, closed position in front of the eye; give
+  them a flat skin colour (saturated samples of the band: sclera and lashes are grey/dark) plus a lash line at the
+  edge. Baking the band texture instead smears when the lid stretches x3.
+- **Shape keys from bone poses**: mute the keys already built while evaluating the next one (otherwise they
+  compound). Judge stretch only on skin edges longer than 0.02 U; cavity/slit edges stretch by design.
+- **Tripo custom normals**: store per-vertex normals in an attribute before topology edits (bmesh interpolates
+  it), restore with `normals_split_custom_set_from_vertices`; subdivide with `smooth=1.0`; per-vertex UVs from
+  different islands break textures -> bake small atlases (iris, lids) and use planar UVs.
+- **Capture of a small face** (128 px in a 1774x996 screen recording): tile search once, then track a crop
+  2.6x face size resized to 512; 98% detection. Clean: per-channel 10th-percentile neutral, gaze centred on the
+  clip median (x0.6), blink pulled 60% toward the L/R mean (a turned head hides one eye), gains x1.3-1.45 on
+  mouth/jaw, 1-euro filter (blink/jaw faster). Left/right check: subject's left mouth corner (lm 291) and eye
+  aperture asymmetry (386/374) vs the Left channels; MediaPipe's Left = subject's left (no swap needed).
+- **Blender 5.x actions**: `keyframe_insert` once to create the slot, then fill curves in bulk through
+  `bpy_extras.anim_utils.action_get_channelbag_for_slot(action, slot).fcurves` (`Action.fcurves` is gone).
+- **Swapping mesh data on a rigged object**: set the object's vertex-group list to the new mesh's (clear + recreate
+  in order) while it still holds the OLD data, then assign the new data; clearing after the swap wipes the weights.
