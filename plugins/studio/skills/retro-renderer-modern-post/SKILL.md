@@ -1759,3 +1759,27 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   later shot got darker, which looks like each variant "working".
 - Python measuring scripts in a scratch dir: run with `-I` (a stray `inspect.py` there broke numpy), and
   downscale shots first when RAM is tight (games running).
+
+## A tileable detail material in the level shaders (lesson, Jak 3 Enhanced desert sand, Nov 2026)
+
+- Lay it in **world space** in the level shader (tfrag/TIE and the terrain's own shader), not in post: one
+  RGBA picture (R G normal along world X/Z, B roughness offset, A AO), slopes added UDN-style to the level
+  normal after the PBR map's, the game's texture keeps the color. Two layers (tile + a copy 2.7x bigger,
+  turned 37 degrees, weights varied by a slow noise) hide the repeat; mips flatten it with distance, a
+  5-45 m fade only saves the reads. Wrap the camera's part of the UV first (`fract(cam*s) + rel*s`): precision.
+- Map it by texture name and class from a JSON (`contains`/`not` words + class), and log each match: in the
+  Jak 3 desert only `des-sand-grass-01` (tfrag) matched; the open sand is the hfrag height field.
+- **Check the test preset**: the agents' test config boots Performance, which turns PBR/relief (and the new
+  material) off. The first A/B showed "no difference" because the picture was never even loaded (no load
+  log line). Boot test runs with the preset the user plays (`JAK_ENHANCED_PRESET=2`).
+- A shade term by the sun alone vanishes at noon (a sun overhead lights all small slopes alike): cap the
+  light's height (~55 degrees) for the fine detail only. Shade with the bumped normal **projected back onto
+  the base's tangent plane** (`n_det / dot(n_det, n_base) - n_base`): linear in the slopes, so the mean stays
+  put; the plain `dot(n_det - n_base, L)` darkened the sand ~12% at 3x strength.
+- Source art that is "nearly periodic" at half its size (measure `|a[:h-d]-a[d:]|` for d = h/2 against a
+  small shift): crop the quarter as the tile, same texel size at a quarter of the file (2.9 MB -> 0.7 MB).
+- One-run A/B: teleport spots and hours from the tuning file (`debug.tp`, `debug.hour`), but put a throwaway
+  shot after every hour change: the sky and light still blend for several seconds and spoil the first shot.
+  GPU ms with another test game on the same GPU is noise (±5 ms, auto quality moving): judge cost by fps held.
+- Watch the commit charge before every boot, not once: a 5.6 GB test gk died with `bad allocation` when another
+  agent's game grew after launch; wait for >= 8.5 GB free when two games share the laptop.
