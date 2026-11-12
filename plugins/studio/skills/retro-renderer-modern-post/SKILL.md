@@ -1779,6 +1779,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   lift was what made them read. Check the ratio's scale too: the vertex colour is often stored 2x.
   Measure it with a debug view (R = ratio, G = texture luma) and sample pixels before picking
   thresholds.
+- Second pass (the reviewer found pale wedges left on the sun-facing slopes): the real cause there was
+  the game's *alpha-blended sand layer* painted over the rock. Blended draws did not write the normal
+  target, so those pixels kept the rock tag underneath. Fix: let blended sand-class draws blend their
+  normal and tag into the normal target by their coverage (rgb only, keep the class alpha), with an
+  alpha window [lo, hi] as the switch; widen the composite's tag window to the blended values. Check
+  with a "blended draws by class" debug view before tuning thresholds any further.
+- The thin dark line along a ledge edge, same patches: rim normals leaned out over the edge, crossed
+  the view plane when seen almost edge-on, and the composite's "flip toward the camera" turned them
+  downward. Keep the written normal on its face's seen side in the level shader (switch to 0 = old).
+- Verify with the user's framing, low sun *and* noon, a zoomed crop plus one wide shot (mountains
+  unchanged), and off / previous / on / raw in one run.
 
 ## A zone look leaking into a town: bisect the grade, test on the real preset (lesson, Jak 3 Enhanced, Nov 2026)
 
