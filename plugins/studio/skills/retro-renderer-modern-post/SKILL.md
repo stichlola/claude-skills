@@ -2003,3 +2003,16 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Check the spot is lit at the test hour: at 16:30-18:30 the slab sits in the hill's shade (no change is right);
   8:00 lights it. A mid-run `ReadAllText`/`WriteAllText` with a relative path in PowerShell resolves against the
   process dir, not `cd`: it emptied a JSON once. Use absolute paths or the Edit tool.
+## Shot ribbons that never drew, and reading by hue at noon (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A hook added to a renderer with per-game paths must go in every path**: `enhanced_draw_shots` sat only in
+  `Sprite3::render_jak1`; Jak 2/3 render through `render_jak2`, so the effect and its test switch never ran.
+- **Then it was still invisible**: a custom shader copying the Jak 1 sprite projection. Jak 2/3's sprite camera
+  gives **w < 0 in front** (`sprite3_3d.vert` negates the transform); the NDC math comes out the same, but with
+  `xyz *= w` the clip w stays negative and the GPU clips every triangle. Pass a sign uniform (-1 for Jak 2/3).
+  Prove "nothing draws" with a per-pixel max deviation from the burst's median (only the idle character moved).
+- **Additive light disappears over pale sand by day** (red + sand clips to the sand's white). Blend premultiplied
+  "over" with an alpha that is 0 at night and up to ~0.85 by day (`glBlendFuncSeparate(ONE, ONE_MINUS_SRC_ALPHA,
+  ZERO, ONE)`, frame alpha untouched), slightly wider by day: it reads by hue, the night look is unchanged.
+- **Test hooks fed from a tuning file must wait for a loaded level**: a teleport left in the file from the last
+  run crashed gk during the boot's level load; gate them on "level up for N s" and keep the request pending.
