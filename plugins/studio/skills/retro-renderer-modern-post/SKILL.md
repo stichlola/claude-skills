@@ -1822,3 +1822,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   `abs()` where it is used). Camera for repeatable A/B: after a teleport, a short left-stick push makes the
   camera trail Jak; never leave the right stick override at -1 after pulsing it (the last value sticks and the
   camera orbits): restart the game if it does.
+- Follow-up (review): the first pass cut close-up detail by only 27%. To reach near/far <= ~1.5-2x it took a softer full-size
+  relief (x0.5), a dark side capped at ~24%, the grain's dark side x0.4 and 0.7 of the near grade's darkening kept on the far
+  colour. Walking toward one slab at noon (45/25/12/3 m, detail over vanilla's): 0.82/2.21/2.24/2.08x -> 0.76/1.27/1.20/1.18x.
+- Verify with a walk-in, not one frame: teleport along a line to the same rock at ~45/25/12/3 m and measure the same masked
+  pixels at each stop (tag view mask, view/raw ratios). Find a lit low-sun hour per spot: here 17h was in building shadow
+  and 8:00 lit the slab's face.
+- Turn cloud shadows off for A/B means (menu setting `cloud_shadows` in enhanced-settings.json, patched at launch). Moving
+  cloud shade changed one slab's mean by 60% between two shots seconds apart. Hour changes between morning and noon take
+  >15 s to settle: change the hour once and walk all distances, and repeat a view at the end to check that it settled.
+- The tuning file is polled. Write it atomically (temp file + move), and wait for its "shaders.tune_x =" log line before
+  shooting. Back-to-back writes a few seconds apart were dropped, and a stale view was shot under the wrong name.
+- Prove an off switch by hot-swapping the pre-change shader file (git show <old>:path) and shooting the same frame. Off vs
+  pre-change differed by about as much as two "new" shots differ from each other (mean |d| ~5 of 255).
+- A rock that is darker close up at a low sun can be the sun shadow map, not the detail: `tune_shadow_dbg` 2 showed
+  sun_lit ~0.02 on a face that vanilla lights.
