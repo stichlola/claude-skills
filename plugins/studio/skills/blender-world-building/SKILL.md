@@ -150,6 +150,24 @@ of the terrain mesh after import.
   fade look fake up close. Layer flash, fire, smoke, dust, debris; compare with real footage.
 - Lighting: vary color temperature and intensity per light; wet, mirror-like ground for neon scenes.
 
+## Painted backdrop for a render shot (Eevee, headless)
+
+- Aerial haze without volumetrics: in every set material mix the BSDF with an Emission of the sky-horizon colour,
+  factor `max * (1 - exp(-CameraData.ViewDistance / L))` (L ~ 500 m). Works for every camera, costs nothing;
+  the world gradient must start from the same colour so far objects melt into the sky.
+- Ground for a fixed shot: one polar mesh (rings growing geometrically 0.6 m -> 3 km) gives detail near the camera
+  and a horizon far away with ~30k verts. Lower the dunes in a corridor toward the hero landmark so it stays visible.
+- Shot camera the user can re-place: a keyless parent camera `CAM_BASE` at the average framing, the animated
+  `CAM_SHOT` as child with every frame baked as `CAM_BASE^-1 @ world` (aim constraint and noise removed); verify
+  with the matrix diff (~1e-7) and a crop PSNR (> 70 dB) at the still frames.
+- Real handheld shake from a reference video, no OpenCV: tile-wise phase correlation (numpy FFT) per frame pair,
+  robust similarity fit (rejects the moving actor), cumulative sum, minus a ~1 s gaussian trend; pixels -> degrees
+  with `f_px = width * lens / sensor`. Check the sign with a synthetic `np.roll` test: the peak of
+  `ifft(A * conj(B))` is MINUS the content shift. Run the script with `python -I` (a local `inspect.py` broke numpy).
+- bmesh: `frozenset(v.index ...)` on freshly created verts gives false duplicates (indices are stale); hash the
+  BMVert objects. Boxes whose corners coincide (parapets, twig bases) become non-manifold after merge-by-distance:
+  overlap them instead.
+
 ## Working with the user
 
 - Show screenshots of every step (Blender `look` from 2-3 angles, or game shots).
