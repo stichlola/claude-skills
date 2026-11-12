@@ -562,6 +562,12 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   checkerboard over a Haven district at night was the game's own.
 - Patch scripts: normalize CRLF (`git stash pop` can bring a file back with CRLF and an exact-match
   assert fails); and never put a `//` comment between `if (...)` and its `{` in a sed edit.
+- **Keeping the game's light over a replaced sky: weigh by the neighbourhood, not the pixel** (Jak 3
+  Enhanced, Nov 2026): keeping `dc = game - game_sky` scaled by `smoothstep(lo, hi, dc)` per pixel squares
+  a soft additive beam away (dc * w(dc)): the searchlights became flat hard-edged slabs cut off midway.
+  Take the weight from the brightest kept light within ~10 px (8 taps, sky pixels only) and add `dc` as
+  drawn; isolated faint light (rain streaks, card seams) still fails the test. Check "also on main?"
+  by flipping the switch back to the old rule in the same run (`-1` = old) before blaming a WIP branch.
 
 ## Puddles, embers, beam dust and presets (lesson)
 
