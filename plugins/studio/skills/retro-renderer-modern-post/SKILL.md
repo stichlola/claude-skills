@@ -210,6 +210,18 @@ camera the game hands over each frame.
   `1594.3/27/-437.8` is a rock ledge with water beside it. Chaining a third continue (`wascitya-seem` after
   `wascityb-defend`) crashes gk: "could not find free small-center bank in the level-group heap" (the game's,
   not ours); one or two continues per boot. A teleport's yaw does not set the camera's heading.
+- Things the game camera can't frame (Spargus palm crowns 20-40 m up: the follow camera pitches ~7 deg down
+  with a ~39 deg vertical view, teleports near them drop Jak into the sea) are shot from a held camera
+  instead: Jak Enhanced's tuning `debug.photo 1` (photo mode on) + `debug.view [x,y,z,yaw,pitch]` (meters,
+  degrees; yaw 0 = +z, 90 = +x) writes photo mode's camera position and rotation in the hook GOAL already
+  calls every frame (`pc-enhanced-editor-cam`), so no GOAL change. The game is held still and the camera
+  doesn't drift, so a frame pair 0.5 s apart differs only by what the renderer animates (wind, water):
+  count changed pixels in a crown box vs a trunk box per strength (0 / 1 / 3) as proof of motion. Find
+  the spots from a loader log of instance origins (here `log/tie_wind_<level>.csv`). Posting WM_KEYDOWN
+  to an unfocused SDL game window does nothing (no camera tilt via keys).
+- Before claiming "x3 in a sandstorm", log the weather wind itself (`[enhanced] wind now`): the desert
+  sandstorm spell reached 1.96 (speed/9 + 1.4 x dust), not the clamp's 3, and Spargus' streets and Haven
+  get no sandstorm at all, so a tuned x3 at calm (0.71 x 3) stood in for a sandstorm, not for its peak.
 - Overhead at noon the sun's tight glint (pow 900 x 7) on smooth swell is one solid white oval a sixth of
   the screen wide: break it into glitter with two noise octaves at 2.5 and 6 cycles/m (9/m averages out to
   grey at 26 m up) and roll it off `g/(1+g)`. Toggle each water term inside one run with `tune_water_dbg`
