@@ -254,6 +254,15 @@ camera the game hands over each frame.
   (`tune_raw_view 1` equally pale; `tune_water_dbg 34` turns them dark green): not a band to fix.
 - Slums pool (`ctyslumc-start`) at 12/18/21.5h and the oasis (`desert-ashelin` + orbit, 8-frame burst, 3 show the
   pond) at 17h: no shore band or dark shapes, same character as the raw view.
+- The creek-edge rule (`tune_water_dbg 30`) is reached in the Spargus cove at the same `1620,9,-420` spot:
+  `dbg 13` shows deep far-sea water within 30 m ringed by rock. dbg 0 vs 30 differs 17-20 luma on the edge band
+  (identical-variant noise <= 12); without the rule a pale haze sits over the near edge, with it the edge is clean.
+- Spargus's north side (z -305..-335 m) is sea cliffs with no beach: 14 ring probes found no wide shore-foam band.
+  To show a thin effect (shore foam) at dusk you need a gently sloping beach; look for one before booking the run.
+- With three test games up the machine runs out of commit and games die silently (no error in the log). The dev
+  goalc then keeps its control port but loses the game (`g >` prompt, "Compilation generated code, but wasn't
+  supposed to"): `dev_goalc -Stop` reports "not running" and a new one says "control port busy"; kill that
+  dev_goalc.py (your own, by its command line) and check that the game is still alive before retrying.
 - After an outage, an orphaned test game of your own lane (lock with your lane name, pid file in your scratchpad)
   can be reused instead of relaunched when free commit is too low to boot a new one.
 - Run `scripts/enhanced/check_shaders.py` after merges: a u-umlaut in a tfrag3.frag comment (from the PBR merge)
