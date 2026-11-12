@@ -1837,3 +1837,23 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   pre-change differed by about as much as two "new" shots differ from each other (mean |d| ~5 of 255).
 - A rock that is darker close up at a low sun can be the sun shadow map, not the detail: `tune_shadow_dbg` 2 showed
   sun_lit ~0.02 on a face that vanilla lights.
+
+## Explosions by day, evening palettes, switch bits, worktree test runs (lesson, Jak 3 Enhanced, Nov 2026)
+
+- **A blast over noon sand clipped to a white blot**: a half see-through fireball at 2.2x emission plus the
+  flash added again after the highlight squeeze pushed the bright sand past 1 and the shoulder took it white.
+  By day: the fireball more opaque (body 0.5 -> 0.85), its hot core orange-yellow not cream, emission ~1.15,
+  soot x1.4; the late flash adds only the room the pixel has left (up to 0.95 at its brightest channel) and
+  the rest shifts the hue toward orange (luma's max kept). It reads by color and dark smoke, not brightness.
+- **An evening palette per zone** costs no shader work: an optional `"evening"` look in the zone table, eased
+  over the day's grade by the dusk factor x (1 - night) in C++ before the existing grade uniforms.
+- **No spare uniform slots, several on/off switches**: pack them as bits in one unused vec4 component
+  (`int(fog.w + 0.5) & 1`, `& 2`), each bit from its own tuning key on the CPU side.
+- **Testing a worktree**: the stock dev launcher passes `--proj-path <main tree>`, so the worktree's shaders and
+  data were never what ran. Launch gk with `--proj-path <worktree>`: its `local\tuning_i<n>.json` and `log\` are
+  then the worktree's too.
+- **`JAK_ENHANCED_MENU=<kind>:<value>` opens the menu** over every shot; queue test requests (frozen clock,
+  hour, travel) through the timed menu script instead. Travel values hold commas? Use a continue point name.
+- **PowerShell traps in a test driver**: a variable `$plan` assigned a hashtable is the `[string]$Plan`
+  parameter (names are case-insensitive) and becomes "System.Collections.Hashtable" (no env, no steps); and
+  `Select-String '^DONE'` is case-insensitive too: the game's "Done birth" lines matched (`-CaseSensitive`).
