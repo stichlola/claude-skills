@@ -246,6 +246,16 @@ camera the game hands over each frame.
 - A swimming camera (Spargus rock ledge) bobs too much for a per-cell A/B of a thin effect (shore foam): 80 px cells
   moved by +-5 luma between identical variants over 3 interleaved rounds. Test thin shore effects from a standing
   camera over a beach.
+- Standing shore spot that works (Spargus, from `wascityb`): teleport `1620,9,-420` leaves Jak standing at y 8.0 in
+  the shallows, camera still, waterline along a rock in view. Teleports to wascitya coordinates (x > 2000) from
+  there fail and drop Jak back at the market continue. Per-pixel masks of animated foam don't carry across rounds
+  (no correlation): compare 40 px cells or region means. Lit shore foam at noon measured +8 luma (old) vs +4..7
+  (new) over none: still white; cost 3.24 vs 3.26 ms. The pale shallows there at 19.5h are vanilla's look
+  (`tune_raw_view 1` equally pale; `tune_water_dbg 34` turns them dark green): not a band to fix.
+- Slums pool (`ctyslumc-start`) at 12/18/21.5h and the oasis (`desert-ashelin` + orbit, 8-frame burst, 3 show the
+  pond) at 17h: no shore band or dark shapes, same character as the raw view.
+- After an outage, an orphaned test game of your own lane (lock with your lane name, pid file in your scratchpad)
+  can be reused instead of relaunched when free commit is too low to boot a new one.
 - Run `scripts/enhanced/check_shaders.py` after merges: a u-umlaut in a tfrag3.frag comment (from the PBR merge)
   would have made AMD drivers refuse the level shader.
 
