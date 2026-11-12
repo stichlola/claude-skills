@@ -2016,3 +2016,24 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   ZERO, ONE)`, frame alpha untouched), slightly wider by day: it reads by hue, the night look is unchanged.
 - **Test hooks fed from a tuning file must wait for a loaded level**: a teleport left in the file from the last
   run crashed gk during the boot's level load; gate them on "level up for N s" and keep the request pending.
+
+## Load-in pop-in: re-enabling a level fade (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Before writing a new fade, grep for one that is already there and switched off (`bg.fade_in` was
+  in the code at default 0, "suspected of smearing"). Find why it was turned off and fix that cause.
+  Then turn it back on, rather than building a second mechanism.
+- Restart a per-level fade only after a real absence of the level (here 30 frames). With a gap of 2
+  frames, a level that skipped a few frames while a city loaded dithered in again and again, which
+  read as a streaky far side. Log a "fades in" line per restart: one travel should log one line per
+  level.
+- The extra draw paths (instanced scenery, impostors, grass fields) need the same fade uniform.
+  If they miss it, they pop in whole over the dithered ground. Use the same 4x4 dither so the pixels
+  match. Objects that are not tied to a level (hand-placed) get their own gap fade, because a level
+  loading nearby must not dither them away. The last tenth of their reach fades them out through the
+  per-instance discard share instead of a hard cut.
+- Test with a slow fade (6 s instead of 0.4) and `debug.travel` between areas in one run, so a
+  2-second shot interval catches the fade. Measure on/off in 5 alternations: with a shared GPU,
+  single 5 s windows swung 13-25 ms, and only the medians (16.0 vs 16.7) say "no cost".
+- Watching a harness status file with `tail -f` from Git Bash locks it on Windows, and the
+  PowerShell `Add-Content` writer died. Write with a retry (`[IO.File]::AppendAllText` in try/catch),
+  or poll the task output instead of tailing.
