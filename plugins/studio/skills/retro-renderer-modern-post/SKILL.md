@@ -1743,3 +1743,19 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   lift was what made them read. Check the ratio's scale too: the vertex colour is often stored 2x.
   Measure it with a debug view (R = ratio, G = texture luma) and sample pixels before picking
   thresholds.
+
+## A zone look leaking into a town: bisect the grade, test on the real preset (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Spargus at noon read orange (ground sat 0.45) because the town sits in the desert zone: the desert's all-day
+  morning look, its midday tan and its area grade all applied. Holding back only the two suspected terms
+  (look, tan) got 0.40; a live bisect found the area grade (gain/lift hue + warm split) the largest term left.
+  Neutralize a grade's hue toward its channel mean (brightness kept) in C++ before the uniform, gated by a
+  per-level eased factor: no new composite uniforms. Result 0.34, warm tan, shadows intact, cost 0.
+- Bisect without rebuilds: a script rewrites the composite with `#define X_<name> (<uniform> * k)` and
+  replaces each uniform's uses after its declaration, the shader hot reload picks it up, one shot per factor
+  in the same run; restore the original in `finally`.
+- Test on the user's preset: the Performance test preset (`JAK_ENHANCED_PRESET=3`) showed no orange at all
+  (sat 0.21). Also pin the weather (`JAK_ENHANCED_WEATHER=0`): a sandstorm spell began mid-run and every
+  later shot got darker, which looks like each variant "working".
+- Python measuring scripts in a scratch dir: run with `-I` (a stray `inspect.py` there broke numpy), and
+  downscale shots first when RAM is tight (games running).
