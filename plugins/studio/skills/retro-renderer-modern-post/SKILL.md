@@ -574,9 +574,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - **Keeping the game's light over a replaced sky: weigh by the neighbourhood, not the pixel** (Jak 3
   Enhanced, Nov 2026): keeping `dc = game - game_sky` scaled by `smoothstep(lo, hi, dc)` per pixel squares
   a soft additive beam away (dc * w(dc)): the searchlights became flat hard-edged slabs cut off midway.
-  Take the weight from the brightest kept light within ~10 px (8 taps, sky pixels only) and add `dc` as
-  drawn; isolated faint light (rain streaks, card seams) still fails the test. Check "also on main?"
-  by flipping the switch back to the old rule in the same run (`-1` = old) before blaming a WIP branch.
+  Take the weight from the brightest kept light on rings sized as a **share of the screen height**
+  (1.2% and 3.5%, not a fixed 10 px: a close beam is 100+ px wide at 2560x1600, and a fixed reach drew
+  a faint box at its edge) and add `dc` as drawn; isolated faint light (rain streaks, card seams) still
+  fails the test. Dim the stars only by the pixel's own light, not the whole reach (dark band).
+  Check "also on main?" by flipping the switch back to the old rule in the same run (`-1` = old).
+- **"Sky" includes the game's far cloud cards**: a rule gated on `z == 0` misses light drawn over a
+  card that the sky pass treats as sky (z > 2.8 km): the beams were cut clean at every card edge,
+  slabs floating mid-air. Find it with a linear debug view written at the very end of the shader
+  (R = card pixel, G = luma(game - sky copy), B = what was kept): green without blue = dropped light.
+  Judge such fixes close up at the user's framing (a free camera: OpenGOAL `*external-cam-mode*`
+  'pad-0 + setting `*math-camera*` trans from the REPL), not from far shots where beams are 8 px wide.
 
 ## Puddles, embers, beam dust and presets (lesson)
 
