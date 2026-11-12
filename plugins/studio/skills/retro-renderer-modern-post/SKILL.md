@@ -205,7 +205,7 @@ camera the game hands over each frame.
   3 interleaved pairs): the moon stands too high there. The Spargus-sea teleport `3:1722.4/40/-420.1` from
   `wascitya-start` (at 22 s or 40 s of the script) left Jak at the continue point twice: check the log's
   `Jak at` before reading a sea shot.
-- Spargus sea that works: `4:1:12;45:2:wascityb-flut;70:3:1594.3/27/-357.8/0` (continue first, then the
+- Spargus sea that works: `4:1:12,45:2:wascityb-flut,70:3:1594.3/27/-357.8/0` (continue first, then the
   teleport, '/' for ','): Jak swims at y 7 m and the camera hangs overhead looking straight down at the sea.
   `1594.3/27/-437.8` is a rock ledge with water beside it. Chaining a third continue (`wascitya-seem` after
   `wascityb-defend`) crashes gk: "could not find free small-center bank in the level-group heap" (the game's,
@@ -233,6 +233,21 @@ camera the game hands over each frame.
 - Python edits of a CRLF shader: open with `newline=''`, or the file is rewritten with LF and later anchors with `
 ` stop matching.
 - Hour schedules in `JAK_ENHANCED_MENU_SCRIPT` run on the game clock from its first frame, not from when the launcher returns (boot 15-40 s). Give each hour a window of at least 50 s and shoot in the middle of it, or the "18h" shot shows noon.
+- `JAK_ENHANCED_MENU_SCRIPT` entries are separated by `,` (a `;` is read as part of the previous value: the log shows
+  `request 4 '0;45:2:...'` and nothing else runs); commas inside a value are written `/`.
+- A test game peaks at ~7-9 GB of private memory while the loader reads the scenery (2048 px textures): launched with
+  7 GB of free commit it died with "bad allocation" in loader_thread (`[die] Assertion failed`). Wait for ~9 GB free,
+  and stop your game (and its goalc, ~4 GB) as soon as the shots are taken: two test games plus goalc took the
+  machine to 0.2 GB of commit and Python/OpenBLAS could no longer allocate. A goalc that cannot start for lack of
+  commit leaves `dev_goalc` evals hanging ("nREPL never came up"): run camera forms in a job with a timeout.
+- Teleports beside a Haven canal (ctygenb) are unreliable for a "from the ledge" view: Jak lands in the water or an
+  ambient creature knocks him in within seconds. The canal from the ledge at 12h, 18.5h and 21.5h (walkway over
+  `ctygenb` at ~142,8,-232 m) showed no hard dark shapes on the bed any more.
+- A swimming camera (Spargus rock ledge) bobs too much for a per-cell A/B of a thin effect (shore foam): 80 px cells
+  moved by +-5 luma between identical variants over 3 interleaved rounds. Test thin shore effects from a standing
+  camera over a beach.
+- Run `scripts/enhanced/check_shaders.py` after merges: a u-umlaut in a tfrag3.frag comment (from the PBR merge)
+  would have made AMD drivers refuse the level shader.
 
 ## Real normals for levels that have none
 
