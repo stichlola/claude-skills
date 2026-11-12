@@ -1883,3 +1883,13 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - **PowerShell traps in a test driver**: a variable `$plan` assigned a hashtable is the `[string]$Plan`
   parameter (names are case-insensitive) and becomes "System.Collections.Hashtable" (no env, no steps); and
   `Select-String '^DONE'` is case-insensitive too: the game's "Done birth" lines matched (`-CaseSensitive`).
+- **A sun disk drawn dark**: when the sky is brought under a highlight cap (scaled so its peak is 0.9, then half
+  desaturated) the disk keeps only its hue and reads as a dark ochre disk on the paler sky. Exempt the disk and
+  the aureole from the cap: mix them back toward a warm white, weighted by how much the cloud volume lets through
+  (keep its transmittance in a variable before the clouds are composited) and by the sun's elevation.
+- **A mist halo nobody saw** at a lamp-poor spot: test volume local lights where a torch is within ~10 m of the
+  camera at night; a gain sweep (1-4) in one run shows gain 1 already reads and 2+ hides the character.
+- **Never run a plain `cmake --build` in a worktree without the vcvars environment**: it re-configures, fails
+  the compiler test (`undefined symbol: mainCRTStartup`) and leaves `build.ninja` pointing at a missing
+  `rules.ninja`. Repair: load the cached vcvars env, delete `CMakeFiles/<cmake version>` and `CMakeCache.txt`,
+  configure with `-G Ninja -DCMAKE_BUILD_TYPE=Release` and the explicit clang paths; a full rebuild follows.
