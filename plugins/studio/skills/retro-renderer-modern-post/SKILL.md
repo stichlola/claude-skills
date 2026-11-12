@@ -1954,3 +1954,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   the compiler test (`undefined symbol: mainCRTStartup`) and leaves `build.ninja` pointing at a missing
   `rules.ninja`. Repair: load the cached vcvars env, delete `CMakeFiles/<cmake version>` and `CMakeCache.txt`,
   configure with `-G Ninja -DCMAKE_BUILD_TYPE=Release` and the explicit clang paths; a full rebuild follows.
+
+## Effects meant for wheels on hover vehicles; GOAL tests in a worktree (lesson, Jak 3 Enhanced, Nov 2026)
+
+- A post effect keyed on "driving" (dust plumes, wet-ground spray, ruts) must know whether the vehicle
+  touches the ground. Jak 3: every piloted vehicle but the desert's `wvehicle` hovers (zoomers, hover
+  cars, gunship, Hellcat); walk the process type's parents for `'wvehicle` and send a flag. The user's
+  "white-blue blobs behind the zoomer in the rain" were wheel spray from the ride puffs, not rain.
+- `dev_goalc.ps1 -Repo <worktree>` still compiles the MAIN tree (its project path is the git common dir):
+  a worktree's GOAL change needs the worktree's own `goalc.exe --game jak3 --proj-path <wt> -p <free>
+  --debug-port <free> -c "(mi)"` (no `--iso-path`: it makes goalc look for `iso_data/VAG` directly).
+- A `-NoMi` dev goalc knows no types at all (`process`, `format`, `*target*` unknown): eval `(mi)` once
+  (~75 s, main tree already built) and then `send-event`, `focus-test?` work. Put Jak on a zoomer with
+  `(send-event *target* 'change-mode 'pilot #f 0 #f)` (0 = h-bike-a; the handler spawns and boards it).
+  A/B the ride puffs standing still with `JAK_ENHANCED_PUFF_TEST=1` and the tuning switch.
