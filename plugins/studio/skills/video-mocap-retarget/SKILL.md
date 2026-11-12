@@ -55,6 +55,17 @@ recorded from a screen, retargeted onto a Jak-like 64-bone rig (Jak Enhanced, 20
   basis = `Rrel^-1 @ Rparent_pose^-1 @ target`, in hierarchy order; write FK quaternion keys.
 - A clavicle following ~40% of the arm elevation keeps a shoulder pad from crumpling on raised arms.
 
+## Rig-to-rig swap of a finished scene (any humanoid model, one script)
+- Bake once from the evaluated source pose, never via Copy Rotation in Local Space (breaks on different
+  bone rolls and on IK-driven sources). Per bone, armature space: `R = F^T D F C T_rest`, `D = S_pose S_rest^T`,
+  `F` = frame (left, up, forward) of the source rig times its transpose on the target rig (built from
+  upper arms, hips, head: fixes models facing +Y/-Y), `C` = rest-direction fix (A-pose vs T-pose). Hips
+  position = target rest + leg-length ratio x source offset; object placed so rest hips coincide.
+  Self-retarget check: 0.000 m on hands/feet/head. Bone roles auto-found by name (Mixamo/UE/VRM/Rigify,
+  side from Left/.L/_l_/Jak-style prefix; Rigify DEF-spine.00x needs its own table; Jak rigs use neckB as head).
+- Drive existing scripts with a CONFIG dict without editing them: `ast` insert `CONFIG.update(ovr)`
+  after the assignment and exec with `__file__` set; each step in its own `blender -b` process.
+
 ## Filtering with numbers
 
 - Zero-phase one-euro on local quaternions (forward + backward pass, sign-aligned, nlerp of the two).
