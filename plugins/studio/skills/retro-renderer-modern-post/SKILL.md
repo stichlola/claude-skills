@@ -438,6 +438,7 @@ for the point lights, then ray tracing (compute-shader BVH, or Vulkan).
   reject there too (a quay rises only 2-5 m behind the water's edge, inside a 3%-of-depth margin).
   Debug first with a hit/distance/fresnel false-color view: it showed the harbour lay at 150-200 m,
   past the march's 80 m cutoff, before any tuning. Cost at 640x360 within noise (32 growing steps).
+- Metal/glass SSR artifacts (Jak Enhanced, Nov 2026): two cheap fixes, no new uniforms. (1) Reject a screen hit whose g-buffer normal points along the ray (dot > 0.15): the ray met a surface's back, the pixel shows its front. (2) The 'screen where the ray vanishes' fallback samples whatever covers that pixel (Jak, a near wall); trust it only where the depth there is sky or 40-150 m off, and scale the reflection's weight by mix(0.3, 1, trust) so the surface's own color shows. A trust-as-grey debug view finds the bad pixels at once. Cost within noise. A fresh dev goalc -Eval for camera moves can hang minutes; pick a start point with the target in view instead.
 - Ray-traced AO falls out of the same BVH: 6 cosine-weighted 3 m rays per pixel in the SSAO pass
   (nearest-hit traversal, linear distance weight). Take min(traced, SSAO): characters aren't in
   the BVH and keep their screen-space contact shadows. In open squares it barely shows; check in
