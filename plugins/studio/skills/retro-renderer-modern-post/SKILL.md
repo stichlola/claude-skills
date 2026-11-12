@@ -1802,3 +1802,21 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   GPU ms with another test game on the same GPU is noise (±5 ms, auto quality moving): judge cost by fps held.
 - Watch the commit charge before every boot, not once: a 5.6 GB test gk died with `bad allocation` when another
   agent's game grew after launch; wait for >= 8.5 GB free when two games share the laptop.
+## Surface detail that changes as you walk: measure by distance band, fix the mips and the clamps (lesson, Jak 3 Enhanced desert, Nov 2026)
+
+- Symptom: rock slabs a flat pale yellow far off, covered in black speckles close up. Measure it: mask the class
+  (tag view), cut the frame into 40 px rows (rows ~ distance), and per row take ours/vanilla mean luma and
+  high-frequency |dx| (`tune_raw_view` for vanilla in the same run). Close up 3.6-6.4x vanilla's detail, 20-40 m ~1x.
+- Then turn each term off in the same frame (pbr.on 0, the grain's strength 0, ...): the guessed cause (the ground
+  grain) was the smaller one; the normal maps' relief was most of it.
+- Normal maps lose their slope to the mips (RMS 0.28 at mip 0, 0.18 at 2, 0.11 at 3, 0.055 at 4: a fifth by
+  40 m), so near and far shade differently. Scale the tilt by the mip the anisotropic filter really reads
+  (`lod = 0.5*log2(max(minor^2, major^2/256))`): softer at full size (x0.7), part of the loss given back
+  farther ((lost)^0.6), the slope capped (~70 deg).
+- A shade clamped at -0.5 x 1.6 turns a pit facing away from a low sun to a fifth of its light: roll the dark side
+  off (`-k*(1-exp(s/k))`) instead of a hard clamp. Same for any procedural relief: take its slope over at least
+  two pixels (`max(6 cm, 2*footprint)`), or each texel shades as a pit up close.
+- Switches without new uniforms in a full uber-shader: the sign of an existing strength uniform (`< 0` = old path,
+  `abs()` where it is used). Camera for repeatable A/B: after a teleport, a short left-stick push makes the
+  camera trail Jak; never leave the right stick override at -1 after pulsing it (the last value sticks and the
+  camera orbits): restart the game if it does.
