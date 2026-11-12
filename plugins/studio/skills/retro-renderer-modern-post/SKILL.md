@@ -1968,3 +1968,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   (~75 s, main tree already built) and then `send-event`, `focus-test?` work. Put Jak on a zoomer with
   `(send-event *target* 'change-mode 'pilot #f 0 #f)` (0 = h-bike-a; the handler spawns and boards it).
   A/B the ride puffs standing still with `JAK_ENHANCED_PUFF_TEST=1` and the tuning switch.
+## Puddles from the depth buffer, per-draw "no rain", flash shadows (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Puddles in noise read as random blotches. Put them where the ground is really lower: for each level
+  wet pixel, project 12 points on two world-space rings (0.6 and 1.4 m) into the depth buffer, rebuild
+  each hit and average its height over the pixel (skip hits that land more than half a radius from where
+  they were asked: occluded; count steps over 25 cm as level: walls). About 1 cm of dip = full puddle.
+  It finds the foot of steps and curbs, flagstone joints and real hollows; keep the noise only for ragged
+  rims and the flooding in a downpour. +0.2 ms at 1280x720 (near 70 m only).
+- No new uniforms, yet one model must skip an effect (rain on hover vehicles): pick it per draw in the
+  renderer by model name (Jak 3: bikea/b/c, newbike, cara/b/c, hellcat, kg-robot-transport; Jak and
+  Daxter only while the player flag says he pilots a hover vehicle), set an EXISTING per-draw uniform to an
+  out-of-range value (enh_wet -1), and write a slightly different tag length in the normal target
+  (0.36 vs 0.45; 8-bit normals keep +-0.004) so the composite can tell those pixels apart too.
+- Lightning shadows: march the depth buffer toward the bolt's side of the sky only while the flash is on
+  (weather2.w > 0.04): cost exists for ~0.4 s per bolt. A/B under JAK_ENHANCED_BOLT_TEST still flickers
+  (sheet lightning is random, rain streaks move): judge with a debug view that paints the shadow mask.
+- The composite's hot reload takes ~30 s: wait for the "enh_composite reloaded" log line before a shot.
+  A `(mi)` eval through dev_goalc can die on a transport timeout (no result); run it in the background
+  and check that a type-using eval works before relying on it.
