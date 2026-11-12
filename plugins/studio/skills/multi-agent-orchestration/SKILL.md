@@ -36,6 +36,8 @@ counts) and lowers quality. Talk to the user in their language, shorter.
 
 Put these rules in a `TERSE` constant appended to every agent prompt of a workflow.
 
+Parallel agents share one session scratchpad: a helper named like a stdlib module there (`inspect.py`) breaks every other agent's Python run from it. Keep scripts in a subfolder named after your lane and run `python -I` from another directory.
+
 ## Workflow shape that works for a feature
 
 ```

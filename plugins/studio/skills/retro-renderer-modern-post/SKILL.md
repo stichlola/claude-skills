@@ -837,6 +837,8 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   and every result with `isnan`/`isinf` and fall back to "nothing" (alpha -1), not to a color.
 - Shader hot reload only runs when its env switch is set in the test script; without it a "fixed" shader
   silently isn't the one on screen.
+- **Constants (not uniforms) A/B'd in one run**: rewrite the `const` lines in the shader files between shots with shader hot reload on for every shader (`JAK_ENHANCED_SHADER_RELOAD=all`: tfrag3/merc2 are the game's), wait ~16 s per swap, `git checkout` the shaders at the end. Score crops numerically (mean, Laplacian high-frequency energy, % under luma 0.06, p99) besides the eye: Jak Enhanced's stronger true PBR (relief 1.6, spec 1.4, per-class K +30%) measured +4% detail, no added crushed shade, golden-hour p99 +8%, character highlights unchanged: kept as is.
+- **A worktree gk that dies at boot (0xC0000005 in an unknown module = GOAL heap) right after the first menu request**, even after touching every .cpp/.h and rebuilding, while another lane's shadow bin of the same C++ boots fine with this worktree's `--proj-path`: swap binaries first (one boot each) to split binary vs data, then test with the working bin; don't (mi) or copy DGOs on a hunch.
 - Finding which pass draws an artifact without editing code: measure it as a number (e.g. a dark row =
   row mean minus the mean of rows +-2, over the affected columns) and compare it against vanilla and per
   env switch, one short boot each (~28 s); then bisect the composite's uniform groups with a "zero group X
