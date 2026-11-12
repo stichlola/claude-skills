@@ -1987,3 +1987,19 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - The composite's hot reload takes ~30 s: wait for the "enh_composite reloaded" log line before a shot.
   A `(mi)` eval through dev_goalc can die on a transport timeout (no result); run it in the background
   and check that a type-using eval works before relying on it.
+## A "flat, blurry" surface under a remade texture: detail material by class (lesson, Jak 3 Enhanced desert, Nov 2026)
+
+- Check what replaces the texture before tuning post: desert-start's slab (wascity-ground-01) had a smooth AI
+  remade picture (1024, `texture_remade/_all`) while its PBR map (256) was still made from the old HD picture,
+  so no relief matched the colors, and the composite's ground grain only shaded brightness. A remade picture
+  needs its own PBR map, or a world-space detail material.
+- The cheap fix: a second tileable detail material (normal/rough/AO) in the level shader, mapped by texture
+  name + class in the JSON (the loader took only `"class": "sand"`; add the others). Make it from the same
+  generated art the composite already uses for that ground, so color grain and relief feel alike.
+- Keep its AO soft (min ~0.8) and the normal moderate: AO 0.3 x min 0.55 at 1.6 normal turned the cracks into
+  black specks and the slab 10% darker. Result: high-frequency detail +26% noon / +30% low sun, mean -4..-7%.
+- Live off switch without composite uniforms: a strength uniform in the level shader gated by class
+  (`tune_detail_rock`), multiplied into the detail's per-pixel weight.
+- Check the spot is lit at the test hour: at 16:30-18:30 the slab sits in the hill's shade (no change is right);
+  8:00 lights it. A mid-run `ReadAllText`/`WriteAllText` with a relative path in PowerShell resolves against the
+  process dir, not `cd`: it emptied a JSON once. Use absolute paths or the Edit tool.
