@@ -1,6 +1,6 @@
 ---
 name: tripo-3d-assets
-description: How to make game-ready 3D models with the Tripo API (tripo3d.ai) cheaply and cleanly - text/image to 3D, low-poly face budgets asked up front, sheets of many parts in one generation cut apart in Blender, P1 low-poly + texture from a user's image, concept pictures before characters, PBR for Unreal, animating non-human creatures from generated video, costs, prompts and the failures already met. Use whenever a task generates, retextures or prepares 3D assets with Tripo, or plans a set of game props, characters or kit pieces.
+description: How to make game-ready 3D models with the Tripo API (tripo3d.ai) cheaply and cleanly - text/image to 3D, low-poly face budgets asked up front, sheets of many parts in one generation cut apart in Blender, P1 low-poly + texture from a user's image, concept pictures before characters, PBR for Unreal, picking routes by use (code, Blender, sheets of 4 with texture steps, one hero picture), cleanup of stray faces and black triangles, PBR derived from the colour texture, animating non-human creatures from generated video, costs, prompts and the failures already met. Use whenever a task generates, retextures or prepares 3D assets with Tripo, or plans a set of game props, characters or kit pieces.
 ---
 
 # Tripo 3D assets: what works
@@ -69,6 +69,90 @@ The price does **not** change with the face count, so a sheet of 12 parts costs 
 Costs seen (credits, 100 = 1 USD): text→image 5, text→3D 40, image→3D with PBR 50, P1 mesh 40,
 texture 20. Always read `credits_consumed` from the finished task and stop if it is above the estimate.
 
+## Choosing how to make each object (routes, texture steps, shared rules)
+
+Decided with the user after a round of sheets in Nov 2026. Start cheap, upgrade only what still looks
+soft **in the game**, seen from the game camera.
+
+**Pick what is worth doing first by counting use.** Generate many maps with the game's own generator
+(e.g. 6 seeds x every recipe), count props per id and in how many maps each appears. The top ten are
+usually small dungeon/storage dressing (rubble, skulls, busts, columns, torches, crates, barrels,
+coins). Many of them are code-made blocks, and those gain the most from a real model.
+
+Routes (credits, 100 = 1 USD):
+
+| Route | Shape | Texture | Credits / object | Use for |
+|---|---|---|---|---|
+| A. Code | simple shapes in the game's code | colours in code | 0 | tiny things repeated hundreds of times (coins, bones, pebbles) |
+| B. Blender | modelled or procedural, exact sizes | projected from the user's picture or painted procedurally | 0 (time, needs Blender) | pieces that must join: walls, bridges, fences, floors |
+| C. Sheet of 4 | Tripo image->3D of one picture with 4 objects | see steps C1-C3 | ~12 | the normal route for most props |
+| D. One object, one picture | Tripo image->3D of a large single-object picture | Tripo's, full resolution | ~50 | a few hero objects (hut, statue, well) |
+
+Text->3D (~40) was dropped as a default: it costs almost as much as D and gives less control of style.
+
+Texture steps for route C:
+
+| Step | What | Extra / object | Result |
+|---|---|---|---|
+| C1 | Tripo's texture + Real-ESRGAN + procedural touch-up (warm top light, dark crevices, light edges, colour grade) | 0 | fine from above, soft up close |
+| C2 | Tripo re-textures the whole sheet model (`/models/texture`) from the same picture upscaled to 4096 | ~5 (20 a sheet) | sharper |
+| C3 | Each object cropped, upscaled and re-textured alone | ~20 | as sharp as route D (needs the split piece uploaded as a model: verify the API first) |
+
+Shared rules:
+
+- **Pictures:** the user makes them (e.g. with Gemini) and sends them as **files**. Images pasted inline
+  in chat may arrive downscaled (~1024) or not as files at all. Below 2048, upscale x4 with Real-ESRGAN
+  first. White background, objects well apart, same 3/4 top view, one family and similar size per
+  sheet, at most 4 objects.
+- **The sheet divides the detail, not the texture.** Tripo's texture is 4096 either way, but it is
+  painted from the picture: 4 objects in a 1024 picture leave ~250-500 source px each, stretched over
+  the model, so they look blurred up close. More source pixels per object (big picture, or one object
+  per picture, or C2/C3) is the only real fix. Real-ESRGAN on the finished 4096 atlas (downscale to
+  1024, x4 back) helps only a little.
+- **To re-texture, keep the shapes.** A new picture for C2/C3 must have the objects in the same place
+  and shape as the one the model came from, so upscale the same sheet; never regenerate it.
+- **Face budgets asked up front** (`smart_low_poly`, `face_limit`): 300-500 for things repeated
+  hundreds of times (1600-2000 for a sheet of 4), 800-1200 for props in view, 2000-4000 for big
+  pieces. `face_limit` counts quads: 2400 came back as ~4500 triangles, so roughly double it in
+  triangles.
+- **Cleanup after every generation** (trimesh is enough, no Blender needed):
+  - Weld, split into connected parts, delete strays under ~10 triangles. A 3-triangle stray rendered
+    as a **black triangle**.
+  - Give small real parts (clover leaves) to the nearest big piece. Split the objects.
+  - A sheet comes back as a slightly tilted scene: put each piece's base on y = 0, upright, centred,
+    scaled to the grid (a wall cap exactly 1 x 1 square).
+  - Fix inconsistent winding (seen on plants).
+  - Check boundary edges (holes) and non-manifold edges.
+- **Materials:**
+  - Tripo GLBs come with `doubleSided: true`, so inside-out strays show their unlit back face as
+    black. Make them single-sided (plants double-sided only if thin leaves vanish, and only with
+    consistent normals).
+  - Tripo sets `metallicFactor: 1` with a metallicRoughness map. Without an environment map that
+    makes stone dark and brown. Set **metal 0**.
+- **PBR from the colour texture** (procedural, free):
+  - luminance minus low-frequency shading = height;
+  - normal map from its Sobel gradient;
+  - AO/cavity from the dark crevices;
+  - roughness = inverted, slightly contrasted brightness, clamped to the toy look (stone ~0.75-0.95,
+    leaves ~0.6-0.8);
+  - keep Tripo's maps only if they look better side by side.
+- **Web delivery:**
+  - Textures at 1024 (2048 for big pieces) as WebP, one file per family.
+  - The npm/node build of `gltfpack` has **no WebP/KTX** (use Blender or a native build), and its
+    `-sa` aggressive simplify **destroys UVs**: never use it on textured models.
+- **Review:** preview to the user before placing, then one shot in the real game from the top-down camera.
+
+API notes confirmed in this round (v3):
+- Upload a local picture with `POST /files` (multipart), which returns a `file_token`.
+- Pass the token straight as `input` to `/generation/image-to-model`, with `model_version`, `texture`,
+  `pbr`, `texture_quality: "detailed"`, `smart_low_poly`, `face_limit`.
+- Credits are taken **when the task is created** (the balance dropped before the first task finished),
+  so check the balance against the full cost before starting a second one.
+
+**Other generators tried and dropped:** Hunyuan3D (LowPoly + PBR, through Higgsfield) gave good 4K
+textures but ~10000 triangles whatever the mode, 20-29 MB of 4K PNGs, no face limit, and it could not
+be reduced below ~3000 triangles without breaking the UVs. Not worth it for a web game.
+
 ## Prompts
 
 - Subject first (shapes, materials, colours, proportions in cm or tiles), then pose, then the **shared
@@ -110,6 +194,10 @@ by the pieces. Per piece, roughly:
   per copy in the engine.
 
 ## Sheets of parts (the cheap way)
+
+Sharpness: every piece shares the picture's pixels, so with 5-12 pieces each texture is soft up close.
+That is fine for tiny props seen from far; for props in view keep sheets to **4** and big pictures
+(see "Choosing how to make each object").
 
 1. Picture prompt: "Game asset sheet: the separate pieces laid out on an even grid with wide empty
    gaps between them, none touching another, each whole, seen from a three-quarter front view, plain
