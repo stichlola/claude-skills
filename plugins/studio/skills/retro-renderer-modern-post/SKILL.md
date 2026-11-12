@@ -1722,6 +1722,25 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Verify on a canal from the side (Haven `ctygenb-start`, teleport 6 m over Jak's swim spot) with a 12-frame
   burst per variant, the old path one tuning value away (`tune_water_dbg 35`): the splash lasts ~1 s and a
   single shot rarely lands on it. Jak grabbing a pool's ledge ignores the teleport: use open water.
+- Dim at dusk only the foam: sprites the frame's alpha says were *blended* (coverage) plus pale, low-saturation
+  ones (a splash's spray is additive and reaches past its disc). Coloured additive light over water (shots,
+  flashes, eco, lamp glows, beams) goes back at gain 1. A "dim every sprite" version (kept as a debug value)
+  showed the splash fine but put the whole sprite layer at risk; measure both on a shot before choosing.
+- The copies around the sprite buckets stop at full night: fade the new path into the old rule with the
+  day factor (smoothstep over its last ~8%), so a splash doesn't jump at the hand-over. Check with a pair
+  at ~20.5h and 22h.
+- The old "brighter game pixel shows through" rule turned a big blast lying over water into a flat white
+  blob with a hard, jagged edge along the waterline (vanilla: soft). The coverage path fixes that too.
+- Shooting in a test without a pad (Jak Enhanced): the save may have no guns, and a `-NoMi` goalc doesn't
+  know `pad-buttons` (declare `*enhanced-pad-press*` / `*enhanced-pad-hold*` as `int`, R1 = #x800, D-pad
+  right = #x20). Re-arm the "shoot" player test from the REPL instead: copy "shoot" into
+  `*enhanced-player-test-buf*`, set `*enhanced-player-test*` to it and `*enhanced-player-test-frames*` to 585:
+  it grants the Peacemaker with full ammo, takes it out and fires every 0.5 s. Ammo is 10: re-arm per
+  variant. Measure the glow as luma above the per-pixel median of all frames at that hour (the shot moves,
+  so the median is the background). Jak auto-aims, so pick the spot by where he ends up aiming (Haven
+  port dock at `ctyport-start`: shots fly over the harbour).
+- Start the dev goalc on its own (`-NoMi`, no `-Eval`) after the level has loaded, then eval: an `-Eval` as the
+  first call on a fresh gk hung for minutes on `(lt)` twice.
 
 ## Pale polygons ringing flat rock patches on sand (lesson, Jak 3 Enhanced desert, Nov 2026)
 
