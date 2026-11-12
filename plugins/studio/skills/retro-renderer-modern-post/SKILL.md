@@ -1429,6 +1429,21 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   foliage, `wstd-canopy` is a stadium awning: keep "canopy" out of the leaf words).
 - Motion has no still-frame proof: report the frame-pair change share (forest top: off 0.3-0.8 %, on 1-2 %) and the
   debug view; the vertex cost was below the GPU-time noise.
+- Frame pairs fail when the game's idle camera drifts (desert: 10-16 % "change" with the wind off). Paint the
+  **displacement itself** instead (a debug value that colours each vertex by how far the sway moved it, red = 30 cm),
+  new vs old and calm vs storm in one run: one still shot per variant proves "trunk still, fronds move".
+- Palm-like sway: a lean by height moves the trunk as much as the fronds. Store each leaf vertex's **reach** = distance
+  to the nearest trunk point of its plant (trunk vertices thinned to 0.5 m, 3D hash of 2 m cells, growing shells
+  with an early out: 90 ms for 40k leaf / 94k trunk verts), and swing it by reach; the trunk gets only a tiny lean.
+  Plants with no trunk (planters, hanging vines: their "foot" is their lowest tip) need a reach cap, or they swing
+  from the wrong end. Classify the trunk strictly (trunk/bark/root): a palm's crown and frond stems (`des-palm-top`)
+  must swing with the blades or the blades tear off a still stem (the weight view showed green midribs on blue
+  fronds). For instanced wind trees use the distance from the instance's axis, and turn the world wind into the
+  instance's own axes before its matrix. Pack two fields in a spare u16 (7-bit height in dm + 8-bit reach) rather
+  than growing the vertex.
+- Check what draws a tree in each area before tuning (Jak 3: desert palms static TIE; Spargus palms a static TIE
+  trunk under a wind-tie crown whose origin sits up in the crown; Haven trees wind ties). A uniform on a program
+  shared by two renderers (tfrag and TIE) keeps whatever the last one set: set it in every renderer that uses it.
 ## Vanilla A/B in one run, measuring detail, finding what a surface is (lesson, Jak 3 Enhanced, Nov 2026)
 
 - Put a "show the game's own picture" switch in the composite (Jak Enhanced: `tune_raw_view` 1 full, 2 right
