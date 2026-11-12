@@ -113,6 +113,10 @@ themselves (env vars, redeploys, dashboard settings) as numbered steps.
 ## Windows: PowerShell GUI and Inno Setup gotchas
 
 - PowerShell variables are case-insensitive: a local `$dir` overwrites the script's `$Dir` parameter.
+- Never write Markdown through a double-quoted PowerShell string: the backtick is its escape, so
+  `` `volume `` becomes a vertical tab + "olume" and the closing backticks vanish (seen in a docs row).
+  Use the Edit tool, a single-quoted here-string `@'...'@`, or `[IO.File]::WriteAllText` with text read
+  from a file; afterwards grep the file for `[char]11` / control characters.
 - A process started with SW_HIDE (Start-Process -WindowStyle Hidden, Inno `Exec(..., SW_HIDE)`) hides
   its first window too; to test a GUI script, start it with CreateNoWindow instead.
 - A custom installer window over Inno: run it from `InitializeSetup` (return False after), let it
