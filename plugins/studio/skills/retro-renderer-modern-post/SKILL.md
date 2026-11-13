@@ -166,6 +166,15 @@ camera the game hands over each frame.
   any spot from the logged camera positions; plus an off switch per feature for A/B pairs.
 - Test boots log the loaded levels and a census of live actors by type name: it settles "are there
   enemies / is this bank loaded" questions in seconds instead of guessing from screenshots.
+- "Dark horizontal bands on the sand, in any weather" (Jak Enhanced desert, Nov 2026): no post toggle
+  (shadow map, AO, detail octaves, haze) moved them; `tune_raw_view` still had them, so bisect the
+  *scene* shader: hot-edit hfrag.frag to output red (is it this mesh?), then the vertex color, then the
+  texture. The vertex colors (time-of-day palette) held the bake's mountain shadows as soft blots; a
+  top-down held camera (`debug.view [x,y,z,yaw,-89]`) shows world-fixed blots vs a camera ring at once.
+  Fix: per frame take the palette's brightest-fifth mean as the "sunlit" reference and compress darker
+  vertices toward it (keep differences under ~15% so noon is untouched). Gotchas: a hot-reloaded edit
+  that drops a uniform's use logs "uniform moved ... restart" and is NOT applied (keep a `* 0.001`
+  use); `debug.hour` only takes effect after leaving photo mode once (photo freezes the clock).
 
 ## Water in post
 
