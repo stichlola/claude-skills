@@ -2064,3 +2064,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - **A procedural effect drawn before the grade is graded as scene** (Jak Enhanced explosions, Nov 2026): the fireball composited before the day's stop-down, highlight squeeze and desert grade came out the sand's own color, a "hollow red ring", while tuning its colors did nothing. Find it in one step: a global that copies the picture right after the effect and a debug switch that outputs it at the very end; if it is right there, the later stages are the bug. Emissive things (fire, flames, shots) go **after** the grade with the brightest channel held at 1 (hue kept); dust and smoke stay before it. Same for a sprite flame at night: put its hue back at the end, not only before the night grade.
 - A ball effect clipped by the depth buffer is a thin slice where it meets the ground (seen from above: see-through middle). Thickness from the unclipped sphere, lifted to stand on the ground, plus a soft fade against scene depth.
 - Transient effects (0.5 s): trigger them on a fixed period inside the game (`debug.blast_every`), grab a burst of window captures 100 ms apart for one period, rotate the list so the biggest frame-to-frame jump comes first, and read one contact sheet; ON, vanilla and hours in the same run via tuning keys (`debug.classic`, `debug.hour`). A `shaders.tune_*` key removed from the tuning file keeps its last value in the running game: always write the reset value explicitly. JSON fragments through bash -> PowerShell lose their quotes: pass a file.
+
+## Puddle lattice from depth "dips", and test-run traps (lesson, Jak 3 Enhanced desert rain, Nov 2026)
+
+- A ring-average height test calls any straight valley a dip: the foot of a mesh lying 12-25 cm over
+  another (flat rock plates, sand-painted sheets over the dunes) and folds between flat triangles became
+  straight puddle lines, a lattice of dark lines over open sand in rain. Fix: per opposite pair of ring
+  samples take the bend `(dh_a + dh_b) / 2` (slope cancels) and use the smallest bend over the directions:
+  water pools where the ground bends up every way. Keep a curb/gutter term (one side 5+ cm up, other level)
+  only where meshes don't overlap (gated by the area's sand grade). Diagnose with a step-height debug view
+  (max sample rise, 12 cm = full): the lines were 12+ cm steps nobody sees.
+- Test runs: the stock test config showed no rain at all with `JAK_ENHANCED_WEATHER=2`; a copy of the
+  user's `enhanced-settings.json` in a `-Config` dir (windowed display settings) rained. `debug.dump_frame`
+  only saves with TAA on. Editing a hot-reloaded shader can crash the game mid-write ("couldn't open
+  ...frag"): verify with `-NoShaderReload` once the edits are done. `JAK_ENHANCED_WEATHER_SCRIPT=0:2,200:0`
+  gives rain then clear-after-rain in one run.
