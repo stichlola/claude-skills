@@ -178,6 +178,16 @@ camera the game hands over each frame.
 
 ## Water in post
 
+- Same bug, the user's real case (review round 2): reproduce the *user's* scene (weather, hour, gameplay
+  camera, not only a held photo-mode view: photo mode pauses dt, so puddles/hour don't evolve). The lines
+  were rows of puddles: a depth-based "hollow" test read depth GL_NEAREST but rebuilt the point at the
+  asked uv, not the texel center, so on level ground seen from low each sample took a neighbour row's
+  depth (a few mm off) and the error drifted row to row into stripes (and 1 cm = a full puddle). Paint the
+  measure itself as a debug colour (dips red, bumps green): constant-amplitude stripes that don't grow
+  with z are sampling, not depth precision. Fix: snap uv to `(floor(uv*size)+0.5)/size` for every
+  reconstructed point. Puddles linger minutes after rain, so "also in Clear" can still be the rain code.
+  Harness traps: a worktree game reads the MAIN tree's shaders unless JAK_DEV_OWN_TREE=1 is set in the
+  same shell call as dev_launch; enh_composite hot reload takes ~23 s (wait for "reloaded" in the log).
 - The sea's own renderers write no usable surface: keep its depth (copy right after the far-sea
   bucket; make the near sea write its surface, then restore the depth) and shade it in the
   composite: noise ripples faded by pixel footprint, a long swell in the normals only (calm it in
