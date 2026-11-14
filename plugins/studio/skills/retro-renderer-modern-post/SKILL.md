@@ -2090,3 +2090,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   only saves with TAA on. Editing a hot-reloaded shader can crash the game mid-write ("couldn't open
   ...frag"): verify with `-NoShaderReload` once the edits are done. `JAK_ENHANCED_WEATHER_SCRIPT=0:2,200:0`
   gives rain then clear-after-rain in one run.
+
+## Dust that glows like a light: coverage below the "not a light" mark (lesson, Jak 3 Enhanced Spargus, Nov 2026)
+
+- Symptom: the game's tan dust puffs (citizens' `dirtpuff01`, `bigpuff`) glowed yellow over shaded
+  ground at golden hour; a fix that darkened them by the hour did nothing at 18h (night factor ~1).
+- Cause: the composite re-adds "light effects" (scene after sprites minus before) ungraded with a
+  gain; blended dust is excluded by its coverage written into the copy's alpha, but the mark ramped
+  from 0.03 to 0.25, so thin puffs and soft edges (alpha 0.05-0.2) still counted as light.
+- Find it with the composite's debug view of the effects' weight (`tune_fx_debug` 2): dust should be
+  black there. Fix = lower ramp (0.005..0.06), existing tunables only.
+- Restrict "darken with the hour" to dust pictures by texture name, not by low saturation: splashes,
+  foam, glints and eco blend the same way and must keep their color at night.
+- Photo mode does not pause actors: compare A/B with counts on a debug mask over several alternating
+  samples (before, after, before...), not pixel diffs of two animated frames.
