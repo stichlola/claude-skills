@@ -760,6 +760,17 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   shape first; (3) NVIDIA `#pragma optionNV(unroll none)` +1.5 ms, `optionNV(inline none)` +10 ms,
   `unroll all` / `fastmath on` no gain: keep the driver's defaults; (4) NVIDIA's `glGetProgramBinary`
   no longer carries the assembly or register count, only its size.
+- **A big branch that runs on few pixels can still halve every pixel's speed: split the program by
+  region, not by feature.** Jak 3 Enhanced, Spargus at dusk (2560x1600): composite 30 ms at full rate,
+  and zeroing each feature found nothing big (2.7 ms at most). Compiling out the ~700-line water-surface
+  block (`#ifdef ENH_NO_WATER`) made it 15 ms, with water off-screen. Fix: two programs over the same
+  quad, the dry variant `discard`s pixels where the water mask is set, the full one (a uniform mode
+  already in the shader, no new uniform) `discard`s the others and is skipped when no water is on.
+  Uniforms copied as above (remember cube-array shadow samplers in the copy's type list, or the copy
+  leaves them on unit 0: GL "undefined behavior" warning spam). Unlike (1) above, here the cut code was
+  live and large; try compiling out each *big* branch once with a `#define` before trusting the
+  feature-zeroing table. On VRS, also reproject last frame's per-tile flags with the camera's move
+  instead of dilating 3x3: shaded share 59 -> 53 %.
 - Before GPU culling / Hi-Z for a PS2-era scene, measure: all the geometry buckets together were ~4 ms
   against 8 ms of post; the work belongs in the post pass.
 - Rock detail over a game's cliffs, as AAA terrain does: each tiling size only within its own distance
