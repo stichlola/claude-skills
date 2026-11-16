@@ -66,7 +66,8 @@ for o in obs:
     if CHECK: bm.free(); continue
     clean(bm); bm.verts.index_update(); r = report(bm.copy()); print('DOPO ', o.name, r, flush=True)
     bm.transform(o.matrix_world.inverted()); bm.to_mesh(o.data); bm.free(); o.data.update(); done.append(o)
-    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
+    for x in bpy.context.view_layer.objects: x.select_set(x == o)   # select_all.poll fails in some -b runs
+    bpy.context.view_layer.objects.active = o
     bpy.ops.wm.stl_export(filepath=os.path.join(OUT, o.name+'.stl'), export_selected_objects=True, global_scale=1.0)
 if done: bpy.data.libraries.write(os.path.join(OUT, 'cleaned.blend'), set(done), fake_user=True)
 print('FINE', flush=True)
