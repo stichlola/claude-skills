@@ -188,6 +188,10 @@ camera the game hands over each frame.
   reconstructed point. Puddles linger minutes after rain, so "also in Clear" can still be the rain code.
   Harness traps: a worktree game reads the MAIN tree's shaders unless JAK_DEV_OWN_TREE=1 is set in the
   same shell call as dev_launch; enh_composite hot reload takes ~23 s (wait for "reloaded" in the log).
+  The test config (-TestCfg) boots the Performance preset, which turns water reflections off: the whole
+  water composite (colors, ripples, dbg views) is skipped and A/B shows nothing; pass
+  `-Env @{ JAK_ENHANCED_PRESET = '2' }` (Maximum). Spargus sea spot: travel wascityb-start, then
+  tuning `debug.tp` [1722.4, 40, -420.1, 0] (Jak swims; a tp into an unloaded area just drops him).
 - The sea's own renderers write no usable surface: keep its depth (copy right after the far-sea
   bucket; make the near sea write its surface, then restore the depth) and shade it in the
   composite: noise ripples faded by pixel footprint, a long swell in the normals only (calm it in
