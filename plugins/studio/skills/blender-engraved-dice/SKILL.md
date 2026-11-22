@@ -76,6 +76,7 @@ Supports only on the bottom vertex (medium) and on the 4 lower edges + 4 equator
 0.3-0.4 mm); the bevel hides the marks and the faces stay flat (balance). Never rest a face on supports
 (one phrase ruined) or an edge (two faces need supports). Biggest cross-section is the equator - slow
 the lift there if it peels badly.
+Full print/finish method (fin supports, opaque vs clear finishing): skill `resin-dice-printing`.
 
 ## Files
 
