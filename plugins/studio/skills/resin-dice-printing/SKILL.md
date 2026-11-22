@@ -64,6 +64,17 @@ plus shop practice. Pairs with `blender-engraved-dice` (building the die) and `m
 4. Fill numbers last (opaque paint or pigmented resin, wipe flush, re-polish the face).
 5. Expect visible micro-bubbles inside: degas or warm the resin, print slower lifts.
 
+## 4c. Acrylic number fill (shop default) and UV gloss resin
+
+- Seal the surface **before** filling (varnish or a thin UV gloss resin coat): on bare sanded resin
+  acrylic stains the sanding scratches around the numbers.
+- Fill with slightly thick acrylic, wait ~1 min, wipe the face with a barely damp sponge/cloth over a
+  flat card; second pass if it shrinks. Let it dry fully (hours) before the top coat.
+- Acrylic is not durable on a rolling die: always top-coat (varnish, or thin UV resin on faces only -
+  resin pooling on edges rounds them and unbalances the die).
+- Clear dice with UV gloss resin: sand to 1500, thin UV resin coat (replaces 2000-12000 + polish),
+  acrylic fill, final thin UV resin/varnish. Use the shop's existing varnish/resin before buying.
+
 ## 5. Masters for silicone moulds (cast dice)
 
 - Printed resin is softer than casting resin and scratches; for real use, cast from a mould.
