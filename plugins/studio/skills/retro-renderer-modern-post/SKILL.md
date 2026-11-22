@@ -105,7 +105,16 @@ camera the game hands over each frame.
   first, their shadow weight eased and packed into the existing per-light float (16*w + slot +
   0.9*map share) instead of new uniforms. Flashes match only flash tracks (an explosion near the
   lantern stole its track). Measure with an algorithm-agnostic log from the uploaded list alone
-  (match last frame's upload by place: new/gone-in-view/per-frame luma jump/caster changes).
+  (new/gone-in-view/per-frame luma jump/caster changes).
+- Follow-ups that mattered: match tracks at their *predicted* place (velocity), plus a second
+  chance within ~8 m for a track seen last frame (same hue), and snap the position (ease only on a
+  live/memory handover): with a 1.5 m match and eased position, car lights lost their track every
+  few frames and shots got a new track at w=0 each frame (no light). Moving lights fade fast and
+  are counted apart in the metric. Match the metric by track id, not by place: two tracks at one
+  lamp (one leaving view, one entering) read as a 1.2 luma "jump". Shadow cube maps: more slots
+  than casters (12 for 8), the map's place uploaded per light instead of per slot (same uniform
+  size), maps only for near casters (~35 m): assigns per 360 turn fell 15 -> 2 on the second turn.
+  A remembered lamp peak must ignore other-hue glows (a passing shot turned a lamp red for 4 s).
 - Test setup: `-TestCfg` boots the Performance preset, which turns dynamic lights off (0
   candidates): add `-Env @{ JAK_ENHANCED_PRESET = '2' }`. Test instance n reads
   `local\tuning_i<n>.json`, not the user's `local\tuning.json`: drive phases (debug.pad camera turn,
