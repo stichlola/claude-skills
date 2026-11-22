@@ -94,6 +94,25 @@ camera the game hands over each frame.
 
 ## Dynamic lights from the game's own lamps
 
+- **Steady light slots (Haven at night: 200+ lights in view, 32 uniform slots).** Picking the 32
+  best scores each frame (or a "kept" list with a hard cap) pops lights on/off. What worked: a
+  persistent track per light by world place (exclusive nearest match, ~1.5 m), kept while out of
+  view (frustum only decides the upload, so a light is back at full strength after a camera turn);
+  a wanted set of 28 that may only take a slot when one is free, losers fading out *in* their slot;
+  a light in view with no slot held at 0 (else it pops in at its old strength when a slot frees);
+  one limiter on the uploaded r+g+b per frame (fade and colour easing together, ~3/s, max 0.06 a
+  frame). Shadow casters (the first N the shader shadows) as their own hysteresis set uploaded
+  first, their shadow weight eased and packed into the existing per-light float (16*w + slot +
+  0.9*map share) instead of new uniforms. Flashes match only flash tracks (an explosion near the
+  lantern stole its track). Measure with an algorithm-agnostic log from the uploaded list alone
+  (match last frame's upload by place: new/gone-in-view/per-frame luma jump/caster changes).
+- Test setup: `-TestCfg` boots the Performance preset, which turns dynamic lights off (0
+  candidates): add `-Env @{ JAK_ENHANCED_PRESET = '2' }`. Test instance n reads
+  `local\tuning_i<n>.json`, not the user's `local\tuning.json`: drive phases (debug.pad camera turn,
+  debug.route walk, a tag key printed in the log) there. PowerShell: `R` is an alias of
+  Invoke-History, don't name a helper function R.
+
+
 - First try: every glow sprite (the renderer's "flare" quads) as a point light. Almost invisible:
   glows are few, faint (colours ~0.15), often doubled, mostly high up or far away (the moon is
   one) - normalise the hue, merge duplicates, cull by distance, but don't rely on them alone.
