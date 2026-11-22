@@ -112,6 +112,11 @@ themselves (env vars, redeploys, dashboard settings) as numbered steps.
 
 ## Windows: PowerShell GUI and Inno Setup gotchas
 
+- Windows PowerShell 5.1 passing a long prompt to a native exe (`claude -p $Prompt`, node, any npm shim):
+  the embedded double quotes are dropped and the argument is split at the spaces, so a JSON format in the
+  prompt never reaches the program (it then invents its own fields). Pipe it instead: `$OutputEncoding =
+  New-Object Text.UTF8Encoding $false; $Prompt | claude -p ...`. Test with `& node -e "console.log(process.argv)" $s`.
+  Also check model-returned ids against the real list before POSTing; an API may ignore an unknown id silently.
 - PowerShell variables are case-insensitive: a local `$dir` overwrites the script's `$Dir` parameter.
 - Never write Markdown through a double-quoted PowerShell string: the backtick is its escape, so
   `` `volume `` becomes a vertical tab + "olume" and the closing backticks vanish (seen in a docs row).
