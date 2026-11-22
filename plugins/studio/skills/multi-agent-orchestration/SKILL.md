@@ -130,6 +130,10 @@ Rounds of polish over a backlog (find, fix, re-check):
   own retry loop (`gh release upload --clobber`, 30 s wait, check the asset `state == "uploaded"` via
   `gh release view --json assets`); publish as soon as the main assets are up, the optional ones last.
 - In PowerShell, quotes inside a `--jq` string are stripped: write `\"uploaded\"`.
+- Progress of a big `gh release upload`: the uploader's `ReadTransferCount` (Win32_Process) over the
+  file size; more read than the file means gh retried internally without logging it.
+- Upload speed varies per file (1.4 MB/min for small patches, 11 MB/min for the Setup): estimate the
+  end from the last big file, and say the estimate is uncertain.
 - Publish dependent metadata (a launcher's mods.json pointing at an asset) only after that asset is up.
 - Don't put `git push` at the end of an unattended upload script while agents are committing WIP:
   it would publish their unfinished commits.

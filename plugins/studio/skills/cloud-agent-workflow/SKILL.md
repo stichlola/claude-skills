@@ -124,5 +124,13 @@ themselves (env vars, redeploys, dashboard settings) as numbered steps.
   keep the wizard as fallback. `ExtractTemporaryFiles('x-*.bmp')` fails on `dontcopy` files: extract
   them one by one. Test builds need a different AppId/AppName/group, or they overwrite the real
   install's uninstall entry and Start menu shortcuts.
+- Minimize/restore of player windows: a WinForms form with `ControlBox = $false` has no minimize box,
+  and once minimized (Win+D) the taskbar can't bring it back: keep the control box, `MaximizeBox =
+  $false`, and refuse unwanted closes in `FormClosing`. A borderless WPF window (`WindowStyle=None`,
+  `AllowsTransparency`) sometimes misses the taskbar's restore: `Add_Activated({ if minimized ->
+  Normal })`. Run long child builds (extractor, compiler) at `BelowNormal` priority so the progress
+  window and the PC stay responsive. Test with UI Automation + `WM_SYSCOMMAND SC_MINIMIZE/SC_RESTORE`.
+- A game launcher that reports crashes only on a non-zero exit code misses "it opens and closes":
+  also report a game process that ends by itself within its first ~20 s.
 - Drive WPF/WinForms windows for screenshots with UI Automation (x:Name = AutomationId, Invoke/Value/
   Toggle patterns) and CopyFromScreen of the BoundingRectangle; no test hooks in the product.
