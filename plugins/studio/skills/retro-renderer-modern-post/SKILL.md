@@ -2164,3 +2164,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   grep the log for "failed, keeping the old one" after a reload before judging a screenshot.
 - Lighting that cycles (signs, passing traffic) makes single screenshots lie: tile 4-6 shots taken
   seconds apart, alternating A and B, and compare within the same light phase.
+
+## "Slow over the water at night" (lesson, Jak 3 Enhanced, Nov 2026)
+
+- Check the suspected cause before optimizing it. The bug report blamed the low camera. In Haven's harbor at
+  22h (960x540) the composite took 4.3-4.8 ms whether the camera was 5 m, 1 m or 0.3 m above the water,
+  because the water fills the frame at all three heights. Away from the water it took 3.3 ms. The cost
+  grows with how much of the screen is water, times the per-pixel loops over lights. With the hover bike
+  (2 headlights plus far glows) it reached 6.7 ms, and 2.2 ms of that was the light loops.
+- On a lobe loop (`pow(nh, k)` columns of lamps and beacons), cull each light on `nh` before the pows and the
+  shadow-map taps. Take the threshold from the exponent: `nh_c = exp(ln(eps / gain) / k)`, which is 0.9 for
+  k 70 and 0.97 for k 220. Result: -0.6 to -0.8 ms with the same picture (A/B of 4-frame averages within noise).
+  Most of the remaining cost is the per-light setup (normalize, dot) that comes before the test.
+- Do not skip the screen-space fallback march where the Hi-Z ray already reached the screen's edge. The march's
+  thicker hit test (it grows with step length) finds hits that Hi-Z rejects. By day this cut visible reflection
+  in the near water (+13 luma in a corner, noise 1-4), and it only saved 0.16 ms.
+- Measure with a probe that zeroes groups of uniforms (here `JAK_ENHANCED_COMPOSITE_OFF` plus a new
+  `debug.composite_probe` n for each variant). It reports waited GPU ms for each group in one run. Watch for
+  two traps: a debug switch that only changes the output after the work (`tune_water_dbg 3`) measures
+  nothing, and zeroing a count like `spot_count` also removes the land loops that use it.
