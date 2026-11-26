@@ -195,6 +195,28 @@ never commit game data (ISO, extracted files, textures, meshes, audio).
   `/VERYSILENT /CURRENTUSER /DIR=<tmp> /LOG=<file>` then `unins000.exe /VERYSILENT`.
 - Don't ship scripts that need `powershell -ExecutionPolicy Bypass` to end users: do image work in
   Python (Pillow/NumPy) and call Real-ESRGAN's exe directly.
+- **Pick the upscale model for PS2 textures, then ship it as ncnn (lesson, 2026-11-26).** realesrgan-x4plus
+  makes PS2 textures waxy and blacks out colour under alpha 0 (Daxter's cutscene face). 4x-GameAI
+  (OpenModelDB, WTFPL, trained on PS2-style textures) kept grain and detail best in a side-by-side of a few
+  character and wall textures; Remacri (CC BY-NC-SA) made a fake grid on one wall; RealisticRescaler was
+  smooth and noisy. Compare 3-4 models on ~14 textures as one sheet (original, current, each model); it takes
+  seconds per model with PyTorch.
+  - OpenModelDB models are PyTorch `.pth` only. An ESRGAN 64nf23nb model has realesrgan-x4plus's graph, so
+    reuse `realesrgan-x4plus.param`. Write the `.bin` yourself: for each Convolution in param order,
+    write the tag `0x01306B47` and the fp16 weights (pad to 4 bytes), then the bias as raw fp32. Check the
+    layout first by parsing x4plus's own `.bin`: 351 convs must account for every byte. Then compare
+    ncnn's output with PyTorch's: PSNR 55+ dB, ignoring borders.
+  - Old ESRGAN keys map to the new names: `model.0` conv_first, `model.1.sub.N.RDBk.convj.0` body.N.rdbk.convj,
+    `model.1.sub.23` conv_body, `model.3/6/8/10` up1/up2/hr/last. A torch-only venv without numpy/PIL can still
+    run it: pass raw RGB bytes in and out.
+  - Google Drive downloads return an HTML "can't scan" page. Re-request with its form's `confirm` and `uuid`
+    on `drive.usercontent.google.com/download`.
+  - OpenGOAL bakes texture replacements into the `.fr3` files at `levels_extract`. A new upscale shows up
+    in game only after the decompiler re-extracts the levels.
+  - The decompiler finds the project by "jak-project" in its own path, or by a `data` folder beside the
+    exe. A junction of the repo's folder doesn't help (Windows resolves the real path). Copy the exe
+    elsewhere and put a `data` junction beside it, never in the release `bin`, or the release would
+    package it.
 
 ## Game text is not rebuilt when the encoder changes (lesson)
 
