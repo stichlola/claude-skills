@@ -2136,3 +2136,22 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
   foam, glints and eco blend the same way and must keep their color at night.
 - Photo mode does not pause actors: compare A/B with counts on a debug mask over several alternating
   samples (before, after, before...), not pixel diffs of two animated frames.
+
+## Steady shadow casters, and finding which shadow term draws an artifact (lesson, Jak 3 Enhanced Haven night, Nov 2026)
+
+- Choosing N shadow-casting lights each frame by a raw score churns (Haven 22h walk: ~20 on/off per
+  20 s). What made it steady (~0.5-2 per 20 s, no pops): an eased importance seen from a point ahead
+  of the camera (velocity x ~1.5 s), a long dwell (5 s), a challenger needing 3x the weakest, ONE swap
+  at a time with a budget (one every 3 s) and a slow fade, joins rate-limited too, and the lamp by the
+  player joining free. Keep the old behaviour reachable by tunes so A/B runs in one game session.
+- Debug views that ADD a tint scaled by the light's falloff (k^2) are invisible for far, bright
+  lights: the artifact looked "not from the lamps". Show the term itself: keep the strongest value per
+  pixel in a global and override the final color at the end of the shader (grey scene + red/green/blue).
+- A binary screen-space march (return 1 at the first hit, coarse jittered steps) breaks a character's
+  shadow at his feet into dark dashes/blocks: pack the steps near the surface (t = u^2 x reach) and
+  shade each hit by its depth gap over the threshold (smoothstep) and less further along the ray.
+- Uniform budget: on a shader at NVIDIA's 1024 constant-register edge, ONE new float uniform fails the
+  link (C6020) and the hot reload silently keeps the old program. Reuse an existing tune, and always
+  grep the log for "failed, keeping the old one" after a reload before judging a screenshot.
+- Lighting that cycles (signs, passing traffic) makes single screenshots lie: tile 4-6 shots taken
+  seconds apart, alternating A and B, and compare within the same light phase.
