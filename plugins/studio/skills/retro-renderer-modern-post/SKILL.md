@@ -2167,6 +2167,19 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 
 ## "Slow over the water at night" (lesson, Jak 3 Enhanced, Nov 2026)
 
+- REAL CAUSE (found on the second pass, at the player's 2000x1250): the water pass ran the whole uber
+  composite, its land code skipped at run time but still holding registers, so few water pixels ran at
+  once: water pixels cost ~5x a dry pixel. A program with only the water in it (land-only conditions
+  turned into compile-time constants with a macro, `WS_DRY false` / `WS_WET true`, so the compiler
+  drops that code) took the pass 10.0 -> 4.4 ms with the camera low over the harbour, 52 -> 60 fps,
+  same picture. When one pass of an uber shader serves a subset of pixels, compile a variant for it.
+- Bisect a pass's per-pixel cost with run-time exits on its own pixels (`if (wet && dbg == k) return`):
+  discard-all, exit after block A, exit after block B... At 960x540 under vsync this never showed:
+  measure at the player's resolution (`JAK_ENHANCED_TEST_RES`) with `JAK_ENHANCED_PROFILE`.
+- Laptop GPU drift: slot-to-slot readings swing 1-3 ms (even with `debug.gpu_burn`); single-loop skips
+  that "saved 2 ms" in 5 s cycles were < 0.3 ms in an interleaved probe (1 s slots, A/B repeated 4x).
+  A photo camera moved to a new spot streams levels for ~30 s: 5-10 fps readings that mean nothing.
+- The first pass's findings below are true but small (~0.5 ms):
 - Check the suspected cause before optimizing it. The bug report blamed the low camera. In Haven's harbor at
   22h (960x540) the composite took 4.3-4.8 ms whether the camera was 5 m, 1 m or 0.3 m above the water,
   because the water fills the frame at all three heights. Away from the water it took 3.3 ms. The cost
