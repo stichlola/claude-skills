@@ -2147,9 +2147,18 @@ stronger where the pixels a little below are lava-colored (red minus blue, brigh
 - Debug views that ADD a tint scaled by the light's falloff (k^2) are invisible for far, bright
   lights: the artifact looked "not from the lamps". Show the term itself: keep the strongest value per
   pixel in a global and override the final color at the end of the shader (grey scene + red/green/blue).
-- A binary screen-space march (return 1 at the first hit, coarse jittered steps) breaks a character's
-  shadow at his feet into dark dashes/blocks: pack the steps near the surface (t = u^2 x reach) and
-  shade each hit by its depth gap over the threshold (smoothstep) and less further along the ray.
+- A binary screen-space march (return 1 at the first hit, coarse jittered steps) gives ragged shadow
+  edges: shade each hit by its depth gap over the threshold (smoothstep), steps only mildly packed
+  near the surface (t between u and u^2; u^2 alone doubles the far gaps and breaks long leg shadows).
+- A "broken shadow at the feet" was not a shadow at all: Jak's own footprints. The game tags city
+  paving "dirt", and a colour-based "sandy" test passed on brick under pink lamps, so every step left
+  a dark sole. Before tuning shadow terms, upscale the user's crop 4x and count the shapes (foot-sized
+  blobs 0.7 m apart = prints), and list every effect that draws near the player (prints, decals,
+  contact blobs). A test switch that seeds the effect on demand proves it without finding the spot.
+- Shadow casters among ~90 city lights: keep a caster's upload slot, rank by a decaying peak (blinking
+  signs), never seat a light that ever moved (traffic), and define "near" as the pool the player stands
+  in (distance < reach), not distance from the camera. Run A/B legs with a teleport reset before each,
+  and format route numbers with the invariant culture (an Italian decimal comma split every point).
 - Uniform budget: on a shader at NVIDIA's 1024 constant-register edge, ONE new float uniform fails the
   link (C6020) and the hot reload silently keeps the old program. Reuse an existing tune, and always
   grep the log for "failed, keeping the old one" after a reload before judging a screenshot.
