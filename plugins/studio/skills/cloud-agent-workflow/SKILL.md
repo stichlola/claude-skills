@@ -135,6 +135,10 @@ themselves (env vars, redeploys, dashboard settings) as numbered steps.
   `AllowsTransparency`) sometimes misses the taskbar's restore: `Add_Activated({ if minimized ->
   Normal })`. Run long child builds (extractor, compiler) at `BelowNormal` priority so the progress
   window and the PC stay responsive. Test with UI Automation + `WM_SYSCOMMAND SC_MINIMIZE/SC_RESTORE`.
+  A PowerShell `while { DoEvents; Start-Sleep }` loop loses those posted WM_SYSCOMMANDs (the window,
+  once minimized, never comes back from the taskbar, though the process "responds"): wait with
+  `[Threading.Thread]::Sleep(ms)` instead, or use `Application.Run` + a Timer. Post the messages from
+  another process to test: the same thread's own minimize/restore hides the bug.
 - A game launcher that reports crashes only on a non-zero exit code misses "it opens and closes":
   also report a game process that ends by itself within its first ~20 s.
 - Drive WPF/WinForms windows for screenshots with UI Automation (x:Name = AutomationId, Invoke/Value/
