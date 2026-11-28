@@ -92,3 +92,11 @@ rest, make the target active, re-enter Sculpt.
   clearance, walls >= 1 mm measured with radial rays; membrane edges get glued.
 - After MANIFOLD booleans on an AI mesh, test assembled interference: self-intersections leave 0.05 mm slivers;
   subtract the body from each wing (MANIFOLD) to clear them. Skip the base-disc cut when an ornament is fused across it.
+- Fast path without agents or Blender: `pip install manifold3d trimesh pymeshlab`. Load the STL with trimesh, wrap
+  it in `manifold3d.Manifold(Mesh(vert_properties=float32, tri_verts=uint32))`: a 1.2 M-face body loads in ~3 s and a
+  disc-limited plane cut (`M ^ cutter`, `M - cutter`, `decompose()` for islands) takes well under a second.
+- Interactive add-ons (CatPin etc.) are mouse/modal tools, not scriptable: the user draws, we check and render.
+- Body joints (Nov 2026, Karna v3): base cut as a heightfield in coordinates sheared along a tilted assembly
+  direction (no undercut by construction, legs over the tail block a vertical pull); neck as a plane limited to a
+  disc; D5x14 pins along each joint direction, walls by rays on the uncut skin (rays on the slanted cut face give
+  false negatives). Check assembly order: the head pulled along its axis hit the mounted wings -> head before wings.
