@@ -78,3 +78,17 @@ rest, make the target active, re-enter Sculpt.
 - Contact sheet: rows scaled to the same height so each row fills the sheet width exactly, thin gaps in the
   background colour, no white holes.
 - Draft message to the client (English), user sends it.
+
+## 8. Splitting a big statue for shipping (dragon wings, Nov 2026)
+
+- Voxelize first (parity ray fill along one axis, 0.5 mm) and find the real contacts with connected-component
+  tests: AI wings are fused along the back far lower than they look (membrane root down to z~62 on a 207 mm dragon),
+  so a box-limited plane beside the spine does not free them. A min-cut on voxels tends to slice through thin
+  membrane: use it only to locate joins, not as the seam.
+- Wing cut that hides well: a thin swept "ribbon" cutter (kerf 0.1 mm) crossing the membrane 1-2 mm outboard of
+  the back, following the root along the spine spikes, plus a flat clipped disc across the wing arm 8-10 mm from the
+  shoulder (clean round section, room for pins). Check both ribbon edges are in air with BVH inside tests.
+- Pins only where the section is thick (arm, 12 mm): 2 per wing, D4 + D3 separate printed pins, 0.12 mm radial
+  clearance, walls >= 1 mm measured with radial rays; membrane edges get glued.
+- After MANIFOLD booleans on an AI mesh, test assembled interference: self-intersections leave 0.05 mm slivers;
+  subtract the body from each wing (MANIFOLD) to clear them. Skip the base-disc cut when an ornament is fused across it.
