@@ -100,3 +100,16 @@ rest, make the target active, re-enter Sculpt.
   direction (no undercut by construction, legs over the tail block a vertical pull); neck as a plane limited to a
   disc; D5x14 pins along each joint direction, walls by rays on the uncut skin (rays on the slanted cut face give
   false negatives). Check assembly order: the head pulled along its axis hit the mounted wings -> head before wings.
+- Joints that hold WITHOUT glue (resin, Nov 2026; researched online): resin is brittle, so no snap fits. Use
+  pins for alignment + 2 neodymium magnets (8x3) per joint for hold; only the magnets get CA glue in their pockets.
+  - Ribbed press-fit pins: core d/2 (0.12 radial clearance in the d+0.24 hole), 3 ribs 0.6 mm wide reaching
+    0.10 mm beyond the hole wall, 1.5 mm ramps and 0.4 chamfers at both ends. Build = (core + ribs) INTERSECT a
+    revolved envelope profile. Tell the user to test-print one pin + hole and adjust the rib interference
+    (0.05 tight printer / 0.15 loose).
+  - Magnet pockets: dia 8.2, depth 3.2 (magnet 0.2 below the face), axis = joint assembly direction, walls >= 1.2
+    tested as `(shell_cylinders - (lo + hi)).volume() < 0.3` against the ASSEMBLED pair (testing each piece alone
+    fails on an uneven heightfield seam), >= 8.2 mm (perpendicular) from pin holes, pair as far apart as possible.
+    On a flat neck cut sample a grid on the plane; on curved seams sample cut-face centres (normal . d < -0.97) near
+    the other piece (cKDTree, NOT trimesh closest_point: 2 GB on 1 M faces). Verify by volume removed per piece.
+  - Script: `scripts/perni_magneti_manifold.py` (Karna, runs in ~30 s on 1.4 M faces total). Remind the user to
+    mark magnet polarity before gluing.
