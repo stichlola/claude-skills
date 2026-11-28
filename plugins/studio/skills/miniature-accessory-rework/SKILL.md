@@ -124,3 +124,9 @@ rest, make the target active, re-enter Sculpt.
 - STL written by trimesh reloads as triangle soup: `merge_vertices()` before building a Manifold, else NotManifold and
   every boolean/interference silently returns 0.
 - Thin wing arms (inscribed r ~3 mm): even D3 pins with 1 mm walls may not fit; say so instead of forcing it.
+- Speed stack (installed Nov 2026, `pip install --user manifold3d trimesh open3d embreex pymeshlab`):
+  manifold3d for booleans/cuts/hulls, `open3d.t.geometry.RaycastingScene` for rays (200k rays on 600k faces
+  in 0.4 s; also `compute_occupancy` / `compute_signed_distance` instead of voxel parity fills), trimesh with
+  Embree for simple queries. Use Blender only for renders and .blend files. Commercial alternatives seen:
+  MeshLib (fast, paid licence for business), Meshy Auto Split API / Hi3D Split-to-Print (automatic splits with
+  connectors, but seams not placed to hide on statues).
