@@ -71,3 +71,16 @@ return done
   Opus/Sonnet and keep Fable for plan/review, and resume stopped agents with SendMessage instead
   of starting new ones (their work is saved).
 - Memory, not tokens, often decides parallelism: each game test is 3-5 GB commit charge.
+
+## Lessons (Karna split, 2026-11-28)
+
+- A Fable planner at effort high on 3D geometry explored for 30+ min. Give the planner a clear stop rule
+  ("concrete plan in <= N steps, no extra renders") and use effort medium for the build.
+- To hurry a running planner: SendMessage it "finish now". Its hand-back goes to the main session, NOT
+  back into the workflow, so the workflow keeps waiting: stop it, write the plan to a file (PIANO.md),
+  launch a build-only workflow that reads it (build opus medium + quick review fable low, max 1 fix).
+  Build-only took ~8 min.
+- When the job is repetitive geometry, a scripted kit (manifold3d + trimesh, see
+  miniature-accessory-rework section 8) beats a team of agents: seconds per cut, no plan phase.
+- Interactive Blender add-ons (CatPin and similar draw-on-model splitters) cannot be driven from code;
+  check this (bl_idname list, modal tools) before the user buys one for automation.
