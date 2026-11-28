@@ -113,3 +113,14 @@ rest, make the target active, re-enter Sculpt.
     the other piece (cKDTree, NOT trimesh closest_point: 2 GB on 1 M faces). Verify by volume removed per piece.
   - Script: `scripts/perni_magneti_manifold.py` (Karna, runs in ~30 s on 1.4 M faces total). Remind the user to
     mark magnet polarity before gluing.
+- Undercut-free cuts by construction (Kala, Nov 2026): any cut that must slide off along d is a heightfield in a frame
+  with one axis = d (base: d = +z; wings: d = arm axis). For wings: split first with a voxel bisector (EDT(body) - EDT(wing),
+  marching tetrahedra), then voxelize wing and "rest" (body + other wing) in the d-frame and per column cut at the top of
+  the rest below the wing top; max-filter G (5x5) where there is no wing, or the interpolated slopes shave 0.2 mm skin
+  slivers off neighbouring spikes (hundreds of islands). A plain bisector or a sleeve around an arm stub always
+  interferes 0.1-45 mm3 when pulled. Scripts: kala_pezzi/script/kl1b_ali_hf.py, mt.py (marching tets), vox.py (winding voxelizer).
+- Base seam on a decorated plinth: if the rocks sit on a moulded band, cut 0.3 mm above the band's top rail (natural
+  groove), drop F to the flange top under ornaments that hang over the band so they stay whole on the upper piece.
+- STL written by trimesh reloads as triangle soup: `merge_vertices()` before building a Manifold, else NotManifold and
+  every boolean/interference silently returns 0.
+- Thin wing arms (inscribed r ~3 mm): even D3 pins with 1 mm walls may not fit; say so instead of forcing it.
